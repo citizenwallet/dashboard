@@ -57,9 +57,29 @@ export const PageContent = styled.div`
 `;
 
 export const Title = styled.h1`
-  font-size: 2rem;
+  font-size: 1.5cqw;
   font-weight: 500;
   margin: 0;
+
+  // ellipsis
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+
+  // at 1200px
+  @media (max-width: 1200px) {
+    font-size: 3cqw;
+  }
+
+  // at 900px
+  @media (max-width: 900px) {
+    font-size: 5cqw;
+  }
+
+  // at 600px
+  @media (max-width: 600px) {
+    font-size: 6cqw;
+  }
 `;
 
 export const Subtitle = styled.h2`
