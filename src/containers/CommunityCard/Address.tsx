@@ -2,17 +2,7 @@
 
 import { FC, useState } from "react";
 import { AddressContainer } from "./styles";
-
-function copyToClipboard(text: string) {
-  navigator.clipboard.writeText(text).then(
-    function () {
-      console.log("Copying to clipboard was successful!");
-    },
-    function (err) {
-      console.error("Could not copy text: ", err);
-    }
-  );
-}
+import { copyToClipboard } from "@/utils/clipboard";
 
 // function that returns the first 4 and last 4 characters of a string
 function formatAddress(address: string) {
@@ -36,7 +26,7 @@ const Address: FC<AddressProps> = ({ address }) => {
   };
 
   return (
-    <AddressContainer copied={copied} onClick={handleClick}>
+    <AddressContainer $copied={copied} onClick={handleClick}>
       {formatAddress(address)}
     </AddressContainer>
   );

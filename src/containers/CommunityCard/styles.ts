@@ -18,7 +18,7 @@ export const Card = styled.div`
 `;
 
 interface AddressContainerProps {
-  copied: boolean;
+  $copied: boolean;
 }
 
 export const AddressContainer = styled.div<AddressContainerProps>`
@@ -35,10 +35,10 @@ export const AddressContainer = styled.div<AddressContainerProps>`
 
   width: 100%;
 
-  background-color: ${({ copied }) => (copied ? "#e2ffd1" : "transparent")};
+  background-color: ${({ $copied }) => ($copied ? "#e2ffd1" : "transparent")};
 
   &:hover {
-    background-color: ${({ copied }) => (copied ? "#e2ffd1" : "#eee")};
+    background-color: ${({ $copied }) => ($copied ? "#e2ffd1" : "#eee")};
   }
 
   transition: background-color 0.25s ease-in-out;
