@@ -21,6 +21,16 @@ export const Row = styled.div`
 `;
 
 export const HeaderBar = styled.header`
+  position: fixed;
+  top: 0;
+  left: 0;
+
+  z-index: 9999;
+
+  background-color: #ffffff;
+
+  padding: 1rem;
+
   display: flex;
   flex-direction: row;
   justify-content: flex-start;
@@ -31,6 +41,19 @@ export const HeaderBar = styled.header`
   width: 100%;
 
   margin-bottom: 1rem;
+`;
+
+export const PageContent = styled.div`
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+  align-items: center;
+
+  padding-top: 60px;
+  padding-bottom: 60px;
+
+  width: 90%;
+  max-width: 1200px;
 `;
 
 export const Title = styled.h1`

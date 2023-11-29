@@ -25,6 +25,10 @@ class CommunityLogic {
 
     return "0.0";
   }
+
+  async fetchChainInfo() {
+    return await this.ethService.getChainInfo();
+  }
 }
 
 export default CommunityLogic;

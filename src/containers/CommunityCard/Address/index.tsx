@@ -1,8 +1,9 @@
 "use client";
 
 import { FC, useState } from "react";
-import { AddressContainer } from "./styles";
 import { copyToClipboard } from "@/utils/clipboard";
+import { faCopy } from "@fortawesome/free-solid-svg-icons";
+import { AddressContainer, AddressText, CopyIcon } from "./styles";
 
 // function that returns the first 4 and last 4 characters of a string
 function formatAddress(address: string) {
@@ -27,7 +28,8 @@ const Address: FC<AddressProps> = ({ address }) => {
 
   return (
     <AddressContainer $copied={copied} onClick={handleClick}>
-      {formatAddress(address)}
+      <AddressText $copied={copied}>{formatAddress(address)} </AddressText>
+      <CopyIcon $copied={copied} icon={faCopy} />
     </AddressContainer>
   );
 };

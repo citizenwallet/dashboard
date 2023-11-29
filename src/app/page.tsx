@@ -4,6 +4,7 @@ import {
   HeaderBar,
   HorizontalSpacer,
   Main,
+  PageContent,
   Row,
   Subtitle,
   Title,
@@ -30,18 +31,19 @@ export default function Home() {
         <HorizontalSpacer />
         <Title>Community Dashboard</Title>
       </HeaderBar>
+      <PageContent>
+        <Row>
+          <Subtitle>Transaction Sponsors</Subtitle>
+        </Row>
 
-      <Row>
-        <Subtitle>Sponsor Account Balance</Subtitle>
-      </Row>
+        <VerticalSpacer />
 
-      <VerticalSpacer />
-
-      <ErrorBoundary errorComponent={CommunityError}>
-        <Suspense fallback={<div>Loading...</div>}>
-          <Communities />
-        </Suspense>
-      </ErrorBoundary>
+        <ErrorBoundary errorComponent={CommunityError}>
+          <Suspense fallback={<div>Loading...</div>}>
+            <Communities />
+          </Suspense>
+        </ErrorBoundary>
+      </PageContent>
     </Main>
   );
 }
