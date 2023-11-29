@@ -62,20 +62,20 @@ export class ConfigService {
 
   config?: Config[];
 
-  cachaBuster() {
+  cacheBuster() {
     return Math.floor(new Date().getTime() / 1000);
   }
 
   async setConfig() {
     this.config = await this.api.get(
-      "communities.json?cacheBuster=" + this.cachaBuster()
+      "communities.json?cacheBuster=" + this.cacheBuster()
     );
   }
 
   async get(): Promise<Config[]> {
     if (!this.config) {
       this.config = await this.api.get(
-        "communities.json?cacheBuster=" + this.cachaBuster()
+        "communities.json?cacheBuster=" + this.cacheBuster()
       );
 
       return this.config!;
