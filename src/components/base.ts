@@ -1,5 +1,6 @@
 "use client";
 
+import Image from "next/image";
 import styled from "styled-components";
 
 export const Main = styled.main`
@@ -54,6 +55,27 @@ export const PageContent = styled.div`
 
   width: 90%;
   max-width: 1200px;
+`;
+
+export const FooterBar = styled.footer`
+  position: fixed;
+  bottom: 0;
+  left: 0;
+
+  z-index: 9999;
+
+  padding: 1rem;
+
+  display: flex;
+  flex-direction: row;
+  justify-content: flex-start;
+  align-items: center;
+  align-content: center;
+
+  height: 60px;
+  width: 100%;
+
+  margin-top: 1rem;
 `;
 
 export const Title = styled.h1`

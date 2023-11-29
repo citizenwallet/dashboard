@@ -1,6 +1,7 @@
 import Image from "next/image";
 import { Suspense } from "react";
 import {
+  FooterBar,
   HeaderBar,
   HorizontalSpacer,
   Main,
@@ -16,6 +17,7 @@ import Communities from "@/containers/Communities";
 import LogoSrc from "@/assets/logo.svg";
 import { ErrorBoundary } from "next/dist/client/components/error-boundary";
 import CommunityError from "@/components/Error";
+import Contribute from "@/components/Contribute";
 
 export default function Home() {
   return (
@@ -44,6 +46,9 @@ export default function Home() {
           </Suspense>
         </ErrorBoundary>
       </PageContent>
+      <FooterBar>
+        <Contribute />
+      </FooterBar>
     </Main>
   );
 }
