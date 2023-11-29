@@ -14,17 +14,32 @@ import {
 
 import Communities from "@/containers/Communities";
 
-import LogoSrc from "@/assets/logo.svg";
 import { ErrorBoundary } from "next/dist/client/components/error-boundary";
 import CommunityError from "@/components/Error";
 import Contribute from "@/components/Contribute";
+import Head from "next/head";
 
 export default function Home() {
   return (
     <Main>
+      <Head>
+        <title>Community Dashboard</title>
+        <link rel="icon" href="/favicon.ico" />
+        <meta
+          property="og:title"
+          content="Citizen Wallet - Community Dashboard"
+        />
+        <meta
+          property="og:description"
+          content="All the Citizen Wallet communities in one place."
+        />
+        <meta property="og:image" content="/logo_rounded.png" />
+        <meta property="og:url" content="https://dashboard.citizenwallet.xyz" />
+        <meta property="og:type" content="website" />
+      </Head>
       <HeaderBar>
         <Image
-          src={LogoSrc}
+          src="/logo.svg"
           alt="Citizen Wallet Logo"
           width={40}
           height={40}
