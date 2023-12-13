@@ -1,4 +1,6 @@
 import Image from "next/image";
+import dynamic from "next/dynamic";
+
 import { Suspense } from "react";
 import {
   FooterBar,
@@ -12,7 +14,7 @@ import {
   VerticalSpacer,
 } from "@/components/base";
 
-import Communities from "@/containers/Communities";
+const Communities = dynamic(() => import('@/containers/Communities'));
 
 import { ErrorBoundary } from "next/dist/client/components/error-boundary";
 import CommunityError from "@/components/Error";
