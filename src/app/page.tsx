@@ -18,12 +18,13 @@ import { ErrorBoundary } from "next/dist/client/components/error-boundary";
 import CommunityError from "@/components/Error";
 import Contribute from "@/components/Contribute";
 import Head from "next/head";
+import Heading from "../components/Heading";
 
 export default function Home() {
   return (
     <Main>
       <Head>
-        <title>Community Dashboard</title>
+        <title>Citizen Wallet Dashboard</title>
         <link rel="icon" href="/favicon.ico" />
         <meta
           property="og:title"
@@ -46,12 +47,10 @@ export default function Home() {
           priority
         />
         <HorizontalSpacer />
-        <Title>Community Dashboard</Title>
+        <Title>Citizen Wallet Dashboard</Title>
       </HeaderBar>
       <PageContent>
-        <Row>
-          <Subtitle>Transaction Sponsors</Subtitle>
-        </Row>
+        <Heading title="Transaction Sponsors" />
 
         <VerticalSpacer />
 

@@ -7,7 +7,10 @@ export class ApiService {
 
   async get(
     fileName: string,
-    { timeout = 10000 } = { timeout: 10000 }
+    { timeout = 10000, revalidate = 3600 } = {
+      timeout: 10000,
+      revalidate: 3600,
+    }
   ): Promise<any> {
     const url = `${this.baseUrl}/${fileName}`;
     const controller = new AbortController();
@@ -16,7 +19,10 @@ export class ApiService {
     }, timeout);
 
     try {
-      const response = await fetch(url, { signal: controller.signal });
+      const response = await fetch(url, {
+        signal: controller.signal,
+        next: { revalidate },
+      });
       if (!response.ok) {
         throw new Error(`HTTP error! status: ${response.status}`);
       }
