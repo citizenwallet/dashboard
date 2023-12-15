@@ -1,9 +1,8 @@
 "use client";
 
 import { FC, useState } from "react";
-import { copyToClipboard } from "@/utils/clipboard";
-import { faCopy } from "@fortawesome/free-solid-svg-icons";
-import { AddressContainer, AddressText, CopyIcon } from "./styles";
+import { faArrowUpRightFromSquare } from "@fortawesome/free-solid-svg-icons";
+import { AddressContainer, AddressText, ArrowUpIcon } from "./styles";
 
 // function that returns the first 4 and last 4 characters of a string
 function formatAddress(address: string) {
@@ -12,24 +11,26 @@ function formatAddress(address: string) {
 
 interface AddressProps {
   address: string;
+  url: string;
 }
 
-const Address: FC<AddressProps> = ({ address }) => {
-  const [copied, setCopied] = useState(false);
+const Address: FC<AddressProps> = ({ address, url }) => {
+  const [active, setActive] = useState(false);
 
   const handleClick = () => {
-    setCopied(true);
-    copyToClipboard(address);
+    setActive(true);
+
+    window.open(`${url}/address/${address}`, address);
 
     setTimeout(() => {
-      setCopied(false);
+      setActive(false);
     }, 1500);
   };
 
   return (
-    <AddressContainer $copied={copied} onClick={handleClick}>
-      <AddressText $copied={copied}>{formatAddress(address)} </AddressText>
-      <CopyIcon $copied={copied} icon={faCopy} />
+    <AddressContainer $active={active} onClick={handleClick}>
+      <AddressText $active={active}>{formatAddress(address)} </AddressText>
+      <ArrowUpIcon $active={active} icon={faArrowUpRightFromSquare} />
     </AddressContainer>
   );
 };

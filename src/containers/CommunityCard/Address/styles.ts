@@ -2,11 +2,11 @@
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import styled from "styled-components";
 
-interface CopyProps {
-  $copied: boolean;
+interface ActiveProps {
+  $active: boolean;
 }
 
-export const AddressContainer = styled.div<CopyProps>`
+export const AddressContainer = styled.div<ActiveProps>`
   display: flex;
   flex-direction: row;
   justify-content: center;
@@ -20,21 +20,21 @@ export const AddressContainer = styled.div<CopyProps>`
 
   max-width: 100%;
 
-  background-color: ${({ $copied }) => ($copied ? "#e2ffd1" : "transparent")};
+  background-color: ${({ $active }) => ($active ? "#e2ffd1" : "transparent")};
 
   &:hover {
-    background-color: ${({ $copied }) => ($copied ? "#e2ffd1" : "#eee")};
+    background-color: ${({ $active }) => ($active ? "#e2ffd1" : "#eee")};
   }
 
   transition: background-color 0.25s ease-in-out;
 `;
 
-export const AddressText = styled.p<CopyProps>`
+export const AddressText = styled.p<ActiveProps>`
   font-size: 1.2rem;
   font-weight: 600;
   margin: 0;
 
-  color: ${({ $copied }) => ($copied ? "#191919" : "#0d0d0d")};
+  color: ${({ $active }) => ($active ? "#191919" : "#0d0d0d")};
 
   transition: color 0.25s ease-in-out;
 
@@ -44,14 +44,14 @@ export const AddressText = styled.p<CopyProps>`
   text-overflow: ellipsis;
 `;
 
-export const CopyIcon = styled(FontAwesomeIcon)<CopyProps>`
+export const ArrowUpIcon = styled(FontAwesomeIcon)<ActiveProps>`
   height: 16px;
   width: 16px;
 
   margin-left: 0.5rem;
   cursor: pointer;
 
-  color: ${({ $copied }) => ($copied ? "#191919" : "#0d0d0d")};
+  color: ${({ $active }) => ($active ? "#191919" : "#0d0d0d")};
 
   transition: color 0.25s ease-in-out;
 `;

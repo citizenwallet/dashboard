@@ -30,7 +30,7 @@ interface CommunityCardProps {
 }
 
 const CommunityCard: FC<CommunityCardProps> = async ({
-  config: { community, node, erc4337, token },
+  config: { community, scan, node, erc4337, token },
 }: CommunityCardProps) => {
   const communityLogic = new CommunityLogic(
     node.url,
@@ -67,7 +67,7 @@ const CommunityCard: FC<CommunityCardProps> = async ({
         <CardTitle>{community.name}</CardTitle>
       </CardTitleRow>
       <VerticalSpacer />
-      <Address address={address} />
+      <Address address={address} url={scan.url} />
       <VerticalSpacer />
       <CommunityBalanceRow>
         <CommunityBalance>
