@@ -1,4 +1,5 @@
-import { Box, Button, Flex, Heading } from "@radix-ui/themes";
+import CreateFaucet from "@/containers/CreateFaucet";
+import { Box, Button, Flex, Heading, Select } from "@radix-ui/themes";
 
 export default function Home() {
   return (
@@ -6,11 +7,7 @@ export default function Home() {
       <Flex p="2">
         <Heading>Faucet</Heading>
       </Flex>
-      <Flex p="2">
-        <Box>
-          <Button>Click me</Button>
-        </Box>
-      </Flex>
+      <CreateFaucet />
     </Flex>
   );
 }
