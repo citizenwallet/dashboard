@@ -1,11 +1,10 @@
 import {
   Card,
-  CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Flex, Text } from "@radix-ui/themes";
+import { DotFilledIcon, DotIcon } from "@radix-ui/react-icons";
 
 interface FaucetCardProps {
   id: string;
@@ -24,7 +23,7 @@ export default function FaucetCard({
 }: FaucetCardProps) {
   return (
     <Card
-      className={active ? "border-2 border-purple " : "border-2 border-grey"}
+      className={active ? "relative border-purple" : "relative border-grey"}
       style={{
         maxWidth: 300,
         cursor: !!onClick ? "pointer" : "default",
@@ -32,6 +31,11 @@ export default function FaucetCard({
       }}
       onClick={() => !!onClick && onClick(id)}
     >
+      {active ? (
+        <DotFilledIcon className="absolute right-1 top-1" />
+      ) : (
+        <DotIcon className="absolute right-1 top-1" />
+      )}
       <CardHeader>
         <CardTitle>{title}</CardTitle>
         <CardDescription>{description}</CardDescription>
