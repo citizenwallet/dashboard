@@ -1,5 +1,7 @@
-import { Flex, Heading, Separator } from "@radix-ui/themes";
+import { Flex, Heading, Separator, Text } from "@radix-ui/themes";
 import Tabs, { Tab } from "./Tabs";
+import { Button } from "@/components/ui/button";
+import { GitHubLogoIcon } from "@radix-ui/react-icons";
 
 const tabs: Tab[] = [
   { href: "/", label: "Home" },
@@ -8,10 +10,16 @@ const tabs: Tab[] = [
 
 export default function Sidebar() {
   return (
-    <Flex style={{ width: 300 }} direction="column" height="100%" p="2" gap="2">
+    <Flex style={{ width: 300 }} direction="column" p="2" gap="2">
       <Heading>Citizen Wallet</Heading>
       <Separator size="4" />
       <Tabs tabs={tabs} />
+      <Flex grow="1"></Flex>
+      <Flex direction="column">
+        <Button variant="ghost">
+          <GitHubLogoIcon className="mr-2 h-4 w-4" /> Contribute
+        </Button>
+      </Flex>
     </Flex>
   );
 }

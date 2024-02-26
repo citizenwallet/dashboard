@@ -33,19 +33,24 @@ export default function Tabs({ tabs = [] }: TabProps) {
 
   if (tabs.length === 0) return null;
 
-  return tabs.map(({ href, label, icon }) => {
-    const isActive = pathname === href;
-    return (
-      <Link
-        key={href}
-        href={href}
-        style={isActive ? activeStyle : inactiveStyle}
-      >
-        <Flex align="center" justify="between" px="1">
-          <Text>{label}</Text>
-          {icon}
-        </Flex>
-      </Link>
-    );
-  });
+  return (
+    <Flex direction="column">
+      {tabs.map(({ href, label, icon }) => {
+        const isActive = pathname === href;
+        return (
+          <Link
+            key={href}
+            href={href}
+            style={isActive ? activeStyle : inactiveStyle}
+            className="hover:bg-muted rounded-sm"
+          >
+            <Flex align="center" justify="between" py="1" px="2">
+              <Text>{label}</Text>
+              {icon}
+            </Flex>
+          </Link>
+        );
+      })}
+    </Flex>
+  );
 }
