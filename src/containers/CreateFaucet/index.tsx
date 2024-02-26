@@ -126,7 +126,7 @@ export default function CreateFaucet() {
               )}
             </Box>
             {community && (
-              <Card>
+              <Card className="animate-fadeIn">
                 <CardHeader>
                   <CardTitle className="flex flex-row items-center">
                     <Image
