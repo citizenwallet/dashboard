@@ -65,7 +65,7 @@ export default function CreateFaucet() {
     if (copied) {
       const timeout = setTimeout(() => {
         setCopied(false);
-      }, 3000);
+      }, 2000);
       return () => clearTimeout(timeout);
     }
   }, [copied]);
@@ -203,7 +203,7 @@ export default function CreateFaucet() {
             {isValid && selectedFaucet && selectedCommunity ? (
               <FaucetCreationDialog
                 faucet={selectedFaucet}
-                community={selectedCommunity}
+                config={selectedCommunity}
               />
             ) : (
               <Button className="opacity-50" variant="soft">
