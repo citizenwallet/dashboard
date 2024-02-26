@@ -28,8 +28,16 @@ import {
   PlusIcon,
 } from "@radix-ui/react-icons";
 import Image from "next/image";
+import FaucetCreationDialog from "./FaucetCreationDialog";
+import { shortenAddress } from "@/utils/shortenAddress";
 
-const faucets = [
+export interface Faucet {
+  id: string;
+  title: string;
+  description: string;
+}
+
+const faucets: Faucet[] = [
   {
     id: "simple",
     title: "Simple Faucet",
@@ -81,14 +89,15 @@ export default function CreateFaucet() {
 
   const communitiesLoading = subscribe((state) => state.loading);
   const communities = subscribe((state) => state.configs) || [];
-  const community = communities.find((c) => c.community.alias === slug);
+  const selectedCommunity = communities.find((c) => c.community.alias === slug);
+  const selectedFaucet = faucets.find((f) => f.id === faucet);
 
-  const isValid = community && faucet && !communitiesLoading;
+  const isValid = selectedCommunity && faucet && !communitiesLoading;
 
   return (
     <Flex direction="column" align="center" p="2">
       <Section size="1">
-        <Card className="w-[650px]">
+        <Card className="max-w-screen-sm">
           <CardHeader>
             <CardTitle>Create a faucet</CardTitle>
             <CardDescription>
@@ -125,43 +134,46 @@ export default function CreateFaucet() {
                 </Box>
               )}
             </Box>
-            {community && (
+            {selectedCommunity && (
               <Card className="animate-fadeIn">
                 <CardHeader>
                   <CardTitle className="flex flex-row items-center">
                     <Image
-                      src={community.community.logo}
+                      src={selectedCommunity.community.logo}
                       alt="community logo"
                       height={40}
                       width={40}
                     />
-                    {community.community.name}
+                    {selectedCommunity.community.name}
                   </CardTitle>
                   <CardDescription>
-                    {community.community.description}
+                    {selectedCommunity.community.description}
                   </CardDescription>
                 </CardHeader>
                 <CardContent className="flex flex-col">
                   <Text>
-                    <b>Name:</b> {community.token.name}
+                    <b>Name:</b> {selectedCommunity.token.name}
                   </Text>
                   <Text>
-                    <b>Symbol:</b> {community.token.symbol}
+                    <b>Symbol:</b> {selectedCommunity.token.symbol}
                   </Text>
                   <Text>
-                    <b>Standard:</b> {community.token.standard.toUpperCase()}
+                    <b>Standard:</b>{" "}
+                    {selectedCommunity.token.standard.toUpperCase()}
                   </Text>
                   <Text>
-                    <b>Decimals:</b> {community.token.decimals}
+                    <b>Decimals:</b> {selectedCommunity.token.decimals}
                   </Text>
                 </CardContent>
                 <CardFooter>
                   <Button
                     className="cursor-pointer"
                     variant="outline"
-                    onClick={() => handleCopyAddress(community.token.address)}
+                    onClick={() =>
+                      handleCopyAddress(selectedCommunity.token.address)
+                    }
                   >
-                    {community.token.address}{" "}
+                    {shortenAddress(selectedCommunity.token.address)}{" "}
                     {copied ? (
                       <CheckIcon className="animate-fadeIn" />
                     ) : (
@@ -188,14 +200,11 @@ export default function CreateFaucet() {
             </Box>
           </CardContent>
           <CardFooter className="flex justify-end">
-            {isValid ? (
-              <Button
-                className="cursor-pointer"
-                variant="soft"
-                onClick={handleCreateFaucet}
-              >
-                Create <PlusIcon />
-              </Button>
+            {isValid && selectedFaucet && selectedCommunity ? (
+              <FaucetCreationDialog
+                faucet={selectedFaucet}
+                community={selectedCommunity}
+              />
             ) : (
               <Button className="opacity-50" variant="soft">
                 Create <PlusIcon />
