@@ -1,3 +1,5 @@
+"use client";
+
 import { Flex, Heading, Separator, Text } from "@radix-ui/themes";
 import Tabs, { Tab } from "./Tabs";
 import { Button } from "@/components/ui/button";
@@ -9,6 +11,13 @@ const tabs: Tab[] = [
 ];
 
 export default function Sidebar() {
+  const handleContribute = () => {
+    window.open(
+      "https://github.com/citizenwallet/dashboard",
+      "https://github.com/citizenwallet/dashboard"
+    );
+  };
+
   return (
     <Flex style={{ width: 300 }} direction="column" p="2" gap="2">
       <Heading>Citizen Wallet</Heading>
@@ -16,7 +25,7 @@ export default function Sidebar() {
       <Tabs tabs={tabs} />
       <Flex grow="1"></Flex>
       <Flex direction="column">
-        <Button variant="ghost">
+        <Button variant="ghost" onClick={handleContribute}>
           <GitHubLogoIcon className="mr-2 h-4 w-4" /> Contribute
         </Button>
       </Flex>
