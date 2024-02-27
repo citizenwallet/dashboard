@@ -149,9 +149,6 @@ export default function FaucetCreationDialog({
     };
   }, [toast, createLoading, createError]);
 
-  console.log("createLoading", createLoading);
-  console.log("createError", createError);
-
   if (isDesktop === undefined) {
     return null;
   }
