@@ -83,10 +83,6 @@ export default function CreateFaucet() {
     setCopied(true);
   };
 
-  const handleCreateFaucet = () => {
-    console.log("create");
-  };
-
   const communitiesLoading = subscribe((state) => state.loading);
   const communities = subscribe((state) => state.configs) || [];
   const selectedCommunity = communities.find((c) => c.community.alias === slug);
@@ -197,6 +193,9 @@ export default function CreateFaucet() {
                   />
                 ))}
               </Grid>
+            </Box>
+            <Box>
+              <Label></Label>
             </Box>
           </CardContent>
           <CardFooter className="flex justify-end">

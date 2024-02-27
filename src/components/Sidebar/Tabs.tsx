@@ -29,8 +29,6 @@ const activeStyle: CSSProperties = {
 export default function Tabs({ tabs = [] }: TabProps) {
   const pathname = usePathname();
 
-  console.log("pathname", pathname);
-
   if (tabs.length === 0) return null;
 
   return (

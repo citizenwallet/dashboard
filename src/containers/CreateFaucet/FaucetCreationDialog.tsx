@@ -61,7 +61,6 @@ export default function FaucetCreationDialog({
   config,
 }: FaucetCreationDialogProps) {
   const isDesktop = useMediaQuery("(min-width: 768px)");
-  const firstOpenRef = useRef(true);
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
@@ -70,28 +69,6 @@ export default function FaucetCreationDialog({
   const network = NETWORKS[node.chainId];
 
   const [subscribe, actions] = useCheckout(config);
-
-  useEffect(() => {
-    if (open) {
-      firstOpenRef.current = false;
-      actions.onLoad();
-      actions.listenBalance();
-      actions.estimateAmountToPay(
-        "0x0654b3e97424e181e169c2f877d7ef06953abb5e",
-        0,
-        "0x5815E61eF72c9E6107b5c5A05FD121F334f7a7f1",
-        10,
-        10,
-        "0x0654b3e97424e181e169c2f877d7ef06953abb5e"
-      );
-    }
-
-    return () => {
-      if (!open && !firstOpenRef.current) {
-        actions.stopListeners();
-      }
-    };
-  }, [open, actions]);
 
   useEffect(() => {
     if (copied) {
@@ -103,6 +80,21 @@ export default function FaucetCreationDialog({
 
   const handleOpenChange = (o: boolean) => {
     setOpen(o);
+
+    if (o) {
+      actions.onLoad();
+      actions.listenBalance();
+      actions.estimateAmountToPay(
+        "0x0654b3e97424e181e169c2f877d7ef06953abb5e",
+        0,
+        "0x5815E61eF72c9E6107b5c5A05FD121F334f7a7f1",
+        10,
+        10,
+        "0x0654b3e97424e181e169c2f877d7ef06953abb5e"
+      );
+    } else {
+      actions.stopListeners();
+    }
   };
 
   const handleClose = () => {
@@ -119,7 +111,6 @@ export default function FaucetCreationDialog({
   };
 
   const handleCreate = async () => {
-    console.log("create");
     actions.createSimpleFaucet(
       "0x0654b3e97424e181e169c2f877d7ef06953abb5e",
       0,
@@ -142,7 +133,6 @@ export default function FaucetCreationDialog({
   useEffect(() => {
     return () => {
       if (createLoading && !createError) {
-        console.log("toasting...");
         handleClose();
         toast({ description: "Faucet created" });
       }
@@ -159,6 +149,10 @@ export default function FaucetCreationDialog({
   );
 
   const isSufficientAmount = progress >= 100;
+
+  const walletUrl = `ethereum:${sessionAddress.value}@${
+    node.chainId
+  }?value=${Math.max(Number(amountToPay.value - sessionBalance.value), 0)}`;
 
   const Content = (
     <Box className="w-full flex justify-center">
@@ -183,7 +177,7 @@ export default function FaucetCreationDialog({
                     maxWidth: "100%",
                     width: "100%",
                   }}
-                  value={`ethereum:${sessionAddress.value}@${node.chainId}?value=${amountToPay.value}`}
+                  value={walletUrl}
                   viewBox={`0 0 256 256`}
                 />
               )}
@@ -205,11 +199,7 @@ export default function FaucetCreationDialog({
                 </Button>
                 <Button
                   variant="outline"
-                  onClick={() =>
-                    handleOpenWallet(
-                      `ethereum:${sessionAddress.value}@${node.chainId}?value=${amountToPay.value}`
-                    )
-                  }
+                  onClick={() => handleOpenWallet(walletUrl)}
                 >
                   Open wallet <ArrowTopRightIcon />
                 </Button>
