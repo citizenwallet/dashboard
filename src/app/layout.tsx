@@ -5,6 +5,7 @@ import "@radix-ui/themes/styles.css";
 import { cn } from "@/lib/utils";
 import { Flex, Separator, Theme } from "@radix-ui/themes";
 import Sidebar from "@/components/Sidebar";
+import { Toaster } from "@/components/ui/toaster";
 
 export const fontSans = FontSans({
   subsets: ["latin"],
@@ -37,6 +38,7 @@ export default function RootLayout({
             </Flex>
             {children}
           </Flex>
+          <Toaster />
         </Theme>
       </body>
     </html>
