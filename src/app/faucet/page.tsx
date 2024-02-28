@@ -1,7 +1,7 @@
 import CreateFaucet from "@/containers/CreateFaucet";
-import { Box, Button, Flex, Heading, Select } from "@radix-ui/themes";
+import { Flex, Heading } from "@radix-ui/themes";
 
-export default function Home() {
+export default function Faucet() {
   return (
     <Flex direction="column" height="100%" width="100%">
       <Flex p="2" pl="9">

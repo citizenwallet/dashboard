@@ -1,6 +1,10 @@
 "use client";
 
-import { Config, useCheckout } from "@citizenwallet/sdk";
+import {
+  Config,
+  useCheckout,
+  useFaucetFactoryContract,
+} from "@citizenwallet/sdk";
 import {
   ArrowTopRightIcon,
   CheckIcon,
@@ -11,7 +15,6 @@ import {
 import {
   Box,
   Button,
-  Container,
   Flex,
   Separator,
   Strong,
@@ -20,7 +23,7 @@ import {
 } from "@radix-ui/themes";
 import { Faucet } from ".";
 import "@radix-ui/themes/styles.css";
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -41,7 +44,7 @@ import {
 } from "@/components/ui/drawer";
 import useMediaQuery from "@/hooks/mediaQuery";
 import { shortenAddress } from "@/utils/shortenAddress";
-import { Card, CardContent, CardFooter } from "@/components/ui/card";
+import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency } from "@/utils/formatCurrency";
 
 import QRCode from "react-qr-code";
@@ -50,6 +53,7 @@ import { calculateProgress } from "@/utils/calculateProgress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { NETWORKS } from "@/constants/networks";
 import { useToast } from "@/components/ui/use-toast";
+import { useRouter } from "next/navigation";
 
 interface FaucetCreationDialogProps {
   faucet: Faucet;
@@ -60,15 +64,18 @@ export default function FaucetCreationDialog({
   faucet,
   config,
 }: FaucetCreationDialogProps) {
+  const router = useRouter();
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
 
-  const { community, node, token } = config;
+  const { node, token } = config;
 
   const network = NETWORKS[node.chainId];
 
   const [subscribe, actions] = useCheckout(config);
+  const [faucetFactorySubscribe, faucetFactoryActions] =
+    useFaucetFactoryContract(config);
 
   useEffect(() => {
     if (copied) {
@@ -78,19 +85,19 @@ export default function FaucetCreationDialog({
     }
   }, [copied]);
 
-  const handleOpenChange = (o: boolean) => {
-    setOpen(o);
+  const handleOpenChange = (opened: boolean) => {
+    setOpen(opened);
 
-    if (o) {
+    if (opened) {
       actions.onLoad();
-      actions.listenBalance();
-      actions.estimateAmountToPay(
-        "0x0654b3e97424e181e169c2f877d7ef06953abb5e",
-        0,
-        "0x5815E61eF72c9E6107b5c5A05FD121F334f7a7f1",
-        10,
-        10,
-        "0x0654b3e97424e181e169c2f877d7ef06953abb5e"
+      actions.listenToBalance();
+      actions.updateAmountToPay(() =>
+        faucetFactoryActions.faucetFactoryService.estimateCreateSimpleFaucetWithDefaults(
+          3,
+          token.address,
+          10,
+          10
+        )
       );
     } else {
       actions.stopListeners();
@@ -110,34 +117,61 @@ export default function FaucetCreationDialog({
     window.open(url, "_blank");
   };
 
-  const handleCreate = async () => {
-    actions.createSimpleFaucet(
-      "0x0654b3e97424e181e169c2f877d7ef06953abb5e",
-      0,
-      "0x5815E61eF72c9E6107b5c5A05FD121F334f7a7f1",
+  const handleCreate = async (owner?: string) => {
+    if (!owner) {
+      toast({ description: "Unable to determine owner" });
+      return;
+    }
+
+    actions.stopListeners();
+
+    const faucetAddress = await faucetFactoryActions.createSimpleFaucet(
+      owner,
+      3,
+      token.address,
       10,
       10,
-      "0x0654b3e97424e181e169c2f877d7ef06953abb5e"
+      owner
     );
+
+    if (faucetAddress) {
+      handleClose();
+      toast({ description: "Faucet created" });
+
+      // navigate to faucet
+      router.push(`/faucet/${faucetAddress}`);
+      return;
+    }
+
+    toast({ description: "Failed to create faucet" });
+    actions.listenToBalance();
   };
 
   const sessionAddress = subscribe((state) => state.sessionAddress);
   const sessionBalance = subscribe((state) => state.sessionBalance);
   const amountToPay = subscribe((state) => state.amountToPay);
+  const sessionOwner = subscribe((state) => state.sessionOwner);
 
-  const createLoading = subscribe((state) => state.createLoading);
-  const createError = subscribe((state) => state.createError);
-
-  const { toast } = useToast();
+  const tokenAddress = token.address;
 
   useEffect(() => {
-    return () => {
-      if (createLoading && !createError) {
-        handleClose();
-        toast({ description: "Faucet created" });
-      }
-    };
-  }, [toast, createLoading, createError]);
+    if (sessionOwner) {
+      actions.updateAmountToPay(() =>
+        faucetFactoryActions.faucetFactoryService.estimateCreateSimpleFaucet(
+          sessionOwner,
+          3,
+          tokenAddress,
+          10,
+          10,
+          sessionOwner
+        )
+      );
+    }
+  }, [actions, faucetFactoryActions, sessionOwner, tokenAddress]);
+
+  const createLoading = faucetFactorySubscribe((state) => state.create.loading);
+
+  const { toast } = useToast();
 
   if (isDesktop === undefined) {
     return null;
@@ -261,6 +295,33 @@ export default function FaucetCreationDialog({
     </Box>
   );
 
+  const Footer = isSufficientAmount ? (
+    <Box className="w-full flex flex-col justify-center gap-4" px="4">
+      {sessionOwner && (
+        <Button
+          variant="ghost"
+          className={
+            isSufficientAmount
+              ? "w-full max-w-sm"
+              : "w-full max-w-sm opacity-50"
+          }
+          color="red"
+        >
+          Refund & Cancel
+          {createLoading && <PieChartIcon className="animate-spin" />}
+        </Button>
+      )}
+      <Button
+        variant="soft"
+        className="w-full max-w-sm"
+        onClick={() => handleCreate(sessionOwner)}
+      >
+        Create
+        {createLoading && <PieChartIcon className="animate-spin" />}
+      </Button>
+    </Box>
+  ) : null;
+
   if (isDesktop) {
     return (
       <Dialog open={open} onOpenChange={handleOpenChange}>
@@ -276,22 +337,7 @@ export default function FaucetCreationDialog({
               <DialogDescription>{token.name}</DialogDescription>
             </DialogHeader>
             {Content}
-            <DialogFooter>
-              <Box className="w-full flex justify-center" px="4">
-                <Button
-                  variant="soft"
-                  className={
-                    isSufficientAmount
-                      ? "w-full max-w-sm"
-                      : "w-full max-w-sm opacity-50"
-                  }
-                  onClick={isSufficientAmount ? handleCreate : undefined}
-                >
-                  {isSufficientAmount ? "Create" : "Insufficient funds"}
-                  {createLoading && <PieChartIcon className="animate-spin" />}
-                </Button>
-              </Box>
-            </DialogFooter>
+            <DialogFooter>{Footer}</DialogFooter>
           </Theme>
         </DialogContent>
       </Dialog>
@@ -312,22 +358,7 @@ export default function FaucetCreationDialog({
             <DrawerDescription>{token.name}</DrawerDescription>
           </DrawerHeader>
           {Content}
-          <DrawerFooter>
-            <Box className="w-full flex justify-center" px="4">
-              <Button
-                variant="soft"
-                className={
-                  isSufficientAmount
-                    ? "w-full max-w-sm"
-                    : "w-full max-w-sm opacity-50"
-                }
-                onClick={isSufficientAmount ? handleCreate : undefined}
-              >
-                {isSufficientAmount ? "Create" : "Insufficient funds"}
-                {createLoading && <PieChartIcon className="animate-spin" />}
-              </Button>
-            </Box>
-          </DrawerFooter>
+          <DrawerFooter>{Footer}</DrawerFooter>
         </Theme>
       </DrawerContent>
     </Drawer>

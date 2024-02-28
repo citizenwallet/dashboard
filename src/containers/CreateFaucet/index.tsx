@@ -199,15 +199,11 @@ export default function CreateFaucet() {
             </Box>
           </CardContent>
           <CardFooter className="flex justify-end">
-            {isValid && selectedFaucet && selectedCommunity ? (
+            {isValid && selectedFaucet && selectedCommunity && (
               <FaucetCreationDialog
                 faucet={selectedFaucet}
                 config={selectedCommunity}
               />
-            ) : (
-              <Button className="opacity-50" variant="soft">
-                Create <PlusIcon />
-              </Button>
             )}
           </CardFooter>
         </Card>
