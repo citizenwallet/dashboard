@@ -328,7 +328,11 @@ export default function FaucetCreationDialog({
   );
 
   const Footer = () => (
-    <Box className="w-full flex flex-col justify-center gap-6" px="4">
+    <Box
+      className="w-full flex flex-col justify-center items-center gap-6"
+      pt="4"
+      px="4"
+    >
       {sessionOwner && sessionBalance.value > 0 && (
         <Button
           variant="ghost"
