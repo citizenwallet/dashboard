@@ -42,7 +42,7 @@ import {
   DrawerTitle,
   DrawerTrigger,
 } from "@/components/ui/drawer";
-import useMediaQuery from "@/hooks/mediaQuery";
+import useMediaQuery from "@/hooks/useMediaQuery";
 import { shortenAddress } from "@/utils/shortenAddress";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency } from "@/utils/formatCurrency";
@@ -75,8 +75,9 @@ export default function FaucetCreationDialog({
   const network = NETWORKS[node.chainId];
 
   const [subscribe, actions] = useCheckout(config);
+
   const [faucetFactorySubscribe, faucetFactoryActions] =
-    useFaucetFactoryContract(config);
+    useFaucetFactoryContract(config, actions.getSessionService());
 
   useEffect(() => {
     let timeout: ReturnType<typeof setTimeout>;
@@ -95,14 +96,17 @@ export default function FaucetCreationDialog({
     if (opened) {
       actions.onLoad();
       actions.listenToBalance();
-      actions.updateAmountToPay(() =>
-        faucetFactoryActions.faucetFactoryService.estimateCreateSimpleFaucetWithDefaults(
+      actions.updateAmountToPay(async () => {
+        if (!faucetFactoryActions.faucetFactoryService) {
+          return;
+        }
+        return faucetFactoryActions.faucetFactoryService.estimateCreateSimpleFaucetWithDefaults(
           3,
           token.address,
           10,
           10
-        )
-      );
+        );
+      });
     } else {
       actions.stopListeners();
     }
@@ -129,6 +133,8 @@ export default function FaucetCreationDialog({
     if (success) {
       toast({ description: "Refund successful" });
       handleClose();
+
+      actions.reset();
       return;
     }
 
@@ -146,7 +152,7 @@ export default function FaucetCreationDialog({
 
     const faucetAddress = await faucetFactoryActions.createSimpleFaucet(
       owner,
-      3,
+      0,
       token.address,
       10,
       10,
@@ -158,6 +164,8 @@ export default function FaucetCreationDialog({
 
       handleClose();
       toast({ description: "Faucet created" });
+
+      actions.reset();
 
       // navigate to faucet
       router.push(`/faucet/${faucetAddress}`);
@@ -177,16 +185,19 @@ export default function FaucetCreationDialog({
 
   useEffect(() => {
     if (sessionOwner) {
-      actions.updateAmountToPay(() =>
-        faucetFactoryActions.faucetFactoryService.estimateCreateSimpleFaucet(
+      actions.updateAmountToPay(async () => {
+        if (!faucetFactoryActions.faucetFactoryService) {
+          return;
+        }
+        return faucetFactoryActions.faucetFactoryService.estimateCreateSimpleFaucet(
           sessionOwner,
-          3,
+          0,
           tokenAddress,
           10,
           10,
           sessionOwner
-        )
-      );
+        );
+      });
     }
   }, [actions, faucetFactoryActions, sessionOwner, tokenAddress]);
 
@@ -209,7 +220,7 @@ export default function FaucetCreationDialog({
     node.chainId
   }?value=${Math.max(Number(amountToPay.value - sessionBalance.value), 0)}`;
 
-  const Content = (
+  const Content = () => (
     <Box className="w-full flex justify-center">
       <Card className="w-full max-w-sm">
         <CardContent>
@@ -316,7 +327,7 @@ export default function FaucetCreationDialog({
     </Box>
   );
 
-  const Footer = (
+  const Footer = () => (
     <Box className="w-full flex flex-col justify-center gap-6" px="4">
       {sessionOwner && sessionBalance.value > 0 && (
         <Button
@@ -358,8 +369,10 @@ export default function FaucetCreationDialog({
               <DialogTitle>Create {faucet.title}</DialogTitle>
               <DialogDescription>{token.name}</DialogDescription>
             </DialogHeader>
-            {Content}
-            <DialogFooter>{Footer}</DialogFooter>
+            <Content />
+            <DialogFooter>
+              <Footer />
+            </DialogFooter>
           </Theme>
         </DialogContent>
       </Dialog>
@@ -379,8 +392,10 @@ export default function FaucetCreationDialog({
             <DrawerTitle>Create {faucet.title}</DrawerTitle>
             <DrawerDescription>{token.name}</DrawerDescription>
           </DrawerHeader>
-          {Content}
-          <DrawerFooter>{Footer}</DrawerFooter>
+          <Content />
+          <DrawerFooter>
+            <Footer />
+          </DrawerFooter>
         </Theme>
       </DrawerContent>
     </Drawer>

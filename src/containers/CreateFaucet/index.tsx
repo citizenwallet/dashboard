@@ -21,15 +21,12 @@ import {
   CardTitle,
 } from "@/components/ui/card";
 import { useConfig } from "@citizenwallet/sdk";
-import {
-  CheckIcon,
-  CopyIcon,
-  PieChartIcon,
-  PlusIcon,
-} from "@radix-ui/react-icons";
+import { CheckIcon, CopyIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import FaucetCreationDialog from "./FaucetCreationDialog";
 import { shortenAddress } from "@/utils/shortenAddress";
+import { Skeleton } from "@/components/ui/skeleton";
+import { useEffectOnce } from "@/hooks/useEffectOnce";
 
 export interface Faucet {
   id: string;
@@ -57,7 +54,7 @@ export default function CreateFaucet() {
 
   const [subscribe, actions] = useConfig();
 
-  useEffect(() => {
+  useEffectOnce(() => {
     actions.getConfigs();
   }, [actions]);
 
@@ -85,7 +82,10 @@ export default function CreateFaucet() {
 
   const communitiesLoading = subscribe((state) => state.loading);
   const communities = subscribe((state) => state.configs) || [];
-  const selectedCommunity = communities.find((c) => c.community.alias === slug);
+  const selectedCommunity = subscribe((state) => {
+    return (state.configs || []).find((c) => c.community.alias === slug);
+  });
+
   const selectedFaucet = faucets.find((f) => f.id === faucet);
 
   const isValid = selectedCommunity && faucet && !communitiesLoading;
@@ -104,8 +104,8 @@ export default function CreateFaucet() {
             <Box className="grid gap-1.5" py="2">
               <Label>Pick a community</Label>
               {communitiesLoading ? (
-                <Box height="7" className="flex justify-center items-center">
-                  <PieChartIcon className="animate-spin" />
+                <Box height="7" className="flex">
+                  <Skeleton style={{ width: 145 }} className="h-full" />
                 </Box>
               ) : (
                 <Box className="animate-fadeIn">
@@ -130,7 +130,7 @@ export default function CreateFaucet() {
                 </Box>
               )}
             </Box>
-            {selectedCommunity && (
+            {selectedCommunity && !communitiesLoading ? (
               <Card className="animate-fadeIn">
                 <CardHeader>
                   <CardTitle className="flex flex-row items-center">
@@ -178,6 +178,8 @@ export default function CreateFaucet() {
                   </Button>
                 </CardFooter>
               </Card>
+            ) : (
+              <Skeleton style={{ height: 292 }} className="w-full" />
             )}
             <Box className="grid gap-1.5" py="2">
               <Label>Faucet type</Label>
@@ -199,11 +201,13 @@ export default function CreateFaucet() {
             </Box>
           </CardContent>
           <CardFooter className="flex justify-end">
-            {!!(isValid && selectedFaucet && selectedCommunity) && (
+            {!!(isValid && selectedFaucet && selectedCommunity) ? (
               <FaucetCreationDialog
                 faucet={selectedFaucet}
                 config={selectedCommunity}
               />
+            ) : (
+              <Skeleton style={{ height: 32, width: 92 }} className="w-full" />
             )}
           </CardFooter>
         </Card>

@@ -7,14 +7,12 @@ import { GitHubLogoIcon, HamburgerMenuIcon } from "@radix-ui/react-icons";
 import {
   Sheet,
   SheetContent,
-  SheetDescription,
-  SheetFooter,
   SheetHeader,
   SheetTitle,
   SheetTrigger,
 } from "@/components/ui/sheet";
 
-import useMediaQuery from "@/hooks/mediaQuery";
+import useMediaQuery from "@/hooks/useMediaQuery";
 
 const tabs: Tab[] = [
   { href: "/", label: "Home" },
