@@ -60,6 +60,7 @@ interface FaucetCreationDialogProps {
   config: Config;
 }
 
+// state.js:57 Warning: Cannot update a component (`FaucetCreationDialog`) while rendering a different component (`FaucetCreationDialog`). To locate the bad setState() call inside `FaucetCreationDialog`, follow the stack trace as described in
 export default function FaucetCreationDialog({
   faucet,
   config,
@@ -168,7 +169,7 @@ export default function FaucetCreationDialog({
       actions.reset();
 
       // navigate to faucet
-      router.push(`/faucet/${faucetAddress}`);
+      router.push(`/faucet/${faucetAddress}?slug=${config.community.alias}`);
       return;
     }
 

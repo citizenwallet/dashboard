@@ -1,13 +1,16 @@
 import CreateFaucet from "@/containers/CreateFaucet";
-import { Flex, Heading } from "@radix-ui/themes";
+import { ConfigService } from "@citizenwallet/sdk";
+import CreateFaucetTemplate from "@/templates/CreateFaucet";
+import { Suspense } from "react";
 
-export default function Faucet() {
+export default async function Page() {
+  const configService = new ConfigService();
+
+  const configs = await configService.get();
+
   return (
-    <Flex direction="column" height="100%" width="100%">
-      <Flex p="2" pl="9">
-        <Heading>Faucet</Heading>
-      </Flex>
-      <CreateFaucet />
-    </Flex>
+    <Suspense fallback={<CreateFaucetTemplate />}>
+      <CreateFaucet communities={configs} />
+    </Suspense>
   );
 }
