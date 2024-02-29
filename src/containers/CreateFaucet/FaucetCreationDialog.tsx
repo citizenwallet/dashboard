@@ -65,6 +65,7 @@ export default function FaucetCreationDialog({
   config,
 }: FaucetCreationDialogProps) {
   const router = useRouter();
+  const { toast } = useToast();
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const [open, setOpen] = useState(false);
   const [copied, setCopied] = useState(false);
@@ -78,11 +79,14 @@ export default function FaucetCreationDialog({
     useFaucetFactoryContract(config);
 
   useEffect(() => {
+    let timeout: ReturnType<typeof setTimeout>;
     if (copied) {
-      setTimeout(() => {
+      timeout = setTimeout(() => {
         setCopied(false);
       }, 2000);
     }
+
+    return () => clearTimeout(timeout);
   }, [copied]);
 
   const handleOpenChange = (opened: boolean) => {
@@ -117,6 +121,21 @@ export default function FaucetCreationDialog({
     window.open(url, "_blank");
   };
 
+  const handleRefund = async () => {
+    actions.stopListeners();
+
+    const success = await actions.refund();
+
+    if (success) {
+      toast({ description: "Refund successful" });
+      handleClose();
+      return;
+    }
+
+    toast({ description: "Failed to refund" });
+    actions.listenToBalance();
+  };
+
   const handleCreate = async (owner?: string) => {
     if (!owner) {
       toast({ description: "Unable to determine owner" });
@@ -135,6 +154,8 @@ export default function FaucetCreationDialog({
     );
 
     if (faucetAddress) {
+      await actions.refund();
+
       handleClose();
       toast({ description: "Faucet created" });
 
@@ -171,7 +192,7 @@ export default function FaucetCreationDialog({
 
   const createLoading = faucetFactorySubscribe((state) => state.create.loading);
 
-  const { toast } = useToast();
+  const refund = subscribe((state) => state.refund);
 
   if (isDesktop === undefined) {
     return null;
@@ -295,32 +316,33 @@ export default function FaucetCreationDialog({
     </Box>
   );
 
-  const Footer = isSufficientAmount ? (
-    <Box className="w-full flex flex-col justify-center gap-4" px="4">
-      {sessionOwner && (
+  const Footer = (
+    <Box className="w-full flex flex-col justify-center gap-6" px="4">
+      {sessionOwner && sessionBalance.value > 0 && (
         <Button
           variant="ghost"
           className={
-            isSufficientAmount
-              ? "w-full max-w-sm"
-              : "w-full max-w-sm opacity-50"
+            !refund.loading ? "w-full max-w-sm" : "w-full max-w-sm opacity-50"
           }
           color="red"
+          onClick={!refund.loading ? handleRefund : undefined}
         >
           Refund & Cancel
+          {refund.loading && <PieChartIcon className="animate-spin" />}
+        </Button>
+      )}
+      {isSufficientAmount && (
+        <Button
+          variant="soft"
+          className="w-full max-w-sm"
+          onClick={() => handleCreate(sessionOwner)}
+        >
+          Create
           {createLoading && <PieChartIcon className="animate-spin" />}
         </Button>
       )}
-      <Button
-        variant="soft"
-        className="w-full max-w-sm"
-        onClick={() => handleCreate(sessionOwner)}
-      >
-        Create
-        {createLoading && <PieChartIcon className="animate-spin" />}
-      </Button>
     </Box>
-  ) : null;
+  );
 
   if (isDesktop) {
     return (
