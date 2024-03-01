@@ -2,7 +2,6 @@
 
 import Link from "next/link";
 import { Flex, Text } from "@radix-ui/themes";
-import { usePathname } from "next/navigation";
 import { CSSProperties } from "react";
 
 export interface Tab {
@@ -12,6 +11,7 @@ export interface Tab {
 }
 
 interface TabProps {
+  pathname: string;
   tabs: Tab[];
 }
 
@@ -26,9 +26,7 @@ const activeStyle: CSSProperties = {
   fontWeight: "bold",
 };
 
-export default function Tabs({ tabs = [] }: TabProps) {
-  const pathname = usePathname();
-
+export default function Tabs({ pathname, tabs = [] }: TabProps) {
   if (tabs.length === 0) return null;
 
   return (

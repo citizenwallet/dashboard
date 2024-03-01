@@ -13,6 +13,9 @@ import {
 } from "@/components/ui/sheet";
 
 import useMediaQuery from "@/hooks/useMediaQuery";
+import { useEffect, useState } from "react";
+import { usePathname } from "next/navigation";
+import { usePrevious } from "@/hooks/usePrevious";
 
 const tabs: Tab[] = [
   { href: "/", label: "Home" },
@@ -21,6 +24,21 @@ const tabs: Tab[] = [
 
 export default function Sidebar() {
   const isDesktop = useMediaQuery("(min-width: 768px)");
+  const pathname = usePathname();
+
+  const [open, setOpen] = useState(false);
+
+  const handleOpenChange = (open: boolean) => {
+    setOpen(open);
+  };
+
+  const previousPathname = usePrevious(pathname);
+
+  useEffect(() => {
+    if (previousPathname !== undefined && previousPathname !== pathname) {
+      setOpen(false);
+    }
+  }, [pathname, previousPathname]);
 
   const handleContribute = () => {
     window.open(
@@ -44,7 +62,7 @@ export default function Sidebar() {
       >
         <Heading>Citizen Wallet</Heading>
         <Separator size="4" />
-        <Tabs tabs={tabs} />
+        <Tabs pathname={pathname} tabs={tabs} />
         <Flex grow="1"></Flex>
         <Flex direction="column">
           <Button variant="ghost" onClick={handleContribute}>
@@ -56,7 +74,7 @@ export default function Sidebar() {
   }
 
   return (
-    <Sheet>
+    <Sheet open={open} onOpenChange={handleOpenChange}>
       <SheetTrigger asChild>
         <Button className="absolute top-2 left-2" variant="outline">
           <HamburgerMenuIcon />
@@ -80,7 +98,7 @@ export default function Sidebar() {
             className="h-full"
           >
             <Separator size="4" />
-            <Tabs tabs={tabs} />
+            <Tabs pathname={pathname} tabs={tabs} />
             <Flex grow="1"></Flex>
             <Flex direction="column">
               <Button variant="ghost" onClick={handleContribute}>
