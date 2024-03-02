@@ -3,7 +3,7 @@
 import { Box, Button, Select, Text } from "@radix-ui/themes";
 import FaucetCard from "./FaucetCard";
 import CreateFaucetTemplate from "@/templates/CreateFaucet";
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import {
   Card,
   CardContent,
@@ -20,6 +20,7 @@ import { shortenAddress } from "@/utils/shortenAddress";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
+import { useSafeEffect } from "@/hooks/useSafeEffect";
 
 export interface Faucet {
   id: string;
@@ -60,7 +61,7 @@ export default function CreateFaucet({
     setOpen(opened);
   };
 
-  useEffect(() => {
+  useSafeEffect(() => {
     if (copied) {
       const timeout = setTimeout(() => {
         setCopied(false);

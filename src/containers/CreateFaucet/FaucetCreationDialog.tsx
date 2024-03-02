@@ -24,7 +24,7 @@ import {
 } from "@radix-ui/themes";
 import { Faucet } from ".";
 import "@radix-ui/themes/styles.css";
-import { useEffect, useRef, useState } from "react";
+import { useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -55,6 +55,7 @@ import { useRouter } from "next/navigation";
 import OwnerAvatarBadge from "@/components/OwnerAvatarBadge";
 import ModifyOwner from "./ModifyOwner";
 import { readableDuration } from "@/utils/duration";
+import { useSafeEffect } from "@/hooks/useSafeEffect";
 
 interface FaucetCreationDialogProps {
   isDesktop?: boolean;
@@ -91,11 +92,17 @@ export default function FaucetCreationDialog({
   const [faucetFactorySubscribe, faucetFactoryActions] =
     useFaucetFactoryContract(config, actions.getSessionService());
 
-  useEffect(() => {
+  useSafeEffect(() => {
     return () => clearTimeout(timeoutRef.current);
   }, []);
 
-  useEffect(() => {
+  useSafeEffect(() => {
+    return () => {
+      actions.stopListeners();
+    };
+  }, [actions]);
+
+  useSafeEffect(() => {
     actions.onLoad();
     actions.listenToBalance();
     actions.updateAmountToPay(async (signer) => {
@@ -197,7 +204,7 @@ export default function FaucetCreationDialog({
 
   const tokenAddress = token.address;
 
-  useEffect(() => {
+  useSafeEffect(() => {
     if (sessionOwner) {
       actions.updateAmountToPay(async () => {
         if (!faucetFactoryActions.faucetFactoryService) {
