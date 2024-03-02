@@ -9,17 +9,19 @@ import {
 import { Label } from "@/components/ui/label";
 import { Skeleton } from "@/components/ui/skeleton";
 import { DotIcon } from "@radix-ui/react-icons";
-import { Box, Flex, Grid, Section } from "@radix-ui/themes";
+import { Box, Flex, Grid, Section, Text } from "@radix-ui/themes";
 
 export default function Template({
   CommunityPicker,
   CommunityCard,
   FaucetCards,
+  FaucetConfiguration,
   FaucetCreationDialog,
 }: {
   CommunityPicker?: React.ReactNode;
   CommunityCard?: React.ReactNode;
   FaucetCards?: React.ReactNode;
+  FaucetConfiguration?: React.ReactNode;
   FaucetCreationDialog?: React.ReactNode;
 }) {
   return (
@@ -35,18 +37,20 @@ export default function Template({
             </CardHeader>
             <CardContent>
               <Box className="grid gap-1.5" py="2">
-                <Label>Pick a community</Label>
+                <Text>Community</Text>
                 <Box className="animate-fadeIn">
                   {CommunityPicker ?? (
                     <Skeleton style={{ height: 32, width: 145 }} />
                   )}
                 </Box>
               </Box>
-              {CommunityCard ?? (
-                <Skeleton style={{ height: 292 }} className="w-full" />
-              )}
               <Box className="grid gap-1.5" py="2">
-                <Label>Faucet type</Label>
+                {CommunityCard ?? (
+                  <Skeleton style={{ height: 292 }} className="w-full" />
+                )}
+              </Box>
+              <Box className="grid gap-1.5" py="2">
+                <Text>Faucet type</Text>
                 <Grid columns={{ initial: "1", md: "2" }} gap="3">
                   {FaucetCards ?? (
                     <>
@@ -87,6 +91,19 @@ export default function Template({
                     </>
                   )}
                 </Grid>
+              </Box>
+              <Box className="grid gap-1.5" py="2">
+                {FaucetConfiguration ?? (
+                  <>
+                    <Text>Faucet configuration</Text>
+                    <Label>Redeem Amount</Label>
+                    <Text size="1">
+                      How much does the faucet give to the user when they
+                      redeem?
+                    </Text>
+                    <Skeleton style={{ height: 40 }} />
+                  </>
+                )}
               </Box>
             </CardContent>
             <CardFooter className="flex justify-end">

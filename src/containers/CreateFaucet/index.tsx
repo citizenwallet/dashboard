@@ -1,6 +1,6 @@
 "use client";
 
-import { Box, Button, Select, Text } from "@radix-ui/themes";
+import { Box, Button, Select, Text, TextField } from "@radix-ui/themes";
 import FaucetCard from "./FaucetCard";
 import CreateFaucetTemplate from "@/templates/CreateFaucet";
 import { useState } from "react";
@@ -21,6 +21,8 @@ import useMediaQuery from "@/hooks/useMediaQuery";
 import { Dialog, DialogContent } from "@/components/ui/dialog";
 import { Drawer, DrawerContent } from "@/components/ui/drawer";
 import { useSafeEffect } from "@/hooks/useSafeEffect";
+import { Label } from "@/components/ui/label";
+import { readableDuration } from "@/utils/duration";
 
 export interface Faucet {
   id: string;
@@ -30,16 +32,19 @@ export interface Faucet {
 
 const faucets: Faucet[] = [
   {
-    id: "simple",
-    title: "Simple Faucet",
-    description: "Users can redeem once.",
+    id: "single",
+    title: "Single Redeem",
+    description: "Users can only redeem once.",
   },
   {
-    id: "redeem-code",
-    title: "Redeem Code Faucet",
-    description: "Users can redeem using a code.",
+    id: "multi",
+    title: "Interval Redeem",
+    description: "Users can redeem after an interval has passed.",
   },
 ];
+
+const DEFAULT_REDEEM_AMOUNT = 1;
+const DEFAULT_REDEEM_INTERVAL = 86400;
 
 export default function CreateFaucet({
   communities,
@@ -48,8 +53,8 @@ export default function CreateFaucet({
 }) {
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
-  const redeemAmount = 1;
-  const redeemInterval = 86400;
+  const [redeemAmount, setRedeemAmount] = useState(DEFAULT_REDEEM_AMOUNT);
+  const [redeemInterval, setRedeemInterval] = useState(DEFAULT_REDEEM_INTERVAL);
 
   const [faucet, setFaucet] = useState(faucets[0].id);
   const [slug, setSlug] = useState("gratitude");
@@ -83,9 +88,25 @@ export default function CreateFaucet({
     setCopied(true);
   };
 
+  const handleRedeemAmount = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const amount = Number(e.target.value);
+    if (isNaN(amount)) return;
+
+    setRedeemAmount(amount >= 1 ? amount : 1);
+  };
+
+  const handleRedeemInterval = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const interval = Number(e.target.value);
+    if (isNaN(interval)) return;
+
+    setRedeemInterval(interval >= 1 ? interval : 1);
+  };
+
   const selectedCommunity = communities.find((c) => c.community.alias === slug);
 
   const selectedFaucet = faucets.find((f) => f.id === faucet);
+
+  const durationText = readableDuration(redeemInterval);
 
   return (
     <CreateFaucetTemplate
@@ -167,6 +188,52 @@ export default function CreateFaucet({
           onClick={handleSelectFaucet}
         />
       ))}
+      FaucetConfiguration={
+        <>
+          <Text>Faucet configuration</Text>
+          <Label>Redeem Amount</Label>
+          <Text size="1">
+            How much does the faucet give to the user when they redeem?
+          </Text>
+          <TextField.Root>
+            <TextField.Slot>
+              <Text>{selectedCommunity?.token.symbol}</Text>
+            </TextField.Slot>
+            <TextField.Input
+              type="number"
+              min={1}
+              placeholder="1"
+              size="3"
+              value={redeemAmount}
+              onChange={handleRedeemAmount}
+            />
+          </TextField.Root>
+          {selectedFaucet?.id === "multi" && (
+            <>
+              <Label>Redeem Interval</Label>
+              <Text size="1">
+                How often can the user redeem from the faucet?
+              </Text>
+              <TextField.Root>
+                <TextField.Input
+                  type="number"
+                  min={1}
+                  placeholder="86400"
+                  size="3"
+                  value={redeemInterval}
+                  onChange={handleRedeemInterval}
+                />
+                <TextField.Slot>
+                  <Text size="1">in seconds</Text>
+                </TextField.Slot>
+              </TextField.Root>
+              <Text size="1" className="px-4">
+                {durationText}
+              </Text>
+            </>
+          )}
+        </>
+      }
       FaucetCreationDialog={
         !!(selectedFaucet && selectedCommunity) ? (
           <>
