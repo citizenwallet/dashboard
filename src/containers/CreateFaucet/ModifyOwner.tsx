@@ -70,10 +70,11 @@ export default function Container({
         <TextField.Input
           type="text"
           placeholder="0x..."
+          size="3"
           className={
             owner && sessionOwnerError
               ? "w-full max-w-sm border-red-500"
-              : undefined
+              : "w-full max-w-sm "
           }
           value={owner}
           onChange={handleOwnerChange}
