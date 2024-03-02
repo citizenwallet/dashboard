@@ -169,9 +169,13 @@ export default function CreateFaucet({
               >
                 {shortenAddress(selectedCommunity.token.address)}{" "}
                 {copied ? (
-                  <CheckIcon className="animate-fadeIn" />
+                  <CheckIcon
+                    height={14}
+                    width={14}
+                    className="animate-fadeIn"
+                  />
                 ) : (
-                  <CopyIcon className="animate-fadeIn" />
+                  <CopyIcon height={14} width={14} className="animate-fadeIn" />
                 )}
               </Button>
             </CardFooter>
@@ -242,7 +246,7 @@ export default function CreateFaucet({
               className="cursor-pointer"
               onClick={() => handleOpenChange(true)}
             >
-              Create <PlusIcon />
+              Create <PlusIcon height={14} width={14} />
             </Button>
             {isDesktop ? (
               <Dialog open={open} onOpenChange={handleOpenChange}>

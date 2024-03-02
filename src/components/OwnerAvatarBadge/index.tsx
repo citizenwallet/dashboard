@@ -6,14 +6,12 @@ export default function Component({
   avatarFallback,
   title,
   description,
-  isReadyState,
   CardAction,
 }: {
   avatar?: string;
   avatarFallback: string;
   title: string;
   description?: string;
-  isReadyState?: boolean;
   CardAction?: React.ReactNode;
 }) {
   return (

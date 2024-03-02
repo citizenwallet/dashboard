@@ -86,7 +86,7 @@ export default function FaucetCreationDialog({
 
   const { node, token } = config;
 
-  const network = NETWORKS[node.chainId];
+  const network = NETWORKS[node.chain_id];
 
   const [subscribe, actions] = useCheckout(config);
 
@@ -241,9 +241,9 @@ export default function FaucetCreationDialog({
 
   const isSufficientAmount = progress >= 100;
 
-  const walletUrl = generateEIP681Link({
+  const qrLink = generateEIP681Link({
     address: sessionAddress.value,
-    chainId: node.chainId,
+    chainId: node.chain_id,
     amount: Math.max(Number(amountToPay.value - sessionBalance.value), 0),
   });
 
@@ -274,7 +274,7 @@ export default function FaucetCreationDialog({
                 maxWidth: "100%",
                 width: "100%",
               }}
-              value={walletUrl}
+              value={qrLink}
               viewBox={`0 0 256 256`}
             />
           )}
@@ -292,13 +292,14 @@ export default function FaucetCreationDialog({
               onClick={() => handleCopy(sessionAddress.value)}
             >
               {shortenAddress(sessionAddress.value)}{" "}
-              {copied ? <CheckIcon /> : <CopyIcon />}
+              {copied ? (
+                <CheckIcon height={14} width={14} />
+              ) : (
+                <CopyIcon height={14} width={14} />
+              )}
             </Button>
-            <Button
-              variant="outline"
-              onClick={() => handleOpenWallet(walletUrl)}
-            >
-              Open wallet <ArrowTopRightIcon />
+            <Button variant="outline" onClick={() => handleOpenWallet(qrLink)}>
+              Open wallet <ArrowTopRightIcon height={14} width={14} />
             </Button>
           </>
         )}
@@ -313,12 +314,14 @@ export default function FaucetCreationDialog({
             {!isSufficientAmount && <Text>Estimated cost: </Text>}
             <Text>{formatCurrency(amountToPay.value, 18, 5)}</Text>
             <Text>{network.symbol}</Text>
-            {isSufficientAmount && <CheckIcon color="green" />}
+            {isSufficientAmount && (
+              <CheckIcon height={14} width={14} color="green" />
+            )}
           </Flex>
           {!isSufficientAmount && (
             <Flex>
               <Progress value={progress} />
-              <PieChartIcon className="animate-spin" />
+              <PieChartIcon height={14} width={14} className="animate-spin" />
             </Flex>
           )}
           {!isSufficientAmount && (
@@ -361,7 +364,7 @@ export default function FaucetCreationDialog({
           <Flex justify="center" align="center" gap="1">
             <Text>{formatCurrency(amountToPay.value, 18, 5)}</Text>
             <Text>{network.symbol}</Text>
-            <CheckIcon color="green" />
+            <CheckIcon height={14} width={14} color="green" />
           </Flex>
           <Flex justify="center">
             <OwnerAvatarBadge
@@ -474,7 +477,9 @@ export default function FaucetCreationDialog({
           onClick={!refund.loading ? handleRefund : undefined}
         >
           Refund & Cancel
-          {refund.loading && <PieChartIcon className="animate-spin" />}
+          {refund.loading && (
+            <PieChartIcon height={14} width={14} className="animate-spin" />
+          )}
         </Button>
       )}
       {sessionOwner && isSufficientAmount && (
@@ -484,7 +489,9 @@ export default function FaucetCreationDialog({
           onClick={() => handleCreate(sessionOwner)}
         >
           Create faucet
-          {createLoading && <PieChartIcon className="animate-spin" />}
+          {createLoading && (
+            <PieChartIcon height={14} width={14} className="animate-spin" />
+          )}
         </Button>
       )}
     </Box>

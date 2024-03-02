@@ -58,7 +58,7 @@ export default function Sidebar() {
         direction="column"
         p="2"
         gap="2"
-        className="animate-fadeIn"
+        className="animate-fadeIn max-h-screen min-h-screen bg-white"
       >
         <Heading>Citizen Wallet</Heading>
         <Separator size="4" />

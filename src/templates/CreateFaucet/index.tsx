@@ -39,20 +39,20 @@ export default function Template({
               <Box className="grid gap-1.5" py="2">
                 <Text>Community</Text>
                 <Box className="animate-fadeIn">
-                  {CommunityPicker ?? (
+                  {CommunityPicker || (
                     <Skeleton style={{ height: 32, width: 145 }} />
                   )}
                 </Box>
               </Box>
               <Box className="grid gap-1.5" py="2">
-                {CommunityCard ?? (
+                {CommunityCard || (
                   <Skeleton style={{ height: 292 }} className="w-full" />
                 )}
               </Box>
               <Box className="grid gap-1.5" py="2">
                 <Text>Faucet type</Text>
                 <Grid columns={{ initial: "1", md: "2" }} gap="3">
-                  {FaucetCards ?? (
+                  {FaucetCards || (
                     <>
                       <Card
                         className="relative border-grey"
@@ -93,7 +93,7 @@ export default function Template({
                 </Grid>
               </Box>
               <Box className="grid gap-1.5" py="2">
-                {FaucetConfiguration ?? (
+                {FaucetConfiguration || (
                   <>
                     <Text>Faucet configuration</Text>
                     <Label>Redeem Amount</Label>
@@ -107,7 +107,7 @@ export default function Template({
               </Box>
             </CardContent>
             <CardFooter className="flex justify-end">
-              {FaucetCreationDialog ?? (
+              {FaucetCreationDialog || (
                 <Skeleton
                   style={{ height: 32, width: 92 }}
                   className="w-full"

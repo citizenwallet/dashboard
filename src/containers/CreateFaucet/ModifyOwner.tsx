@@ -82,7 +82,7 @@ export default function Container({
         {owner && (
           <TextField.Slot>
             <IconButton size="1" variant="ghost" onClick={handleClearInput}>
-              <Cross2Icon height="14" width="14" />
+              <Cross2Icon height={14} width={14} />
             </IconButton>
           </TextField.Slot>
         )}
