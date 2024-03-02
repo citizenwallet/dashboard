@@ -14,7 +14,7 @@ export default function Template({
   FaucetCard,
   FaucetTransfers,
 }: {
-  scrollRef: React.RefObject<HTMLDivElement>;
+  scrollRef?: React.RefObject<HTMLDivElement>;
   FaucetCard?: React.ReactNode;
   FaucetTransfers?: React.ReactNode;
 }) {
