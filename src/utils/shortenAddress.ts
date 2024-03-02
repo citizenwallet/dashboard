@@ -1,4 +1,4 @@
-export function shortenAddress(address: string, chars = 4) {
+export function shortenAddress(address?: string, chars = 4) {
   // Check if it's a valid address
   if (!address) return "";
   const parsed = address.toString();

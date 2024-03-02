@@ -1,18 +1,9 @@
 "use client";
 
-import {
-  Box,
-  Button,
-  Flex,
-  Grid,
-  Section,
-  Select,
-  Text,
-} from "@radix-ui/themes";
+import { Box, Button, Select, Text } from "@radix-ui/themes";
 import FaucetCard from "./FaucetCard";
 import CreateFaucetTemplate from "@/templates/CreateFaucet";
 import { useEffect, useState } from "react";
-import { Label } from "@/components/ui/label";
 import {
   Card,
   CardContent,
@@ -21,13 +12,14 @@ import {
   CardHeader,
   CardTitle,
 } from "@/components/ui/card";
-import { Config, useConfig } from "@citizenwallet/sdk";
-import { CheckIcon, CopyIcon } from "@radix-ui/react-icons";
+import { Config } from "@citizenwallet/sdk";
+import { CheckIcon, CopyIcon, PlusIcon } from "@radix-ui/react-icons";
 import Image from "next/image";
 import FaucetCreationDialog from "./FaucetCreationDialog";
 import { shortenAddress } from "@/utils/shortenAddress";
-import { Skeleton } from "@/components/ui/skeleton";
-import { useEffectOnce } from "@/hooks/useEffectOnce";
+import useMediaQuery from "@/hooks/useMediaQuery";
+import { Dialog, DialogContent } from "@/components/ui/dialog";
+import { Drawer, DrawerContent } from "@/components/ui/drawer";
 
 export interface Faucet {
   id: string;
@@ -53,9 +45,20 @@ export default function CreateFaucet({
 }: {
   communities: Config[];
 }) {
+  const isDesktop = useMediaQuery("(min-width: 768px)");
+
+  const redeemAmount = 1;
+  const redeemInterval = 86400;
+
   const [faucet, setFaucet] = useState(faucets[0].id);
   const [slug, setSlug] = useState("gratitude");
   const [copied, setCopied] = useState(false);
+
+  const [open, setOpen] = useState(false);
+
+  const handleOpenChange = (opened: boolean) => {
+    setOpen(opened);
+  };
 
   useEffect(() => {
     if (copied) {
@@ -165,10 +168,49 @@ export default function CreateFaucet({
       ))}
       FaucetCreationDialog={
         !!(selectedFaucet && selectedCommunity) ? (
-          <FaucetCreationDialog
-            faucet={selectedFaucet}
-            config={selectedCommunity}
-          />
+          <>
+            <Button
+              variant="soft"
+              className="cursor-pointer"
+              onClick={() => handleOpenChange(true)}
+            >
+              Create <PlusIcon />
+            </Button>
+            {isDesktop ? (
+              <Dialog open={open} onOpenChange={handleOpenChange}>
+                <DialogContent>
+                  {open ? (
+                    <FaucetCreationDialog
+                      isDesktop
+                      faucet={selectedFaucet}
+                      config={selectedCommunity}
+                      redeemAmount={redeemAmount}
+                      redeemInterval={redeemInterval}
+                      handleClose={() => handleOpenChange(false)}
+                    />
+                  ) : (
+                    <Box className="min-h-[600px] min-w-[460px]" />
+                  )}
+                </DialogContent>
+              </Dialog>
+            ) : (
+              <Drawer open={open} onOpenChange={handleOpenChange}>
+                <DrawerContent>
+                  {open ? (
+                    <FaucetCreationDialog
+                      faucet={selectedFaucet}
+                      config={selectedCommunity}
+                      redeemAmount={redeemAmount}
+                      redeemInterval={redeemInterval}
+                      handleClose={() => handleOpenChange(false)}
+                    />
+                  ) : (
+                    <Box className="min-h-[600px]" />
+                  )}
+                </DrawerContent>
+              </Drawer>
+            )}
+          </>
         ) : undefined
       }
     />

@@ -9,8 +9,9 @@ import {
   ArrowTopRightIcon,
   CheckIcon,
   CopyIcon,
+  Link2Icon,
+  LinkNone2Icon,
   PieChartIcon,
-  PlusIcon,
 } from "@radix-ui/react-icons";
 import {
   Box,
@@ -23,7 +24,7 @@ import {
 } from "@radix-ui/themes";
 import { Faucet } from ".";
 import "@radix-ui/themes/styles.css";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import {
   Dialog,
   DialogContent,
@@ -31,7 +32,6 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "@/components/ui/dialog";
 import {
   Drawer,
@@ -40,9 +40,7 @@ import {
   DrawerFooter,
   DrawerHeader,
   DrawerTitle,
-  DrawerTrigger,
 } from "@/components/ui/drawer";
-import useMediaQuery from "@/hooks/useMediaQuery";
 import { shortenAddress } from "@/utils/shortenAddress";
 import { Card, CardContent } from "@/components/ui/card";
 import { formatCurrency } from "@/utils/formatCurrency";
@@ -54,21 +52,34 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { NETWORKS } from "@/constants/networks";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
+import OwnerAvatarBadge from "@/components/OwnerAvatarBadge";
+import ModifyOwner from "./ModifyOwner";
+import { readableDuration } from "@/utils/duration";
 
 interface FaucetCreationDialogProps {
+  isDesktop?: boolean;
   faucet: Faucet;
   config: Config;
+  redeemAmount: number;
+  redeemInterval: number;
+  handleClose: () => void;
 }
 
 // state.js:57 Warning: Cannot update a component (`FaucetCreationDialog`) while rendering a different component (`FaucetCreationDialog`). To locate the bad setState() call inside `FaucetCreationDialog`, follow the stack trace as described in
 export default function FaucetCreationDialog({
+  isDesktop,
   faucet,
   config,
+  redeemAmount,
+  redeemInterval,
+  handleClose,
 }: FaucetCreationDialogProps) {
   const router = useRouter();
   const { toast } = useToast();
-  const isDesktop = useMediaQuery("(min-width: 768px)");
-  const [open, setOpen] = useState(false);
+
+  const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
+
+  const [openModifyOwner, setOpenModifyOwner] = useState(false);
   const [copied, setCopied] = useState(false);
 
   const { node, token } = config;
@@ -81,45 +92,44 @@ export default function FaucetCreationDialog({
     useFaucetFactoryContract(config, actions.getSessionService());
 
   useEffect(() => {
-    let timeout: ReturnType<typeof setTimeout>;
-    if (copied) {
-      timeout = setTimeout(() => {
-        setCopied(false);
-      }, 2000);
-    }
+    return () => clearTimeout(timeoutRef.current);
+  }, []);
 
-    return () => clearTimeout(timeout);
-  }, [copied]);
+  useEffect(() => {
+    actions.onLoad();
+    actions.listenToBalance();
+    actions.updateAmountToPay(async (signer) => {
+      if (!faucetFactoryActions.faucetFactoryService) {
+        return;
+      }
+      return faucetFactoryActions.faucetFactoryService.estimateCreateSimpleFaucet(
+        signer.address,
+        0,
+        token.address,
+        redeemAmount,
+        redeemInterval,
+        signer.address
+      );
+    });
+  }, [
+    actions,
+    faucetFactoryActions,
+    token.address,
+    redeemAmount,
+    redeemInterval,
+  ]);
 
-  const handleOpenChange = (opened: boolean) => {
-    setOpen(opened);
-
-    if (opened) {
-      actions.onLoad();
-      actions.listenToBalance();
-      actions.updateAmountToPay(async () => {
-        if (!faucetFactoryActions.faucetFactoryService) {
-          return;
-        }
-        return faucetFactoryActions.faucetFactoryService.estimateCreateSimpleFaucetWithDefaults(
-          3,
-          token.address,
-          10,
-          10
-        );
-      });
-    } else {
-      actions.stopListeners();
-    }
-  };
-
-  const handleClose = () => {
-    setOpen(false);
+  const handleOpenModifyOwner = (opened: boolean) => {
+    setOpenModifyOwner(opened);
   };
 
   const handleCopy = (address: string) => {
     navigator.clipboard.writeText(address);
     setCopied(true);
+
+    timeoutRef.current = setTimeout(() => {
+      setCopied(false);
+    }, 2000);
   };
 
   const handleOpenWallet = (url: string) => {
@@ -155,8 +165,8 @@ export default function FaucetCreationDialog({
       owner,
       0,
       token.address,
-      10,
-      10,
+      redeemAmount,
+      redeemInterval,
       owner
     );
 
@@ -181,6 +191,9 @@ export default function FaucetCreationDialog({
   const sessionBalance = subscribe((state) => state.sessionBalance);
   const amountToPay = subscribe((state) => state.amountToPay);
   const sessionOwner = subscribe((state) => state.sessionOwner);
+  const sessionOwnerError = subscribe((state) => state.sessionOwnerError);
+
+  const shortenedOwner = shortenAddress(sessionOwner);
 
   const tokenAddress = token.address;
 
@@ -194,21 +207,24 @@ export default function FaucetCreationDialog({
           sessionOwner,
           0,
           tokenAddress,
-          10,
-          10,
+          redeemAmount,
+          redeemInterval,
           sessionOwner
         );
       });
     }
-  }, [actions, faucetFactoryActions, sessionOwner, tokenAddress]);
+  }, [
+    actions,
+    faucetFactoryActions,
+    sessionOwner,
+    tokenAddress,
+    redeemAmount,
+    redeemInterval,
+  ]);
 
   const createLoading = faucetFactorySubscribe((state) => state.create.loading);
 
   const refund = subscribe((state) => state.refund);
-
-  if (isDesktop === undefined) {
-    return null;
-  }
 
   const progress = calculateProgress(
     Number(sessionBalance.value),
@@ -221,114 +237,218 @@ export default function FaucetCreationDialog({
     node.chainId
   }?value=${Math.max(Number(amountToPay.value - sessionBalance.value), 0)}`;
 
-  const Content = () => (
+  const durationText = readableDuration(redeemInterval);
+
+  const FundingCardContent = (
+    <CardContent className="fadeIn">
+      <Flex
+        direction="column"
+        p="4"
+        gap="2"
+        className="w-full max-w-sm"
+        justify="center"
+        align="center"
+      >
+        <Text size="2" className="text-center">
+          Send <Strong>{network.symbol}</Strong> to the following address to
+          fund the faucet creation.
+        </Text>
+        <Box className="p-4 border rounded-lg bg-white">
+          {sessionAddress.loading ? (
+            <Skeleton style={{ height: 256, width: 256 }} />
+          ) : (
+            <QRCode
+              size={256}
+              style={{
+                height: "auto",
+                maxWidth: "100%",
+                width: "100%",
+              }}
+              value={walletUrl}
+              viewBox={`0 0 256 256`}
+            />
+          )}
+        </Box>
+        {sessionAddress.loading ? (
+          <>
+            <Skeleton style={{ height: 32, width: 126 }} />
+            <Skeleton style={{ height: 32, width: 126 }} />
+          </>
+        ) : (
+          <>
+            <Button
+              variant="outline"
+              color="gray"
+              onClick={() => handleCopy(sessionAddress.value)}
+            >
+              {shortenAddress(sessionAddress.value)}{" "}
+              {copied ? <CheckIcon /> : <CopyIcon />}
+            </Button>
+            <Button
+              variant="outline"
+              onClick={() => handleOpenWallet(walletUrl)}
+            >
+              Open wallet <ArrowTopRightIcon />
+            </Button>
+          </>
+        )}
+
+        <Separator size="4" />
+        <Text>
+          <Strong>Fund transaction</Strong>
+        </Text>
+
+        <Flex direction="column" className="w-full" gap="2">
+          <Flex justify="center" align="center" gap="1">
+            {!isSufficientAmount && <Text>Estimated cost: </Text>}
+            <Text>{formatCurrency(amountToPay.value, 18, 5)}</Text>
+            <Text>{network.symbol}</Text>
+            {isSufficientAmount && <CheckIcon color="green" />}
+          </Flex>
+          {!isSufficientAmount && (
+            <Flex>
+              <Progress value={progress} />
+              <PieChartIcon className="animate-spin" />
+            </Flex>
+          )}
+          {!isSufficientAmount && (
+            <Flex justify="center" gap="1">
+              <Text
+                className="transition-colors duration-150"
+                color={sessionBalance.loading ? "orange" : undefined}
+              >
+                {formatCurrency(sessionBalance.value, 18, 5)}
+              </Text>
+              <Text className="transition-colors duration-150">
+                {network.symbol}
+              </Text>
+            </Flex>
+          )}
+          {!isSufficientAmount && (
+            <Flex justify="center">
+              <Text>Waiting for funds...</Text>
+            </Flex>
+          )}
+        </Flex>
+      </Flex>
+    </CardContent>
+  );
+
+  const FundedCardContent = (
+    <CardContent className="fadeIn">
+      <Flex
+        direction="column"
+        p="4"
+        gap="2"
+        className="w-full max-w-sm"
+        justify="center"
+        align="center"
+      >
+        <Text>
+          <Strong>Transaction funded</Strong>
+        </Text>
+        <Flex direction="column" className="w-full" gap="2" pb="4">
+          <Flex justify="center" align="center" gap="1">
+            <Text>{formatCurrency(amountToPay.value, 18, 5)}</Text>
+            <Text>{network.symbol}</Text>
+            <CheckIcon color="green" />
+          </Flex>
+          <Flex justify="center">
+            <OwnerAvatarBadge
+              avatar={
+                sessionOwner
+                  ? `https://api.multiavatar.com/${sessionOwner}.png`
+                  : undefined
+              }
+              avatarFallback={sessionOwner ? "0x" : "?"}
+              title={sessionOwner ? shortenedOwner : "Connect"}
+              description={sessionOwner ? "Owner" : "No owner"}
+              CardAction={
+                <>
+                  <Button
+                    className="cursor-pointer"
+                    variant="soft"
+                    onClick={() => handleOpenModifyOwner(true)}
+                  >
+                    {sessionOwner ? <Link2Icon /> : <LinkNone2Icon />}
+                  </Button>
+                  {isDesktop ? (
+                    <Dialog
+                      open={openModifyOwner}
+                      onOpenChange={handleOpenModifyOwner}
+                    >
+                      <DialogContent>
+                        {openModifyOwner && (
+                          <ModifyOwner
+                            isDesktop
+                            actions={actions}
+                            sessionOwner={sessionOwner}
+                            sessionOwnerError={sessionOwnerError}
+                            handleClose={() => handleOpenModifyOwner(false)}
+                          />
+                        )}
+                      </DialogContent>
+                    </Dialog>
+                  ) : (
+                    <Drawer
+                      open={openModifyOwner}
+                      onOpenChange={handleOpenModifyOwner}
+                    >
+                      <DrawerContent>
+                        {openModifyOwner && (
+                          <ModifyOwner
+                            actions={actions}
+                            sessionOwner={sessionOwner}
+                            sessionOwnerError={sessionOwnerError}
+                            handleClose={() => handleOpenModifyOwner(false)}
+                          />
+                        )}
+                      </DrawerContent>
+                    </Drawer>
+                  )}
+                </>
+              }
+            />
+          </Flex>
+        </Flex>
+        <Separator size="4" />
+        <Flex
+          direction="column"
+          align="center"
+          className="w-full"
+          gap="2"
+          pt="4"
+        >
+          <Text>
+            <Strong>Redeem interval</Strong>
+          </Text>
+          <Text>{durationText}</Text>
+          <Text>
+            <Strong>Redeem amount</Strong>
+          </Text>
+          <Text>
+            {redeemAmount} {token.symbol}
+          </Text>
+          <Separator size="4" />
+          <Text>Anyone can top up the faucet.</Text>
+          <Separator size="4" />
+          <Text className="text-center">
+            Only the owner can withdraw from the faucet.
+          </Text>
+        </Flex>
+      </Flex>
+    </CardContent>
+  );
+
+  const Content = (
     <Box className="w-full flex justify-center">
       <Card className="w-full max-w-sm">
-        <CardContent>
-          <Flex
-            direction="column"
-            p="4"
-            gap="2"
-            className="w-full max-w-sm"
-            justify="center"
-            align="center"
-          >
-            <Box className="p-4 border rounded-lg bg-white">
-              {sessionAddress.loading ? (
-                <Skeleton style={{ height: 256, width: 256 }} />
-              ) : (
-                <QRCode
-                  size={256}
-                  style={{
-                    height: "auto",
-                    maxWidth: "100%",
-                    width: "100%",
-                  }}
-                  value={walletUrl}
-                  viewBox={`0 0 256 256`}
-                />
-              )}
-            </Box>
-            {sessionAddress.loading ? (
-              <>
-                <Skeleton style={{ height: 32, width: 126 }} />
-                <Skeleton style={{ height: 32, width: 126 }} />
-              </>
-            ) : (
-              <>
-                <Button
-                  variant="outline"
-                  color="gray"
-                  onClick={() => handleCopy(sessionAddress.value)}
-                >
-                  {shortenAddress(sessionAddress.value)}{" "}
-                  {copied ? <CheckIcon /> : <CopyIcon />}
-                </Button>
-                <Button
-                  variant="outline"
-                  onClick={() => handleOpenWallet(walletUrl)}
-                >
-                  Open wallet <ArrowTopRightIcon />
-                </Button>
-              </>
-            )}
-
-            <Separator size="4" />
-            <Text>
-              <Strong>Fund transaction</Strong>
-            </Text>
-
-            <Flex direction="column" className="w-full" gap="2">
-              <Flex justify="center" gap="1">
-                <Text>Needed: </Text>
-                <Text>{formatCurrency(amountToPay.value, 18, 5)}</Text>
-                <Text>{network.symbol}</Text>
-              </Flex>
-              <Flex>
-                <Progress
-                  className={
-                    isSufficientAmount ? "border border-green-400" : ""
-                  }
-                  value={progress}
-                />
-                {isSufficientAmount ? (
-                  <CheckIcon color="green" />
-                ) : (
-                  <PieChartIcon className="animate-spin" />
-                )}
-              </Flex>
-              <Flex justify="center" gap="1">
-                <Text
-                  className="transition-colors duration-150"
-                  color={
-                    isSufficientAmount
-                      ? "green"
-                      : sessionBalance.loading
-                      ? "orange"
-                      : undefined
-                  }
-                >
-                  {formatCurrency(sessionBalance.value, 18, 5)}
-                </Text>
-                <Text className="transition-colors duration-150">
-                  {network.symbol}
-                </Text>
-              </Flex>
-              <Flex justify="center">
-                <Text>
-                  {isSufficientAmount
-                    ? "Ready to create"
-                    : "Waiting for funds..."}
-                </Text>
-              </Flex>
-            </Flex>
-          </Flex>
-        </CardContent>
+        {isSufficientAmount ? FundedCardContent : FundingCardContent}
       </Card>
     </Box>
   );
 
-  const Footer = () => (
+  const Footer = (
     <Box
       className="w-full flex flex-col justify-center items-center gap-6"
       pt="4"
@@ -347,13 +467,13 @@ export default function FaucetCreationDialog({
           {refund.loading && <PieChartIcon className="animate-spin" />}
         </Button>
       )}
-      {isSufficientAmount && (
+      {sessionOwner && isSufficientAmount && (
         <Button
           variant="soft"
           className="w-full max-w-sm"
           onClick={() => handleCreate(sessionOwner)}
         >
-          Create
+          Create faucet
           {createLoading && <PieChartIcon className="animate-spin" />}
         </Button>
       )}
@@ -362,47 +482,25 @@ export default function FaucetCreationDialog({
 
   if (isDesktop) {
     return (
-      <Dialog open={open} onOpenChange={handleOpenChange}>
-        <DialogTrigger asChild>
-          <Button className="cursor-pointer" variant="soft">
-            Create <PlusIcon />
-          </Button>
-        </DialogTrigger>
-        <DialogContent>
-          <Theme accentColor="purple" grayColor="sand" radius="large">
-            <DialogHeader>
-              <DialogTitle>Create {faucet.title}</DialogTitle>
-              <DialogDescription>{token.name}</DialogDescription>
-            </DialogHeader>
-            <Content />
-            <DialogFooter>
-              <Footer />
-            </DialogFooter>
-          </Theme>
-        </DialogContent>
-      </Dialog>
+      <Theme accentColor="purple" grayColor="sand" radius="large">
+        <DialogHeader>
+          <DialogTitle>Create {faucet.title}</DialogTitle>
+          <DialogDescription>{token.name}</DialogDescription>
+        </DialogHeader>
+        {Content}
+        <DialogFooter>{Footer}</DialogFooter>
+      </Theme>
     );
   }
 
   return (
-    <Drawer open={open} onOpenChange={handleOpenChange}>
-      <DrawerTrigger asChild>
-        <Button variant="soft" className="cursor-pointer">
-          Create <PlusIcon />
-        </Button>
-      </DrawerTrigger>
-      <DrawerContent>
-        <Theme accentColor="purple" grayColor="sand" radius="large">
-          <DrawerHeader>
-            <DrawerTitle>Create {faucet.title}</DrawerTitle>
-            <DrawerDescription>{token.name}</DrawerDescription>
-          </DrawerHeader>
-          <Content />
-          <DrawerFooter>
-            <Footer />
-          </DrawerFooter>
-        </Theme>
-      </DrawerContent>
-    </Drawer>
+    <Theme accentColor="purple" grayColor="sand" radius="large">
+      <DrawerHeader>
+        <DrawerTitle>Create {faucet.title}</DrawerTitle>
+        <DrawerDescription>{token.name}</DrawerDescription>
+      </DrawerHeader>
+      {Content}
+      <DrawerFooter>{Footer}</DrawerFooter>
+    </Theme>
   );
 }
