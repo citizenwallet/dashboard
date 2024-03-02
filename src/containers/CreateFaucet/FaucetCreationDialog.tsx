@@ -56,6 +56,7 @@ import OwnerAvatarBadge from "@/components/OwnerAvatarBadge";
 import ModifyOwner from "./ModifyOwner";
 import { readableDuration } from "@/utils/duration";
 import { useSafeEffect } from "@/hooks/useSafeEffect";
+import { generateEIP681Link } from "@/utils/eip681Link";
 
 interface FaucetCreationDialogProps {
   isDesktop?: boolean;
@@ -240,9 +241,11 @@ export default function FaucetCreationDialog({
 
   const isSufficientAmount = progress >= 100;
 
-  const walletUrl = `ethereum:${sessionAddress.value}@${
-    node.chainId
-  }?value=${Math.max(Number(amountToPay.value - sessionBalance.value), 0)}`;
+  const walletUrl = generateEIP681Link({
+    address: sessionAddress.value,
+    chainId: node.chainId,
+    amount: Math.max(Number(amountToPay.value - sessionBalance.value), 0),
+  });
 
   const durationText = readableDuration(redeemInterval);
 
