@@ -186,7 +186,7 @@ export default function FaucetCreationDialog({
       actions.reset();
 
       // navigate to faucet
-      router.push(`/faucet/${faucetAddress}?slug=${config.community.alias}`);
+      router.push(`/faucet/${config.community.alias}/${faucetAddress}`);
       return;
     }
 
