@@ -33,7 +33,6 @@ export default function Container({
   faucetAddress: string;
 }) {
   const scrollRef = useRef<HTMLDivElement | null>(null);
-  const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const [copied, setCopied] = useState(false);
