@@ -435,7 +435,7 @@ export default function FaucetCreationDialog({
           <Text>
             <Strong>Redeem interval</Strong>
           </Text>
-          <Text>{durationText}</Text>
+          <Text>{redeemInterval === 0 ? "Single redeem" : durationText}</Text>
           <Text>
             <Strong>Redeem amount</Strong>
           </Text>

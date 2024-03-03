@@ -257,7 +257,9 @@ export default function CreateFaucet({
                       faucet={selectedFaucet}
                       config={selectedCommunity}
                       redeemAmount={redeemAmount}
-                      redeemInterval={redeemInterval}
+                      redeemInterval={
+                        selectedFaucet.id === "single" ? 0 : redeemInterval
+                      }
                       handleClose={() => handleOpenChange(false)}
                     />
                   ) : (
@@ -273,7 +275,9 @@ export default function CreateFaucet({
                       faucet={selectedFaucet}
                       config={selectedCommunity}
                       redeemAmount={redeemAmount}
-                      redeemInterval={redeemInterval}
+                      redeemInterval={
+                        selectedFaucet.id === "single" ? 0 : redeemInterval
+                      }
                       handleClose={() => handleOpenChange(false)}
                     />
                   ) : (
