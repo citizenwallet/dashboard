@@ -12,14 +12,19 @@ import {
 export default function Template({
   scrollRef,
   FaucetCard,
+  FaucetTransfersHeading,
   FaucetTransfers,
 }: {
   scrollRef?: React.RefObject<HTMLDivElement>;
   FaucetCard?: React.ReactNode;
+  FaucetTransfersHeading?: React.ReactNode;
   FaucetTransfers?: React.ReactNode;
 }) {
   return (
-    <ScrollArea ref={scrollRef} className="max-h-screen min-h-screen">
+    <ScrollArea
+      ref={scrollRef}
+      className="max-h-screen min-h-screen flex flex-col"
+    >
       <Flex direction="column" align="center" p="2">
         <Section size="1">
           <Flex
@@ -67,22 +72,26 @@ export default function Template({
           </Flex>
         </Section>
       </Flex>
-      <Separator size="4" />
-      <Flex
-        shrink="0"
-        grow="1"
-        direction="column"
-        gap="2"
-        p="4"
-        className="relative"
-      >
-        <Box className="z-50 sticky top-0 left-0 bg-white py-4">
-          <Text>Transactions</Text>
-        </Box>
-        {FaucetTransfers ||
-          Array.from({ length: 5 }).map((_, index) => (
-            <Skeleton key={index} style={{ height: 64 }} />
-          ))}
+      <Flex justify="center" className="w-full">
+        <Flex
+          shrink="0"
+          grow="1"
+          direction="column"
+          gap="2"
+          p="4"
+          className="relative max-w-md"
+        >
+          <Separator size="4" />
+          {FaucetTransfersHeading || (
+            <Box className="z-50 sticky top-0 left-0 bg-white py-4">
+              <Text>Transactions</Text>
+            </Box>
+          )}
+          {FaucetTransfers ||
+            Array.from({ length: 5 }).map((_, index) => (
+              <Skeleton key={index} style={{ height: 64 }} />
+            ))}
+        </Flex>
       </Flex>
     </ScrollArea>
   );

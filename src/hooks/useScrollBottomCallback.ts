@@ -1,4 +1,4 @@
-import { useCallback } from "react";
+import { useCallback, useRef } from "react";
 import { useSafeEffect } from "./useSafeEffect";
 
 export const useScrollBottomCallback = (
@@ -6,10 +6,15 @@ export const useScrollBottomCallback = (
   callback: () => void,
   deps: any[] = []
 ) => {
-  const stableCallback = useCallback(() => {
-    callback();
+  const firstLoadRef = useRef(true);
+
+  const stableCallback = useCallback(
+    () => {
+      callback();
+    },
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [callback, ...deps]);
+    [callback, ...deps]
+  );
 
   useSafeEffect(() => {
     const handleScroll = () => {

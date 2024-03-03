@@ -3,7 +3,12 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import useMediaQuery from "@/hooks/useMediaQuery";
 import { Config, useContract, useERC20 } from "@citizenwallet/sdk";
-import { UploadIcon, CheckIcon, CopyIcon } from "@radix-ui/react-icons";
+import {
+  UploadIcon,
+  CheckIcon,
+  CopyIcon,
+  ReloadIcon,
+} from "@radix-ui/react-icons";
 import { Avatar, Box, Button, Flex, Text } from "@radix-ui/themes";
 import InfoPageTemplate from "@/templates/InfoPage";
 import ManageFaucetTemplate from "@/templates/ManageFaucet";
@@ -65,20 +70,37 @@ export default function Container({
     }, 2000);
   };
 
+  const handleWithdraw = () => {
+    const link = `${config.scan.url}/address/${faucetAddress}#writeContract`;
+
+    window.open(link, link);
+  };
+
+  const cleanupFunctionRef = useRef<() => void>(() => {});
   const [subscribe, actions] = useERC20(config);
 
   useSafeEffect(() => {
     actions.getBalance(faucetAddress);
-    actions.getTransfers(faucetAddress);
+
+    actions.getTransfersForScrollable(
+      faucetAddress,
+      scrollRef,
+      cleanupFunctionRef
+    );
+
+    return () => {
+      cleanupFunctionRef.current();
+    };
   }, [faucetAddress, actions]);
 
-  useScrollBottomCallback(
-    scrollRef,
-    () => {
-      actions.getTransfers(faucetAddress);
-    },
-    [actions, faucetAddress]
-  );
+  const handleReload = async () => {
+    console.log("handle reload");
+    actions.getTransfersForScrollable(
+      faucetAddress,
+      scrollRef,
+      cleanupFunctionRef
+    );
+  };
 
   const [contractSubscribe, contractActions] = useContract(config);
 
@@ -156,7 +178,7 @@ export default function Container({
                     <CopyIcon height={14} width={14} />
                   )}
                 </Button>
-                <Button variant="outline">
+                <Button variant="outline" onClick={handleWithdraw}>
                   Withdraw <UploadIcon height={14} width={14} />
                 </Button>
               </Flex>
@@ -183,13 +205,24 @@ export default function Container({
           </Box>
         )
       }
+      FaucetTransfersHeading={
+        <Box className="z-50 sticky top-0 left-0 bg-white py-4 flex flex-row justify-between align-center">
+          <Text>Transactions</Text>
+          <Button
+            variant="ghost"
+            style={{ height: 24, width: 24 }}
+            onClick={handleReload}
+          >
+            <ReloadIcon height={14} width={14} />
+          </Button>
+        </Box>
+      }
       FaucetTransfers={
         <>
           {(!transfers.loading || transfers.transfers.length > 0) &&
             transfers.transfers.map((tx, i) => (
               <TransferCard
-                // key={tx.tx_hash}
-                key={i}
+                key={tx.tx_hash}
                 account={faucetAddress}
                 transfer={tx}
                 token={token}
