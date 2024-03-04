@@ -59,11 +59,29 @@ export default function Template({
                 </Box>
                 <Flex align="center" gap="2">
                   <Text>Balance: </Text>
-                  <Skeleton style={{ height: 32 }} className="w-full" />
+                  <Skeleton
+                    style={{ height: 24, width: 40 }}
+                    className="w-full"
+                  />
+                </Flex>
+                <Separator size="4" />
+                <Flex align="center" gap="2">
+                  <Text>Redeem interval: </Text>
+                  <Skeleton
+                    style={{ height: 24, width: 40 }}
+                    className="w-full"
+                  />
+                </Flex>
+                <Flex align="center" gap="2">
+                  <Text>Redeem amount: </Text>
+                  <Skeleton
+                    style={{ height: 24, width: 40 }}
+                    className="w-full"
+                  />
                 </Flex>
                 <Flex justify="end" align="center" gap="2" pt="2">
                   <Skeleton
-                    style={{ height: 32, width: 92 }}
+                    style={{ height: 24, width: 92 }}
                     className="w-full"
                   />
                 </Flex>

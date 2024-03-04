@@ -5,15 +5,11 @@ import {
   Config,
   useContract,
   useERC20,
+  useScrollableElementFetcher,
   useSimpleFaucetContract,
 } from "@citizenwallet/sdk";
-import {
-  UploadIcon,
-  CheckIcon,
-  CopyIcon,
-  ReloadIcon,
-} from "@radix-ui/react-icons";
-import { Avatar, Box, Button, Flex, Text } from "@radix-ui/themes";
+import { UploadIcon, CheckIcon, CopyIcon } from "@radix-ui/react-icons";
+import { Avatar, Box, Button, Flex, Separator, Text } from "@radix-ui/themes";
 import InfoPageTemplate from "@/templates/InfoPage";
 import ManageFaucetTemplate from "@/templates/ManageFaucet";
 import TransferCard from "@/components/TransferCard";
@@ -25,7 +21,7 @@ import { shortenAddress } from "@/utils/shortenAddress";
 import Image from "next/image";
 import MissingIcon from "@/assets/icons/missing.svg";
 import { formatCurrency } from "@/utils/formatCurrency";
-import { useScrollBottomCallback } from "@/hooks/useScrollBottomCallback";
+import { readableDuration } from "@/utils/duration";
 
 // http://localhost:3000/faucet/gratitude/0x48a5c3e5756bEA469d466932CF4A9fa735B689c5
 
@@ -36,8 +32,6 @@ export default function Container({
   config: Config;
   faucetAddress: string;
 }) {
-  const scrollRef = useRef<HTMLDivElement | null>(null);
-
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const [copied, setCopied] = useState(false);
 
@@ -79,7 +73,6 @@ export default function Container({
     window.open(link, link);
   };
 
-  const cleanupFunctionRef = useRef<() => void>(() => {});
   const [subscribe, actions] = useERC20(config);
   const [faucetSubscribe, faucetActions] = useSimpleFaucetContract(
     faucetAddress,
@@ -91,25 +84,16 @@ export default function Container({
     actions.getBalance(faucetAddress);
     faucetActions.fetchMetadata();
 
-    actions.getTransfersForScrollable(
-      faucetAddress,
-      scrollRef,
-      cleanupFunctionRef
-    );
+    actions.listenForTransfers(faucetAddress, 2000);
 
     return () => {
-      cleanupFunctionRef.current();
+      actions.stopListeners();
     };
   }, [faucetAddress, actions]);
 
-  const handleReload = async () => {
-    console.log("handle reload");
-    actions.getTransfersForScrollable(
-      faucetAddress,
-      scrollRef,
-      cleanupFunctionRef
-    );
-  };
+  const scrollRef = useScrollableElementFetcher(() =>
+    actions.getTransfers(faucetAddress)
+  );
 
   const [contractSubscribe, contractActions] = useContract(config);
 
@@ -120,9 +104,8 @@ export default function Container({
   const exists = contractSubscribe((state) => state.exists);
   const loading = contractSubscribe((state) => state.loading);
 
+  const metadataLoading = faucetSubscribe((state) => state.metadataLoading);
   const metadata = faucetSubscribe((state) => state.metadata);
-
-  console.log("metadata", metadata);
 
   const balance = subscribe((state) => state.balance);
   const transfers = subscribe((state) => state.transfers);
@@ -201,9 +184,41 @@ export default function Container({
               {!balance.loading ? (
                 <Text>{formatCurrency(balance.value, token.decimals, 2)}</Text>
               ) : (
-                <Skeleton style={{ height: 32 }} className="w-full" />
+                <Skeleton
+                  style={{ height: 24, width: 40 }}
+                  className="w-full"
+                />
               )}
               <Text>{token.symbol}</Text>
+            </Flex>
+            <Separator size="4" />
+            <Flex align="center" gap="2">
+              <Text>Redeem interval: </Text>
+              {!metadataLoading ? (
+                <Text>
+                  {metadata.redeemInterval === 0
+                    ? "Once"
+                    : readableDuration(metadata.redeemInterval)}
+                </Text>
+              ) : (
+                <Skeleton
+                  style={{ height: 24, width: 40 }}
+                  className="w-full"
+                />
+              )}
+            </Flex>
+            <Flex align="center" gap="2">
+              <Text>Redeem amount: </Text>
+              {!metadataLoading ? (
+                <Text>
+                  {metadata.amount} {token.symbol}
+                </Text>
+              ) : (
+                <Skeleton
+                  style={{ height: 24, width: 40 }}
+                  className="w-full"
+                />
+              )}
             </Flex>
             <Flex justify="end" align="center" gap="2" pt="2">
               <Button variant="soft" onClick={handleCopyRedeemLink}>
@@ -221,13 +236,6 @@ export default function Container({
       FaucetTransfersHeading={
         <Box className="z-50 sticky top-0 left-0 bg-white py-4 flex flex-row justify-between align-center">
           <Text>Transactions</Text>
-          <Button
-            variant="ghost"
-            style={{ height: 24, width: 24 }}
-            onClick={handleReload}
-          >
-            <ReloadIcon height={14} width={14} />
-          </Button>
         </Box>
       }
       FaucetTransfers={
