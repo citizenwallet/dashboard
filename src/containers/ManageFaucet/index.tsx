@@ -1,8 +1,12 @@
 "use client";
 
 import { Skeleton } from "@/components/ui/skeleton";
-import useMediaQuery from "@/hooks/useMediaQuery";
-import { Config, useContract, useERC20 } from "@citizenwallet/sdk";
+import {
+  Config,
+  useContract,
+  useERC20,
+  useSimpleFaucetContract,
+} from "@citizenwallet/sdk";
 import {
   UploadIcon,
   CheckIcon,
@@ -23,7 +27,7 @@ import MissingIcon from "@/assets/icons/missing.svg";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { useScrollBottomCallback } from "@/hooks/useScrollBottomCallback";
 
-// http://localhost:3000/faucet/0x48a5c3e5756bEA469d466932CF4A9fa735B689c5?slug=gratitude
+// http://localhost:3000/faucet/gratitude/0x48a5c3e5756bEA469d466932CF4A9fa735B689c5
 
 export default function Container({
   config,
@@ -77,9 +81,15 @@ export default function Container({
 
   const cleanupFunctionRef = useRef<() => void>(() => {});
   const [subscribe, actions] = useERC20(config);
+  const [faucetSubscribe, faucetActions] = useSimpleFaucetContract(
+    faucetAddress,
+    config,
+    faucetAddress
+  );
 
   useSafeEffect(() => {
     actions.getBalance(faucetAddress);
+    faucetActions.fetchMetadata();
 
     actions.getTransfersForScrollable(
       faucetAddress,
@@ -109,6 +119,10 @@ export default function Container({
 
   const exists = contractSubscribe((state) => state.exists);
   const loading = contractSubscribe((state) => state.loading);
+
+  const metadata = faucetSubscribe((state) => state.metadata);
+
+  console.log("metadata", metadata);
 
   const balance = subscribe((state) => state.balance);
   const transfers = subscribe((state) => state.transfers);
