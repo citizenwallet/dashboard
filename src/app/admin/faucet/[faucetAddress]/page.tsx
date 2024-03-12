@@ -1,4 +1,4 @@
-import Faucet from "@/containers/ManageFaucet";
+import ManageFaucet from "@/containers/ManageFaucet";
 import ManageFaucetTemplate from "@/templates/ManageFaucet";
 import { Suspense } from "react";
 import { readCommunityFile } from "@/utils/community";
@@ -12,7 +12,7 @@ export default async function Page({
 
   return (
     <Suspense fallback={<ManageFaucetTemplate />}>
-      <Faucet config={config} faucetAddress={faucetAddress} />
+      <ManageFaucet config={config} faucetAddress={faucetAddress} />
     </Suspense>
   );
 }

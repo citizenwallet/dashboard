@@ -4,23 +4,18 @@ import { Skeleton } from "@/components/ui/skeleton";
 import {
   Config,
   useContract,
-  useERC20,
-  useScrollableElementFetcher,
   useSimpleFaucetContract,
 } from "@citizenwallet/sdk";
-import { UploadIcon, CheckIcon, CopyIcon } from "@radix-ui/react-icons";
-import { Avatar, Box, Button, Flex, Separator, Text } from "@radix-ui/themes";
+import { CheckIcon, CopyIcon } from "@radix-ui/react-icons";
+import { Avatar, Box, Button, Flex, Text } from "@radix-ui/themes";
 import InfoPageTemplate from "@/templates/InfoPage";
-import ManageFaucetTemplate from "@/templates/ManageFaucet";
-import TransferCard from "@/components/TransferCard";
+import RedeemFaucetTemplate from "@/templates/RedeemFaucet";
 import { useEffect, useRef, useState } from "react";
 import QRCode from "react-qr-code";
-import { generateEIP681Link } from "@/utils/eip681Link";
 import { useSafeEffect } from "@/hooks/useSafeEffect";
 import { shortenAddress } from "@/utils/shortenAddress";
 import Image from "next/image";
 import MissingIcon from "@/assets/icons/missing.svg";
-import { formatCurrency } from "@/utils/formatCurrency";
 import { readableDuration } from "@/utils/duration";
 
 // http://localhost:3000/faucet/gratitude/0x48a5c3e5756bEA469d466932CF4A9fa735B689c5
@@ -28,9 +23,11 @@ import { readableDuration } from "@/utils/duration";
 export default function Container({
   config,
   faucetAddress,
+  appBaseUrl,
 }: {
   config: Config;
   faucetAddress: string;
+  appBaseUrl: string;
 }) {
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const [copied, setCopied] = useState(false);
@@ -67,13 +64,6 @@ export default function Container({
     }, 2000);
   };
 
-  const handleWithdraw = () => {
-    const link = `${config.scan.url}/address/${faucetAddress}#writeContract`;
-
-    window.open(link, link);
-  };
-
-  const [subscribe, actions] = useERC20(config);
   const [faucetSubscribe, faucetActions] = useSimpleFaucetContract(
     faucetAddress,
     config,
@@ -81,19 +71,8 @@ export default function Container({
   );
 
   useSafeEffect(() => {
-    actions.getBalance(faucetAddress);
     faucetActions.fetchMetadata();
-
-    actions.listenForTransfers(faucetAddress, 2000);
-
-    return () => {
-      actions.stopListeners(faucetAddress);
-    };
-  }, [faucetAddress, actions]);
-
-  const scrollRef = useScrollableElementFetcher(() =>
-    actions.getTransfers(faucetAddress)
-  );
+  }, [faucetAddress]);
 
   const [contractSubscribe, contractActions] = useContract(config);
 
@@ -107,15 +86,9 @@ export default function Container({
   const metadataLoading = faucetSubscribe((state) => state.metadataLoading);
   const metadata = faucetSubscribe((state) => state.metadata);
 
-  const balance = subscribe((state) => state.balance);
-  const transfers = subscribe((state) => state.transfers);
+  const { community, token } = config;
 
-  const { community, node, token } = config;
-
-  const qrLink = generateEIP681Link({
-    address: faucetAddress,
-    chainId: node.chain_id,
-  });
+  const qrLink = `${appBaseUrl}?dl=faucet-v1&alias=${community.alias}&address=${faucetAddress}`;
 
   if (!loading && !exists) {
     return (
@@ -134,8 +107,7 @@ export default function Container({
   }
 
   return (
-    <ManageFaucetTemplate
-      scrollRef={scrollRef}
+    <RedeemFaucetTemplate
       FaucetCard={
         !loading &&
         exists && (
@@ -175,24 +147,8 @@ export default function Container({
                     <CopyIcon height={14} width={14} />
                   )}
                 </Button>
-                <Button variant="outline" onClick={handleWithdraw}>
-                  Withdraw <UploadIcon height={14} width={14} />
-                </Button>
               </Flex>
             </Box>
-            <Flex align="center" gap="2">
-              <Text>Balance: </Text>
-              {!balance.loading ? (
-                <Text>{formatCurrency(balance.value, token.decimals, 2)}</Text>
-              ) : (
-                <Skeleton
-                  style={{ height: 24, width: 40 }}
-                  className="w-full"
-                />
-              )}
-              <Text>{token.symbol}</Text>
-            </Flex>
-            <Separator size="4" />
             <Flex align="center" gap="2">
               <Text>Redeem interval: </Text>
               {!metadataLoading ? (
@@ -233,28 +189,6 @@ export default function Container({
             </Flex>
           </Box>
         )
-      }
-      FaucetTransfersHeading={
-        <Box className="z-50 sticky top-0 left-0 bg-white py-4 flex flex-row justify-between align-center">
-          <Text>Transactions</Text>
-        </Box>
-      }
-      FaucetTransfers={
-        <>
-          {(!transfers.loading || transfers.transfers.length > 0) &&
-            transfers.transfers.map((tx, i) => (
-              <TransferCard
-                key={tx.tx_hash}
-                account={faucetAddress}
-                transfer={tx}
-                token={token}
-              />
-            ))}
-          {transfers.loading &&
-            Array.from({ length: 10 }).map((_, index) => (
-              <Skeleton key={index} style={{ height: 64 }} />
-            ))}
-        </>
       }
     />
   );

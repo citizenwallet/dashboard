@@ -81,7 +81,7 @@ export default function Template({
                 </Flex>
                 <Flex justify="end" align="center" gap="2" pt="2">
                   <Skeleton
-                    style={{ height: 24, width: 92 }}
+                    style={{ height: 32, width: 92 }}
                     className="w-full"
                   />
                 </Flex>
