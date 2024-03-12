@@ -8,13 +8,16 @@ export default async function Page({
 }: {
   params: { slug: string; faucetAddress: string };
 }) {
+  console.log("slug", slug);
+  console.log("faucetAddress", faucetAddress);
   const configService = new ConfigService();
 
-  const config = await configService.getBySlug(slug);
+  // const config = await configService.getBySlug(slug);
 
   return (
     <Suspense fallback={<ManageFaucetTemplate />}>
-      <Faucet config={config} faucetAddress={faucetAddress} />
+      <div>hello redeem</div>
+      {/* <Faucet config={config} faucetAddress={faucetAddress} /> */}
     </Suspense>
   );
 }

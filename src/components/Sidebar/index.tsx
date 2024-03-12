@@ -16,13 +16,14 @@ import useMediaQuery from "@/hooks/useMediaQuery";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { usePrevious } from "@/hooks/usePrevious";
-
-const tabs: Tab[] = [
-  { href: "/", label: "Home" },
-  { href: "/faucet", label: "Faucet" },
-];
+import { shortenAddress } from "@/utils/shortenAddress";
 
 export default function Sidebar() {
+  let tabs: Tab[] = [
+    { href: `/admin/`, item: "", label: "Home" },
+    { href: `/admin/faucet`, item: "faucet", label: "Faucet" },
+  ];
+
   const isDesktop = useMediaQuery("(min-width: 768px)");
   const pathname = usePathname();
 

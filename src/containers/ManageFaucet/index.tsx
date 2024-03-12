@@ -87,7 +87,7 @@ export default function Container({
     actions.listenForTransfers(faucetAddress, 2000);
 
     return () => {
-      actions.stopListeners();
+      actions.stopListeners(faucetAddress);
     };
   }, [faucetAddress, actions]);
 

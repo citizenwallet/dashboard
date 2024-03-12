@@ -1,16 +1,14 @@
 import Faucet from "@/containers/ManageFaucet";
-import { ConfigService } from "@citizenwallet/sdk";
 import ManageFaucetTemplate from "@/templates/ManageFaucet";
 import { Suspense } from "react";
+import { readCommunityFile } from "@/utils/community";
 
 export default async function Page({
-  params: { slug, faucetAddress },
+  params: { faucetAddress },
 }: {
-  params: { slug: string; faucetAddress: string };
+  params: { faucetAddress: string };
 }) {
-  const configService = new ConfigService();
-
-  const config = await configService.getBySlug(slug);
+  const config = readCommunityFile();
 
   return (
     <Suspense fallback={<ManageFaucetTemplate />}>

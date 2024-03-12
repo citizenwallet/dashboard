@@ -46,11 +46,7 @@ const faucets: Faucet[] = [
 const DEFAULT_REDEEM_AMOUNT = 1;
 const DEFAULT_REDEEM_INTERVAL = 86400;
 
-export default function CreateFaucet({
-  communities,
-}: {
-  communities: Config[];
-}) {
+export default function CreateFaucet({ community }: { community: Config }) {
   const isDesktop = useMediaQuery("(min-width: 768px)");
 
   const [redeemAmount, setRedeemAmount] = useState(DEFAULT_REDEEM_AMOUNT);
@@ -102,85 +98,55 @@ export default function CreateFaucet({
     setRedeemInterval(interval >= 1 ? interval : 1);
   };
 
-  const selectedCommunity = communities.find((c) => c.community.alias === slug);
-
   const selectedFaucet = faucets.find((f) => f.id === faucet);
 
   const durationText = readableDuration(redeemInterval);
 
   return (
     <CreateFaucetTemplate
-      CommunityPicker={
-        <Select.Root
-          defaultValue="gratitude"
-          onValueChange={handleSelectCommunity}
-        >
-          <Select.Trigger />
-          <Select.Content>
-            {communities
-              .filter((c) => !c.community.hidden)
-              .map(({ community }) => (
-                <Select.Item key={community.alias} value={community.alias}>
-                  {community.name}
-                </Select.Item>
-              ))}
-          </Select.Content>
-        </Select.Root>
-      }
       CommunityCard={
-        selectedCommunity ? (
-          <Card className="animate-fadeIn">
-            <CardHeader>
-              <CardTitle className="flex flex-row items-center">
-                <Image
-                  src={selectedCommunity.community.logo}
-                  alt="community logo"
-                  height={40}
-                  width={40}
-                />
-                {selectedCommunity.community.name}
-              </CardTitle>
-              <CardDescription>
-                {selectedCommunity.community.description}
-              </CardDescription>
-            </CardHeader>
-            <CardContent className="flex flex-col">
-              <Text>
-                <b>Name:</b> {selectedCommunity.token.name}
-              </Text>
-              <Text>
-                <b>Symbol:</b> {selectedCommunity.token.symbol}
-              </Text>
-              <Text>
-                <b>Standard:</b>{" "}
-                {selectedCommunity.token.standard.toUpperCase()}
-              </Text>
-              <Text>
-                <b>Decimals:</b> {selectedCommunity.token.decimals}
-              </Text>
-            </CardContent>
-            <CardFooter>
-              <Button
-                className="cursor-pointer"
-                variant="outline"
-                onClick={() =>
-                  handleCopyAddress(selectedCommunity.token.address)
-                }
-              >
-                {shortenAddress(selectedCommunity.token.address)}{" "}
-                {copied ? (
-                  <CheckIcon
-                    height={14}
-                    width={14}
-                    className="animate-fadeIn"
-                  />
-                ) : (
-                  <CopyIcon height={14} width={14} className="animate-fadeIn" />
-                )}
-              </Button>
-            </CardFooter>
-          </Card>
-        ) : undefined
+        <Card className="animate-fadeIn">
+          <CardHeader>
+            <CardTitle className="flex flex-row items-center">
+              <Image
+                src={community.community.logo}
+                alt="community logo"
+                height={40}
+                width={40}
+              />
+              {community.community.name}
+            </CardTitle>
+            <CardDescription>{community.community.description}</CardDescription>
+          </CardHeader>
+          <CardContent className="flex flex-col">
+            <Text>
+              <b>Name:</b> {community.token.name}
+            </Text>
+            <Text>
+              <b>Symbol:</b> {community.token.symbol}
+            </Text>
+            <Text>
+              <b>Standard:</b> {community.token.standard.toUpperCase()}
+            </Text>
+            <Text>
+              <b>Decimals:</b> {community.token.decimals}
+            </Text>
+          </CardContent>
+          <CardFooter>
+            <Button
+              className="cursor-pointer"
+              variant="outline"
+              onClick={() => handleCopyAddress(community.token.address)}
+            >
+              {shortenAddress(community.token.address)}{" "}
+              {copied ? (
+                <CheckIcon height={14} width={14} className="animate-fadeIn" />
+              ) : (
+                <CopyIcon height={14} width={14} className="animate-fadeIn" />
+              )}
+            </Button>
+          </CardFooter>
+        </Card>
       }
       FaucetCards={faucets.map((f) => (
         <FaucetCard
@@ -201,7 +167,7 @@ export default function CreateFaucet({
           </Text>
           <TextField.Root>
             <TextField.Slot>
-              <Text>{selectedCommunity?.token.symbol}</Text>
+              <Text>{community.token.symbol}</Text>
             </TextField.Slot>
             <TextField.Input
               type="number"
@@ -239,7 +205,7 @@ export default function CreateFaucet({
         </>
       }
       FaucetCreationDialog={
-        !!(selectedFaucet && selectedCommunity) ? (
+        !!selectedFaucet ? (
           <>
             <Button
               variant="soft"
@@ -255,7 +221,7 @@ export default function CreateFaucet({
                     <FaucetCreationDialog
                       isDesktop
                       faucet={selectedFaucet}
-                      config={selectedCommunity}
+                      config={community}
                       redeemAmount={redeemAmount}
                       redeemInterval={
                         selectedFaucet.id === "single" ? 0 : redeemInterval
@@ -273,7 +239,7 @@ export default function CreateFaucet({
                   {open ? (
                     <FaucetCreationDialog
                       faucet={selectedFaucet}
-                      config={selectedCommunity}
+                      config={community}
                       redeemAmount={redeemAmount}
                       redeemInterval={
                         selectedFaucet.id === "single" ? 0 : redeemInterval

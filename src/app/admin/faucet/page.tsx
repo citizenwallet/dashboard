@@ -1,16 +1,14 @@
 import CreateFaucet from "@/containers/CreateFaucet";
-import { ConfigService } from "@citizenwallet/sdk";
 import CreateFaucetTemplate from "@/templates/CreateFaucet";
 import { Suspense } from "react";
+import { readCommunityFile } from "@/utils/community";
 
 export default async function Page() {
-  const configService = new ConfigService();
-
-  const configs = await configService.get();
+  const config = readCommunityFile();
 
   return (
     <Suspense fallback={<CreateFaucetTemplate />}>
-      <CreateFaucet communities={configs} />
+      <CreateFaucet community={config} />
     </Suspense>
   );
 }

@@ -1,0 +1,45 @@
+{
+    "community": {
+        "name": "Community Name",
+        "description": "Community Description.",
+        "url": "https://citizenwallet.xyz",
+        "alias": "community",
+        "logo": "https://gratitude.citizenwallet.xyz/wallet-config/_images/gt.svg"
+    },
+    "scan": {
+        "url": "https://celoscan.io",
+        "name": "Celo Explorer"
+    },
+    "indexer": {
+        "url": "https://your-indexer-url.xyz",
+        "ipfs_url": "https://your-indexer-url.xyz",
+        "key": "x"
+    },
+    "ipfs": {
+        "url": "https://ipfs.internal.citizenwallet.xyz"
+    },
+    "node": {
+        "chain_id": 42220,
+        "url": "https://your-rpc-url.xyz",
+        "ws_url": "wss://your-ws-rpc-url.xyz"
+    },
+    "erc4337": {
+        "rpc_url": "https://your-indexer-url.xyz/rpc",
+        "paymaster_address": "0x",
+        "entrypoint_address": "0x",
+        "account_factory_address": "0x",
+        "paymaster_rpc_url": "https://your-indexer-url.xyz/rpc",
+        "paymaster_type": "cw"
+    },
+    "token": {
+        "standard": "erc20",
+        "address": "0x",
+        "name": "Your Token",
+        "symbol": "YT",
+        "decimals": 6
+    },
+    "profile": {
+        "address": "0x"
+    },
+    "version": 1
+}

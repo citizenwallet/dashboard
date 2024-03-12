@@ -6,6 +6,7 @@ import { CSSProperties } from "react";
 
 export interface Tab {
   href: string;
+  item: string;
   label: string;
   icon?: React.ReactNode;
 }
@@ -23,7 +24,6 @@ const inactiveStyle: CSSProperties = {
 const activeStyle: CSSProperties = {
   textDecoration: "none",
   color: "unset",
-  fontWeight: "bold",
 };
 
 export default function Tabs({ pathname, tabs = [] }: TabProps) {
@@ -32,16 +32,18 @@ export default function Tabs({ pathname, tabs = [] }: TabProps) {
   return (
     <Flex direction="column">
       {tabs.map(({ href, label, icon }) => {
-        const isActive = pathname === href;
+        const isActive = pathname === href.replace(/\/$/, ""); // remove trailing slash
         return (
           <Link
             key={href}
             href={href}
             style={isActive ? activeStyle : inactiveStyle}
-            className="hover:bg-muted rounded-sm"
+            className={
+              isActive ? "bg-muted rounded-sm" : "hover:bg-muted rounded-sm"
+            }
           >
             <Flex align="center" justify="between" py="1" px="2">
-              <Text>{label}</Text>
+              <Text weight={isActive ? "bold" : "regular"}>{label}</Text>
               {icon}
             </Flex>
           </Link>

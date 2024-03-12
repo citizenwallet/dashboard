@@ -12,13 +12,11 @@ import { DotIcon } from "@radix-ui/react-icons";
 import { Box, Flex, Grid, Section, Text } from "@radix-ui/themes";
 
 export default function Template({
-  CommunityPicker,
   CommunityCard,
   FaucetCards,
   FaucetConfiguration,
   FaucetCreationDialog,
 }: {
-  CommunityPicker?: React.ReactNode;
   CommunityCard?: React.ReactNode;
   FaucetCards?: React.ReactNode;
   FaucetConfiguration?: React.ReactNode;
@@ -36,14 +34,6 @@ export default function Template({
               </CardDescription>
             </CardHeader>
             <CardContent>
-              <Box className="grid gap-1.5" py="2">
-                <Text>Community</Text>
-                <Box className="animate-fadeIn">
-                  {CommunityPicker || (
-                    <Skeleton style={{ height: 32, width: 145 }} />
-                  )}
-                </Box>
-              </Box>
               <Box className="grid gap-1.5" py="2">
                 {CommunityCard || (
                   <Skeleton style={{ height: 292 }} className="w-full" />

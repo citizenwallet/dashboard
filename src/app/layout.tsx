@@ -3,8 +3,7 @@ import { Inter as FontSans } from "next/font/google";
 import "./globals.css";
 import "@radix-ui/themes/styles.css";
 import { cn } from "@/lib/utils";
-import { Flex, Separator, Theme } from "@radix-ui/themes";
-import Sidebar from "@/components/Sidebar";
+import { Theme } from "@radix-ui/themes";
 import { Toaster } from "@/components/ui/toaster";
 
 export const fontSans = FontSans({
@@ -31,13 +30,7 @@ export default function RootLayout({
         )}
       >
         <Theme accentColor="purple" grayColor="sand" radius="large">
-          <Flex className="min-h-screen bg-background font-sans antialiased">
-            <Sidebar />
-            <Flex direction="column">
-              <Separator orientation="vertical" size="4" />
-            </Flex>
-            {children}
-          </Flex>
+          {children}
           <Toaster />
         </Theme>
       </body>
