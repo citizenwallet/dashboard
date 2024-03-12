@@ -17,6 +17,7 @@ import { shortenAddress } from "@/utils/shortenAddress";
 import Image from "next/image";
 import MissingIcon from "@/assets/icons/missing.svg";
 import { readableDuration } from "@/utils/duration";
+import { ArrowUpRight } from "lucide-react";
 
 // http://localhost:3000/faucet/gratitude/0x48a5c3e5756bEA469d466932CF4A9fa735B689c5
 
@@ -24,10 +25,12 @@ export default function Container({
   config,
   faucetAddress,
   appBaseUrl,
+  appDeepLink,
 }: {
   config: Config;
   faucetAddress: string;
   appBaseUrl: string;
+  appDeepLink: string;
 }) {
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const [copied, setCopied] = useState(false);
@@ -88,7 +91,14 @@ export default function Container({
 
   const { community, token } = config;
 
-  const qrLink = `${appBaseUrl}?dl=faucet-v1&alias=${community.alias}&address=${faucetAddress}`;
+  const faucetDeepLink = `?dl=faucet-v1&alias=${community.alias}&address=${faucetAddress}`;
+
+  const qrLink = `${appBaseUrl}${faucetDeepLink}`;
+
+  const handleOpenApp = () => {
+    const link = `${appDeepLink}/#/${faucetDeepLink}`;
+    window.open(link);
+  };
 
   if (!loading && !exists) {
     return (
@@ -146,6 +156,9 @@ export default function Container({
                   ) : (
                     <CopyIcon height={14} width={14} />
                   )}
+                </Button>
+                <Button variant="outline" onClick={handleOpenApp}>
+                  Open App <ArrowUpRight height={14} width={14} />
                 </Button>
               </Flex>
             </Box>

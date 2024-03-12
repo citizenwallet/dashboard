@@ -16,12 +16,19 @@ export default async function Page({
     throw new Error("Missing APP_BASE_URL environment variable");
   }
 
+  const appDeepLink = process.env.NATIVE_APP_DEEP_LINK;
+
+  if (!appDeepLink) {
+    throw new Error("Missing NATIVE_APP_DEEP_LINK environment variable");
+  }
+
   return (
     <Suspense fallback={<RedeemFaucetTemplate />}>
       <RedeemFaucet
         config={config}
         faucetAddress={faucetAddress}
         appBaseUrl={appBaseUrl}
+        appDeepLink={appDeepLink}
       />
     </Suspense>
   );
