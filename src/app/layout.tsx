@@ -6,7 +6,7 @@ import { cn } from "@/lib/utils";
 import { Theme } from "@radix-ui/themes";
 import { Toaster } from "@/components/ui/toaster";
 
-export const fontSans = FontSans({
+const fontSans = FontSans({
   subsets: ["latin"],
   variable: "--font-sans",
 });
