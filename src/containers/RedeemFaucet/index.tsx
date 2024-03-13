@@ -91,7 +91,10 @@ export default function Container({
 
   const { community, token } = config;
 
-  const faucetDeepLink = `?dl=faucet-v1&alias=${community.alias}&address=${faucetAddress}`;
+  const deepLinkParams = encodeURIComponent(
+    `alias=${community.alias}&address=${faucetAddress}`
+  );
+  const faucetDeepLink = `?dl=faucet-v1&faucet-v1=${deepLinkParams}`;
 
   const qrLink = `${appBaseUrl}${faucetDeepLink}`;
 
@@ -121,7 +124,10 @@ export default function Container({
       FaucetCard={
         !loading &&
         exists && (
-          <Box className="flex flex-col align-center gap-2 p-4 border rounded-lg bg-white">
+          <Box className="w-[330px] flex flex-col align-center gap-2 p-4 border rounded-lg bg-white">
+            <Text weight="bold" size="5">
+              Faucet
+            </Text>
             <Flex justify="between" align="center" gap="2">
               <Avatar
                 src={community.logo}
@@ -129,10 +135,12 @@ export default function Container({
                 color="gray"
                 radius="full"
               />
-              <Text size="5">{token.name}</Text>
+              <Text className="truncate" size="5">
+                {token.name}
+              </Text>
             </Flex>
             <Box className="p-4 border rounded-lg bg-white">
-              <Text>Faucet</Text>
+              <Text>Redeem </Text>
               <QRCode
                 size={256}
                 style={{
@@ -140,7 +148,7 @@ export default function Container({
                   maxWidth: "100%",
                   width: "100%",
                 }}
-                className="animate-fadeIn"
+                className="animate-fadeIn p-1"
                 value={qrLink}
                 viewBox={`0 0 256 256`}
               />
