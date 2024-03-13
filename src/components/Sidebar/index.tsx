@@ -3,7 +3,11 @@
 import { Flex, Heading, Separator, Text, Theme } from "@radix-ui/themes";
 import Tabs, { Tab } from "./Tabs";
 import { Button } from "@/components/ui/button";
-import { GitHubLogoIcon, HamburgerMenuIcon } from "@radix-ui/react-icons";
+import {
+  ExternalLinkIcon,
+  GitHubLogoIcon,
+  HamburgerMenuIcon,
+} from "@radix-ui/react-icons";
 import {
   Sheet,
   SheetContent,
@@ -16,9 +20,12 @@ import useMediaQuery from "@/hooks/useMediaQuery";
 import { useEffect, useState } from "react";
 import { usePathname } from "next/navigation";
 import { usePrevious } from "@/hooks/usePrevious";
-import { shortenAddress } from "@/utils/shortenAddress";
 
-export default function Sidebar() {
+interface SidebarProps {
+  title: string;
+}
+
+export default function Sidebar({ title }: SidebarProps) {
   let tabs: Tab[] = [
     { href: `/admin/`, item: "", label: "Home" },
     { href: `/admin/faucet`, item: "faucet", label: "Faucet" },
@@ -48,6 +55,10 @@ export default function Sidebar() {
     );
   };
 
+  const handleCitizenWallet = () => {
+    window.open("https://citizenwallet.xyz", "https://citizenwallet.xyz");
+  };
+
   if (isDesktop === undefined) {
     return null;
   }
@@ -61,13 +72,18 @@ export default function Sidebar() {
         gap="2"
         className="animate-fadeIn max-h-screen min-h-screen bg-white"
       >
-        <Heading>Citizen Wallet</Heading>
+        <Heading>{title}</Heading>
         <Separator size="4" />
         <Tabs pathname={pathname} tabs={tabs} />
         <Flex grow="1"></Flex>
         <Flex direction="column">
           <Button variant="ghost" onClick={handleContribute}>
             <GitHubLogoIcon className="mr-2 h-4 w-4" /> Contribute
+            <ExternalLinkIcon className="ml-2" />
+          </Button>
+          <Button variant="ghost" onClick={handleCitizenWallet}>
+            Citizen Wallet
+            <ExternalLinkIcon className="ml-2" />
           </Button>
         </Flex>
       </Flex>
@@ -89,7 +105,7 @@ export default function Sidebar() {
           className="h-full animate-fadeIn"
         >
           <SheetHeader>
-            <SheetTitle>Citizen Wallet</SheetTitle>
+            <SheetTitle>{title}</SheetTitle>
           </SheetHeader>
           <Flex
             style={{ width: 300 }}
@@ -104,6 +120,11 @@ export default function Sidebar() {
             <Flex direction="column">
               <Button variant="ghost" onClick={handleContribute}>
                 <GitHubLogoIcon className="mr-2 h-4 w-4" /> Contribute
+                <ExternalLinkIcon className="ml-1" />
+              </Button>
+              <Button variant="ghost" onClick={handleCitizenWallet}>
+                Citizen Wallet
+                <ExternalLinkIcon className="ml-1" />
               </Button>
             </Flex>
           </Flex>
