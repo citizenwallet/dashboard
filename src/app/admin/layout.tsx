@@ -1,9 +1,15 @@
 import Sidebar from "@/components/Sidebar";
-import { readCommunityFile } from "@/utils/community";
+import { communityFileExists, readCommunityFile } from "@/utils/community";
 import { Flex, Separator } from "@radix-ui/themes";
+import { redirect } from "next/navigation";
 
 export default function Layout({ children }: { children: React.ReactNode }) {
   const config = readCommunityFile();
+
+  if (!config) {
+    // redirect to /admin
+    redirect("/config");
+  }
 
   return (
     <Flex className="min-h-screen bg-background font-sans antialiased">

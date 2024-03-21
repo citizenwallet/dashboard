@@ -37,4 +37,5 @@ yarn-error.log*
 next-env.d.ts
 
 # community
+config
 community.json

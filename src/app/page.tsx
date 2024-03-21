@@ -1,6 +1,15 @@
+import { communityFileExists } from "@/utils/community";
 import { Flex, Heading } from "@radix-ui/themes";
+import { redirect } from "next/navigation";
 
 export default function Page() {
+  const exists = communityFileExists();
+
+  if (!exists) {
+    // redirect to /admin
+    redirect("/config");
+  }
+
   return (
     <Flex direction="column" height="100%" width="100%">
       <Flex p="2" pl="9">
