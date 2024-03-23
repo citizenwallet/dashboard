@@ -1,11 +1,11 @@
-import { CardContent } from "@/components/ui/card";
+import { Card, CardContent, CardFooter } from "@/components/ui/card";
 import { Progress } from "@/components/ui/progress";
 import { Skeleton } from "@/components/ui/skeleton";
 import { calculateProgress } from "@/utils/calculateProgress";
 import { generateEIP681Link } from "@/utils/eip681Link";
 import { formatCurrency } from "@/utils/formatCurrency";
 import { shortenAddress } from "@/utils/shortenAddress";
-import { CheckoutActions, Network } from "@citizenwallet/sdk";
+import { CheckoutActions, Network, useSafeEffect } from "@citizenwallet/sdk";
 import ModifyOwner from "./ModifyOwner";
 import {
   ArrowTopRightIcon,
@@ -58,6 +58,12 @@ interface ComponentProps {
   sessionOwner: string | undefined;
   sessionOwnerError: boolean;
   actions: CheckoutActions;
+  AdditionalInfo?: React.ReactNode;
+  onValidityChange?: (valid: boolean) => void;
+  onCheckout?: () => void;
+  onCancel?: () => void;
+  isCheckingOut?: boolean;
+  isRefunding?: boolean;
 }
 
 export default function Component({
@@ -70,6 +76,12 @@ export default function Component({
   sessionOwner,
   sessionOwnerError,
   actions,
+  AdditionalInfo,
+  onValidityChange,
+  onCheckout,
+  onCancel,
+  isCheckingOut,
+  isRefunding,
 }: ComponentProps) {
   const timeoutRef = useRef<ReturnType<typeof setTimeout>>();
   const [copied, setCopied] = useState(false);
@@ -84,6 +96,14 @@ export default function Component({
       setCopied(false);
     }, 2000);
   };
+
+  useSafeEffect(() => {
+    return () => {
+      if (timeoutRef.current) {
+        clearTimeout(timeoutRef.current);
+      }
+    };
+  }, []);
 
   const handleOpenWallet = (url: string) => {
     window.open(url, "_blank");
@@ -108,212 +128,250 @@ export default function Component({
 
   const isSufficientAmount = progress >= 100;
 
+  useSafeEffect(() => {
+    if (onValidityChange) {
+      onValidityChange(isSufficientAmount && sessionOwner !== undefined);
+    }
+  }, [onValidityChange, isSufficientAmount, sessionOwner]);
+
   if (!isSufficientAmount) {
     return (
-      <CardContent className="fadeIn">
-        <Flex
-          direction="column"
-          p="4"
-          gap="2"
-          className="w-full max-w-sm"
-          justify="center"
-          align="center"
-        >
-          <Text size="2" className="text-center">
-            Send <Strong>{network.symbol}</Strong> to the following address to
-            fund {fundingItemName}.
-          </Text>
-          <Box className="p-4 border rounded-lg bg-white">
-            {sessionAddress.loading ? (
-              <Skeleton style={{ height: 256, width: 256 }} />
-            ) : (
-              <QRCode
-                size={256}
-                style={{
-                  height: "auto",
-                  maxWidth: "100%",
-                  width: "100%",
-                }}
-                value={qrLink}
-                viewBox={`0 0 256 256`}
-              />
-            )}
-          </Box>
-          {sessionAddress.loading ? (
-            <>
-              <Skeleton style={{ height: 32, width: 126 }} />
-              <Skeleton style={{ height: 32, width: 126 }} />
-            </>
-          ) : (
-            <>
-              <Button
-                variant="outline"
-                color="gray"
-                onClick={() => handleCopy(sessionAddress.value)}
-              >
-                {shortenAddress(sessionAddress.value)}{" "}
-                {copied ? (
-                  <CheckIcon height={14} width={14} />
+      <Box className="w-full flex justify-center">
+        <Card className="w-full max-w-sm">
+          <CardContent className="fadeIn">
+            <Flex
+              direction="column"
+              p="4"
+              gap="2"
+              className="w-full max-w-sm"
+              justify="center"
+              align="center"
+            >
+              <Text size="2" className="text-center">
+                Send <Strong>{network.symbol}</Strong> to the following address
+                to fund {fundingItemName}.
+              </Text>
+              <Box className="p-4 border rounded-lg bg-white">
+                {sessionAddress.loading ? (
+                  <Skeleton style={{ height: 256, width: 256 }} />
                 ) : (
-                  <CopyIcon height={14} width={14} />
+                  <QRCode
+                    size={256}
+                    style={{
+                      height: "auto",
+                      maxWidth: "100%",
+                      width: "100%",
+                    }}
+                    value={qrLink}
+                    viewBox={`0 0 256 256`}
+                  />
                 )}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={() => handleOpenWallet(qrLink)}
-              >
-                Open wallet <ArrowTopRightIcon height={14} width={14} />
-              </Button>
-            </>
-          )}
-
-          <Separator size="4" />
-          <Text>
-            <Strong>Fund transaction</Strong>
-          </Text>
-
-          <Flex direction="column" className="w-full" gap="2">
-            <Flex justify="center" align="center" gap="1">
-              {!isSufficientAmount && <Text>Estimated cost: </Text>}
-              <Text>{formatCurrency(amountToPay.value, 18, 5)}</Text>
-              <Text>{network.symbol}</Text>
-              {isSufficientAmount && (
-                <CheckIcon height={14} width={14} color="green" />
+              </Box>
+              {sessionAddress.loading ? (
+                <>
+                  <Skeleton style={{ height: 32, width: 126 }} />
+                  <Skeleton style={{ height: 32, width: 126 }} />
+                </>
+              ) : (
+                <>
+                  <Button
+                    variant="outline"
+                    color="gray"
+                    onClick={() => handleCopy(sessionAddress.value)}
+                  >
+                    {shortenAddress(sessionAddress.value)}{" "}
+                    {copied ? (
+                      <CheckIcon height={14} width={14} />
+                    ) : (
+                      <CopyIcon height={14} width={14} />
+                    )}
+                  </Button>
+                  <Button
+                    variant="outline"
+                    onClick={() => handleOpenWallet(qrLink)}
+                  >
+                    Open wallet <ArrowTopRightIcon height={14} width={14} />
+                  </Button>
+                </>
               )}
+
+              <Separator size="4" />
+              <Text>
+                <Strong>Fund transaction</Strong>
+              </Text>
+
+              <Flex direction="column" className="w-full" gap="2">
+                <Flex justify="center" align="center" gap="1">
+                  {!isSufficientAmount && <Text>Estimated cost: </Text>}
+                  <Text>{formatCurrency(amountToPay.value, 18, 5)}</Text>
+                  <Text>{network.symbol}</Text>
+                  {isSufficientAmount && (
+                    <CheckIcon height={14} width={14} color="green" />
+                  )}
+                </Flex>
+                {!isSufficientAmount && (
+                  <Flex>
+                    <Progress value={progress} />
+                    <PieChartIcon
+                      height={14}
+                      width={14}
+                      className="animate-spin"
+                    />
+                  </Flex>
+                )}
+                {!isSufficientAmount && (
+                  <Flex justify="center" gap="1">
+                    <Text
+                      className="transition-colors duration-150"
+                      color={sessionBalance.loading ? "orange" : undefined}
+                    >
+                      {formatCurrency(sessionBalance.value, 18, 5)}
+                    </Text>
+                    <Text className="transition-colors duration-150">
+                      {network.symbol}
+                    </Text>
+                  </Flex>
+                )}
+                {!isSufficientAmount && (
+                  <Flex justify="center">
+                    <Text>Waiting for funds...</Text>
+                  </Flex>
+                )}
+              </Flex>
             </Flex>
-            {!isSufficientAmount && (
-              <Flex>
-                <Progress value={progress} />
-                <PieChartIcon height={14} width={14} className="animate-spin" />
-              </Flex>
-            )}
-            {!isSufficientAmount && (
-              <Flex justify="center" gap="1">
-                <Text
-                  className="transition-colors duration-150"
-                  color={sessionBalance.loading ? "orange" : undefined}
-                >
-                  {formatCurrency(sessionBalance.value, 18, 5)}
-                </Text>
-                <Text className="transition-colors duration-150">
-                  {network.symbol}
-                </Text>
-              </Flex>
-            )}
-            {!isSufficientAmount && (
-              <Flex justify="center">
-                <Text>Waiting for funds...</Text>
-              </Flex>
-            )}
-          </Flex>
-        </Flex>
-      </CardContent>
+          </CardContent>
+        </Card>
+      </Box>
     );
   }
 
   return (
-    <CardContent className="fadeIn">
-      <Flex
-        direction="column"
-        p="4"
-        gap="2"
-        className="w-full max-w-sm"
-        justify="center"
-        align="center"
-      >
-        <Text>
-          <Strong>Transaction funded</Strong>
-        </Text>
-        <Flex direction="column" className="w-full" gap="2" pb="4">
-          <Flex justify="center" align="center" gap="1">
-            <Text>{formatCurrency(amountToPay.value, 18, 5)}</Text>
-            <Text>{network.symbol}</Text>
-            <CheckIcon height={14} width={14} color="green" />
+    <Box className="w-full flex justify-center">
+      <Card className="w-full max-w-sm">
+        <CardContent className="fadeIn">
+          <Flex
+            direction="column"
+            p="4"
+            gap="2"
+            className="w-full max-w-sm"
+            justify="center"
+            align="center"
+          >
+            <Text>
+              <Strong>Transaction funded</Strong>
+            </Text>
+            <Flex direction="column" className="w-full" gap="2" pb="4">
+              <Flex justify="center" align="center" gap="1">
+                <Text>{formatCurrency(amountToPay.value, 18, 5)}</Text>
+                <Text>{network.symbol}</Text>
+                <CheckIcon height={14} width={14} color="green" />
+              </Flex>
+              <Flex justify="center">
+                <OwnerAvatarBadge
+                  avatar={
+                    sessionOwner
+                      ? `https://api.multiavatar.com/${sessionOwner}.png`
+                      : undefined
+                  }
+                  avatarFallback={sessionOwner ? "0x" : "?"}
+                  title={sessionOwner ? shortenedOwner : "Connect"}
+                  description={sessionOwner ? "Owner" : "No owner"}
+                  CardAction={
+                    <>
+                      <Button
+                        className="cursor-pointer"
+                        variant="soft"
+                        onClick={() => handleOpenModifyOwner(true)}
+                      >
+                        {sessionOwner ? <Link2Icon /> : <LinkNone2Icon />}
+                      </Button>
+                      {isDesktop ? (
+                        <Dialog
+                          open={openModifyOwner}
+                          onOpenChange={handleOpenModifyOwner}
+                        >
+                          <DialogContent>
+                            {openModifyOwner && (
+                              <ModifyOwner
+                                isDesktop
+                                actions={actions}
+                                sessionOwner={sessionOwner}
+                                sessionOwnerError={sessionOwnerError}
+                                handleClose={() => handleOpenModifyOwner(false)}
+                              />
+                            )}
+                          </DialogContent>
+                        </Dialog>
+                      ) : (
+                        <Drawer
+                          open={openModifyOwner}
+                          onOpenChange={handleOpenModifyOwner}
+                        >
+                          <DrawerContent>
+                            {openModifyOwner && (
+                              <ModifyOwner
+                                actions={actions}
+                                sessionOwner={sessionOwner}
+                                sessionOwnerError={sessionOwnerError}
+                                handleClose={() => handleOpenModifyOwner(false)}
+                              />
+                            )}
+                          </DrawerContent>
+                        </Drawer>
+                      )}
+                    </>
+                  }
+                />
+              </Flex>
+            </Flex>
+            {AdditionalInfo && <Separator size="4" />}
+            {AdditionalInfo}
           </Flex>
-          <Flex justify="center">
-            <OwnerAvatarBadge
-              avatar={
-                sessionOwner
-                  ? `https://api.multiavatar.com/${sessionOwner}.png`
-                  : undefined
-              }
-              avatarFallback={sessionOwner ? "0x" : "?"}
-              title={sessionOwner ? shortenedOwner : "Connect"}
-              description={sessionOwner ? "Owner" : "No owner"}
-              CardAction={
-                <>
-                  <Button
-                    className="cursor-pointer"
-                    variant="soft"
-                    onClick={() => handleOpenModifyOwner(true)}
-                  >
-                    {sessionOwner ? <Link2Icon /> : <LinkNone2Icon />}
-                  </Button>
-                  {isDesktop ? (
-                    <Dialog
-                      open={openModifyOwner}
-                      onOpenChange={handleOpenModifyOwner}
-                    >
-                      <DialogContent>
-                        {openModifyOwner && (
-                          <ModifyOwner
-                            isDesktop
-                            actions={actions}
-                            sessionOwner={sessionOwner}
-                            sessionOwnerError={sessionOwnerError}
-                            handleClose={() => handleOpenModifyOwner(false)}
-                          />
-                        )}
-                      </DialogContent>
-                    </Dialog>
-                  ) : (
-                    <Drawer
-                      open={openModifyOwner}
-                      onOpenChange={handleOpenModifyOwner}
-                    >
-                      <DrawerContent>
-                        {openModifyOwner && (
-                          <ModifyOwner
-                            actions={actions}
-                            sessionOwner={sessionOwner}
-                            sessionOwnerError={sessionOwnerError}
-                            handleClose={() => handleOpenModifyOwner(false)}
-                          />
-                        )}
-                      </DrawerContent>
-                    </Drawer>
+        </CardContent>
+        {(onCheckout || onCancel) && (
+          <CardFooter>
+            <Flex
+              width="100%"
+              direction="column"
+              justify="center"
+              align="center"
+              gap="4"
+            >
+              {onCancel && (
+                <Button
+                  variant="outline"
+                  color="orange"
+                  onClick={isRefunding ? undefined : onCancel}
+                >
+                  Cancel & Refund{" "}
+                  {isRefunding && (
+                    <PieChartIcon
+                      height={14}
+                      width={14}
+                      className="animate-spin"
+                    />
                   )}
-                </>
-              }
-            />
-          </Flex>
-        </Flex>
-        <Separator size="4" />
-        <Flex
-          direction="column"
-          align="center"
-          className="w-full"
-          gap="2"
-          pt="4"
-        >
-          {/* <Text>
-            <Strong>Redeem interval</Strong>
-          </Text>
-          <Text>{redeemInterval === 0 ? "Single redeem" : durationText}</Text>
-          <Text>
-            <Strong>Redeem amount</Strong>
-          </Text>
-          <Text>
-            {redeemAmount} {token.symbol}
-          </Text> */}
-          <Separator size="4" />
-          <Text>Anyone can top up the faucet.</Text>
-          <Separator size="4" />
-          <Text className="text-center">
-            Only the owner can withdraw from the faucet.
-          </Text>
-        </Flex>
-      </Flex>
-    </CardContent>
+                </Button>
+              )}
+              {onCheckout && (
+                <Button
+                  variant="soft"
+                  onClick={isCheckingOut ? undefined : onCheckout}
+                >
+                  Configure Community{" "}
+                  {isCheckingOut && (
+                    <PieChartIcon
+                      height={14}
+                      width={14}
+                      className="animate-spin"
+                    />
+                  )}
+                </Button>
+              )}
+            </Flex>
+          </CardFooter>
+        )}
+      </Card>
+    </Box>
   );
 }
