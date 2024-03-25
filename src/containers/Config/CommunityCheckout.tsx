@@ -11,10 +11,14 @@ import { Flex, Separator, Text } from "@radix-ui/themes";
 
 export default function Container({
   network,
+  token,
+  loading = false,
   onValidityChange,
   onCheckout,
 }: {
   network: Network;
+  token: string;
+  loading: boolean;
   onValidityChange?: (valid: boolean) => void;
   onCheckout: (
     owner: string,
@@ -34,11 +38,11 @@ export default function Container({
     actions.updateAmountToPay((signer) => {
       return factoryActions.communityFactoryService.estimateCreate(
         signer.address,
-        "",
+        token,
         0
       );
     });
-  }, [actions, factoryActions]);
+  }, [actions, factoryActions, token]);
 
   const sessionAddress = subscribe((state) => state.sessionAddress);
   const sessionBalance = subscribe((state) => state.sessionBalance);
@@ -51,16 +55,18 @@ export default function Container({
   const isCheckingOut = factorySubscribe((state) => state.create.loading);
 
   useSafeEffect(() => {
-    if (sessionOwner) {
+    console.log("sessionOwner", sessionOwner);
+    console.log("token", token);
+    if (sessionOwner && token) {
       actions.updateAmountToPay((_) => {
         return factoryActions.communityFactoryService.estimateCreate(
           sessionOwner,
-          "",
+          token,
           0
         );
       });
     }
-  }, [actions, factoryActions, sessionOwner]);
+  }, [actions, factoryActions, sessionOwner, token]);
 
   const handleCheckout = () => {
     if (!sessionOwner) return;
@@ -100,7 +106,7 @@ export default function Container({
       onValidityChange={onValidityChange}
       onCheckout={handleCheckout}
       onCancel={handleCancel}
-      isCheckingOut={isCheckingOut}
+      isCheckingOut={isCheckingOut || loading}
       isRefunding={refund.loading}
     />
   );

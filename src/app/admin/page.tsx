@@ -2,7 +2,7 @@ import CommunityHome from "@/containers/CommunityHome";
 import CommunityHomeTemplate from "@/templates/CommunityHome";
 import InfoPageTemplate from "@/templates/InfoPage";
 import { Suspense } from "react";
-import { readCommunityFile } from "@/utils/community";
+import { readCommunityFile } from "@/services/community";
 
 export default async function Page() {
   const config = readCommunityFile();

@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Config from "@/containers/Config";
 import ConfigPageTemplate from "@/templates/Config";
-import { communityFileExists } from "@/utils/community";
+import { communityFileExists } from "@/services/community";
 import { Suspense } from "react";
 
 export default async function Page() {

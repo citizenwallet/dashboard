@@ -3,13 +3,21 @@ import { ConfigStep, ConfigStore, useConfigStore } from "./state";
 import { useMemo } from "react";
 import {
   CommunityFactoryContractService,
+  Config,
   ConfigCommunity,
+  ConfigERC4337,
+  ConfigIPFS,
+  ConfigIndexer,
   ConfigNode,
+  ConfigProfile,
   ConfigScan,
   ConfigToken,
   Network,
 } from "@citizenwallet/sdk";
 import { isValidUrl } from "@/utils/url";
+import { generateKey } from "@/utils/random";
+import { writeCommunityFile } from "@/services/community";
+import { ConfigureResponse } from "@/app/api/configure/route";
 
 class ConfigLogic {
   store: StoreApi<ConfigStore>;
@@ -21,9 +29,20 @@ class ConfigLogic {
     this.store.setState({ step });
   }
 
+  updatePrimaryColor(color: string) {
+    this.store.setState({ primaryColor: color });
+  }
+
   selectNetwork(network: Network) {
-    const scan: ConfigScan = { url: "", name: "" };
-    const node: ConfigNode = { url: "", ws_url: "", chain_id: 0 };
+    const scan: ConfigScan = {
+      url: network.explorer,
+      name: `${network.name} Explorer`,
+    };
+    const node: ConfigNode = {
+      url: network.rpcUrl,
+      ws_url: network.wsRpcUrl,
+      chain_id: network.chainId,
+    };
     this.store.getState().chainContinue(network, scan, node);
   }
 
@@ -35,9 +54,10 @@ class ConfigLogic {
     metadata: {
       symbol: string;
       name: string;
-      decimals: number;
+      decimals: bigint;
     },
-    file: string
+    file: string,
+    primaryColor?: string
   ) {
     const isValid = isValidUrl(url);
     if (!isValid) {
@@ -49,6 +69,11 @@ class ConfigLogic {
 
     const alias = window.location.hostname;
 
+    const primary =
+      primaryColor ||
+      process.env.NEXT_PUBLIC_COMMUNITY_THEME_PRIMARY_COLOR ||
+      "#000000";
+
     const community: ConfigCommunity = {
       name,
       description,
@@ -56,6 +81,9 @@ class ConfigLogic {
       alias,
       custom_domain: alias,
       logo: file,
+      theme: {
+        primary,
+      },
     };
 
     const token: ConfigToken = {
@@ -63,30 +91,120 @@ class ConfigLogic {
       name: metadata.name,
       address: tokenAddress,
       symbol: metadata.symbol,
-      decimals: metadata.decimals,
+      decimals: Number(metadata.decimals),
     };
     this.store.getState().communityContinue(community, token);
   }
 
   async deploy(
     owner: string,
-    network: Network,
-    factoryService: CommunityFactoryContractService
-  ) {
+    factoryService: CommunityFactoryContractService,
+    tokenAddress: string
+  ): Promise<boolean> {
     try {
       this.store.getState().deployRequest();
 
-      const tx = await factoryService.create(owner, "", 0);
+      // deploy community
+      //   const tx = await factoryService.create(owner, tokenAddress, 0);
 
-      await tx.wait();
+      //   await tx.wait();
 
-      const communityAddress = await factoryService.get(owner, "", 0);
+      const [
+        tokenEntryPointAddress,
+        paymasterAddress,
+        accountFactoryAddress,
+        profileAddress,
+      ] = await factoryService.get(owner, tokenAddress, 0);
+
+      const community = this.store.getState().community;
+      if (!community) {
+        throw new Error("Community not found");
+      }
+
+      const token = this.store.getState().token;
+      if (!token) {
+        throw new Error("Token not found");
+      }
+
+      const scan = this.store.getState().scan;
+      if (!scan) {
+        throw new Error("Scan not found");
+      }
+
+      const node = this.store.getState().node;
+      if (!node) {
+        throw new Error("Node not found");
+      }
+
+      const ipfsUrl = process.env.NEXT_PUBLIC_IPFS_CDN_URL;
+      if (!ipfsUrl) {
+        throw new Error("IPFS URL not found");
+      }
+      const ipfs: ConfigIPFS = {
+        url: ipfsUrl,
+      };
+
+      const profile: ConfigProfile = {
+        address: profileAddress,
+      };
+
+      const indexerUrl = `${window.location.protocol}//${window.location.host}/indexer`;
+      const indexer: ConfigIndexer = {
+        url: indexerUrl,
+        ipfs_url: indexerUrl,
+        key: generateKey(),
+      };
+
+      const erc4337: ConfigERC4337 = {
+        rpc_url: `${indexerUrl}/rpc`,
+        paymaster_rpc_url: `${indexerUrl}/rpc`,
+        entrypoint_address: tokenEntryPointAddress,
+        paymaster_address: paymasterAddress,
+        account_factory_address: accountFactoryAddress,
+        paymaster_type: "cw",
+      };
+
+      const config: Config = {
+        community,
+        token,
+        scan,
+        node,
+        ipfs,
+        profile,
+        indexer,
+        erc4337,
+        version: 1,
+      };
+
+      console.log(config);
+      const response = await fetch("/dashboard/api/configure", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(config),
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to deploy");
+      }
+
+      const { hash } = (await response.json()) as ConfigureResponse;
+
+      console.log("hash", hash);
+      // transfer partial checkout balance out to sponsor
+
+      // transfer remainder to cw
 
       this.store.getState().deploySuccess();
+
+      return true;
     } catch (e) {
       console.error(e);
       this.store.getState().deployFailed();
     }
+
+    return false;
   }
 }
 

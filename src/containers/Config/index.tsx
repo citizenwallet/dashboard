@@ -15,10 +15,15 @@ import { ConfigStep, useConfigStore } from "@/state/config/state";
 import ConfigPageTemplate from "@/templates/Config";
 import CommunityCheckout from "@/containers/Config/CommunityCheckout";
 import {
+  ArrowDownIcon,
+  ArrowUpIcon,
   CaretDownIcon,
   CheckCircledIcon,
   CircleIcon,
+  ColorWheelIcon,
   CrossCircledIcon,
+  OpacityIcon,
+  PieChartIcon,
 } from "@radix-ui/react-icons";
 import {
   Avatar,
@@ -27,6 +32,7 @@ import {
   Card,
   DropdownMenu,
   Flex,
+  Popover,
   Text,
   TextField,
 } from "@radix-ui/themes";
@@ -39,8 +45,12 @@ import {
   useERC20,
   useSafeEffect,
 } from "@citizenwallet/sdk";
+import { useRouter } from "next/navigation";
+import { ColorChangeHandler, ColorResult, SketchPicker } from "react-color";
 
 export default function Container({}) {
+  const router = useRouter();
+
   const [name, setName] = useState("");
   const [description, setDescription] = useState("");
   const [tokenAddress, setTokenAddress] = useState("");
@@ -52,6 +62,7 @@ export default function Container({}) {
 
   const logic = useConfigLogic();
   const step = useConfigStore((state) => state.step);
+  const primaryColor = useConfigStore((state) => state.primaryColor);
   const invalidUrl = useConfigStore((state) => state.invalidUrl);
   const network = useConfigStore((state) => state.network);
   const scan = useConfigStore((state) => state.scan);
@@ -122,6 +133,10 @@ export default function Container({}) {
     }
   };
 
+  const handleColorChange: ColorChangeHandler = (color: ColorResult) => {
+    logic.updatePrimaryColor(color.hex);
+  };
+
   const handleLogoSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (file) {
       URL.revokeObjectURL(file);
@@ -132,8 +147,16 @@ export default function Container({}) {
     }
   };
 
+  const handleNetworkContinue = () => {
+    if (!network) {
+      return;
+    }
+
+    handleStepChange(ConfigStep.Community);
+  };
+
   const handleCommunityContinue = () => {
-    if (!file) {
+    if (!file || !name || !description || !url || !validAddress) {
       return;
     }
     logic.communityContinue(
@@ -142,16 +165,16 @@ export default function Container({}) {
       url,
       validAddress,
       metadata,
-      file
+      file,
+      primaryColor
     );
   };
 
   const handleValidityChange = (value: boolean) => {
-    console.log("valid", value);
     setValid(value);
   };
 
-  const handleDeploy = (
+  const handleDeploy = async (
     owner: string,
     factoryService: CommunityFactoryContractService
   ) => {
@@ -159,7 +182,13 @@ export default function Container({}) {
       return;
     }
 
-    logic.deploy(owner, network, factoryService);
+    const success = await logic.deploy(owner, factoryService, validAddress);
+    if (!success) {
+      return;
+    }
+
+    // redirect to home
+    router.replace("/");
   };
 
   return (
@@ -203,13 +232,18 @@ export default function Container({}) {
                     </DropdownMenu.Content>
                   </DropdownMenu.Root>
                 </Box>
+                {network && (
+                  <Flex width="100%" justify="center">
+                    <Button variant="soft" onClick={handleNetworkContinue}>
+                      Continue
+                    </Button>
+                  </Flex>
+                )}
               </Flex>
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="community">
-            <AccordionTrigger
-              onClick={() => handleStepChange(ConfigStep.Community)}
-            >
+            <AccordionTrigger onClick={handleNetworkContinue}>
               <Flex justify="center" align="center" gap="2">
                 {community ? community.name : "Community"}
                 {community ? (
@@ -274,8 +308,27 @@ export default function Container({}) {
                     </Box>
                   </Flex>
                 </Flex>
-
-                <Label>Community Name</Label>
+                <Flex align="center" justify="center" gap="4">
+                  <Flex direction="column" justify="center" align="center">
+                    <div
+                      className="flex flex-col justify-center items-center h-12 w-12 rounded-full"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      <ArrowUpIcon height={22} width={22} color="white" />
+                    </div>
+                    <Text>Send</Text>
+                  </Flex>
+                  <Flex direction="column" justify="center" align="center">
+                    <div
+                      className="flex flex-col justify-center items-center h-12 w-12 rounded-full"
+                      style={{ backgroundColor: primaryColor }}
+                    >
+                      <ArrowDownIcon height={22} width={22} color="white" />
+                    </div>
+                    <Text>Receive</Text>
+                  </Flex>
+                </Flex>
+                <Label>Name</Label>
                 <TextField.Root>
                   <TextField.Input
                     type="text"
@@ -286,7 +339,7 @@ export default function Container({}) {
                     onChange={handleValueChange}
                   />
                 </TextField.Root>
-                <Label>Community Description</Label>
+                <Label>Description</Label>
                 <TextField.Root>
                   <TextField.Input
                     type="text"
@@ -297,7 +350,7 @@ export default function Container({}) {
                     onChange={handleValueChange}
                   />
                 </TextField.Root>
-                <Label>Community URL</Label>
+                <Label>URL</Label>
                 <TextField.Root>
                   <TextField.Input
                     type="text"
@@ -316,6 +369,27 @@ export default function Container({}) {
                     Invalid url.
                   </Text>
                 )}
+                <Label>Primary Color</Label>
+                <Flex justify="center" align="center">
+                  <Popover.Root>
+                    <Popover.Trigger>
+                      <Button
+                        variant="solid"
+                        style={{ backgroundColor: primaryColor }}
+                      >
+                        <OpacityIcon height={14} width={14} />
+                        {primaryColor}
+                      </Button>
+                    </Popover.Trigger>
+                    <Popover.Content side="bottom" size="1">
+                      <SketchPicker
+                        disableAlpha
+                        color={primaryColor}
+                        onChange={handleColorChange}
+                      />
+                    </Popover.Content>
+                  </Popover.Root>
+                </Flex>
                 <Label>Token Address</Label>
                 <TextField.Root>
                   <TextField.Slot>
@@ -323,6 +397,12 @@ export default function Container({}) {
                       <CheckCircledIcon height={14} width={14} color="green" />
                     ) : !isTokenValid && tokenAddress.trim().length > 0 ? (
                       <CrossCircledIcon height={14} width={14} />
+                    ) : metadata.loading ? (
+                      <PieChartIcon
+                        height={14}
+                        width={14}
+                        className="animate-spin"
+                      />
                     ) : (
                       <CircleIcon height={14} width={14} />
                     )}
@@ -340,7 +420,7 @@ export default function Container({}) {
                 <Input
                   type="file"
                   name="file"
-                  accept=".jpg,.jpeg,.png,.svg"
+                  accept=".svg"
                   onChange={handleLogoSelect}
                 />
                 <Flex width="100%" justify="center">
@@ -352,9 +432,7 @@ export default function Container({}) {
             </AccordionContent>
           </AccordionItem>
           <AccordionItem value="checkout">
-            <AccordionTrigger
-              onClick={() => handleStepChange(ConfigStep.Checkout)}
-            >
+            <AccordionTrigger onClick={handleCommunityContinue}>
               <Flex justify="center" align="center" gap="2">
                 Publishing{" "}
                 {valid ? (
@@ -365,9 +443,11 @@ export default function Container({}) {
               </Flex>
             </AccordionTrigger>
             <AccordionContent>
-              {network && (
+              {network && community && (
                 <CommunityCheckout
                   network={network}
+                  token={validAddress}
+                  loading={deployment.loading}
                   onValidityChange={handleValidityChange}
                   onCheckout={handleDeploy}
                 />

@@ -2,7 +2,7 @@ import CreateFaucet from "@/containers/CreateFaucet";
 import CreateFaucetTemplate from "@/templates/CreateFaucet";
 import InfoPageTemplate from "@/templates/InfoPage";
 import { Suspense } from "react";
-import { readCommunityFile } from "@/utils/community";
+import { readCommunityFile } from "@/services/community";
 
 export default async function Page() {
   const config = readCommunityFile();

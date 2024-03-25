@@ -1,5 +1,5 @@
 import Sidebar from "@/components/Sidebar";
-import { communityFileExists, readCommunityFile } from "@/utils/community";
+import { communityFileExists, readCommunityFile } from "@/services/community";
 import { Flex, Separator } from "@radix-ui/themes";
 import { redirect } from "next/navigation";
 

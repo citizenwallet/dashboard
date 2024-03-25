@@ -18,6 +18,8 @@ export enum ConfigStep {
 
 export type ConfigStore = {
   step: ConfigStep;
+  primaryColor: string;
+  setPrimaryColor: (color: string) => void;
   config?: Config;
   network?: Network;
   scan?: ConfigScan;
@@ -46,6 +48,8 @@ export type ConfigStore = {
 
 const getInitialState = () => ({
   step: ConfigStep.Chain,
+  primaryColor:
+    process.env.NEXT_PUBLIC_COMMUNITY_THEME_PRIMARY_COLOR || "#000000",
   config: undefined,
   loading: true,
   error: false,
@@ -58,6 +62,7 @@ const getInitialState = () => ({
 
 export const useConfigStore = create<ConfigStore>((set) => ({
   ...getInitialState(),
+  setPrimaryColor: (primaryColor) => set({ primaryColor }),
   setInvalidUrl: (invalidUrl) => set({ invalidUrl }),
   setStep: (step) => set({ step }),
   request: () => set({ loading: true, error: false }),
