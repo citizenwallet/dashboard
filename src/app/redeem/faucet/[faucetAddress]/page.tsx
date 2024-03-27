@@ -1,7 +1,8 @@
 import RedeemFaucet from "@/containers/RedeemFaucet";
 import RedeemFaucetTemplate from "@/templates/RedeemFaucet";
+import InfoPageTemplate from "@/templates/InfoPage";
 import { Suspense } from "react";
-import { readCommunityFile } from "@/utils/community";
+import { readCommunityFile } from "@/services/community";
 
 export default async function Page({
   params: { faucetAddress },
@@ -9,6 +10,9 @@ export default async function Page({
   params: { faucetAddress: string };
 }) {
   const config = readCommunityFile();
+  if (!config) {
+    return <InfoPageTemplate description="Community not found" />;
+  }
 
   const appBaseUrl = process.env.APP_BASE_URL;
 

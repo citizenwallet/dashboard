@@ -3,6 +3,7 @@
 import { Skeleton } from "@/components/ui/skeleton";
 import {
   Config,
+  NETWORKS,
   useContract,
   useERC20,
   useScrollableElementFetcher,
@@ -73,7 +74,9 @@ export default function Container({
     window.open(link, link);
   };
 
-  const [subscribe, actions] = useERC20(config);
+  const network = NETWORKS[config.node.chain_id];
+
+  const [subscribe, actions] = useERC20(network);
   const [faucetSubscribe, faucetActions] = useSimpleFaucetContract(
     faucetAddress,
     config,

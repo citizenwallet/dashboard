@@ -1,7 +1,8 @@
 import ManageFaucet from "@/containers/ManageFaucet";
 import ManageFaucetTemplate from "@/templates/ManageFaucet";
+import InfoPageTemplate from "@/templates/InfoPage";
 import { Suspense } from "react";
-import { readCommunityFile } from "@/utils/community";
+import { readCommunityFile } from "@/services/community";
 
 export default async function Page({
   params: { faucetAddress },
@@ -9,6 +10,9 @@ export default async function Page({
   params: { faucetAddress: string };
 }) {
   const config = readCommunityFile();
+  if (!config) {
+    return <InfoPageTemplate description="Community not found" />;
+  }
 
   return (
     <Suspense fallback={<ManageFaucetTemplate />}>

@@ -2,6 +2,7 @@
 
 import {
   Config,
+  NETWORKS,
   useCheckout,
   useFaucetFactoryContract,
 } from "@citizenwallet/sdk";
@@ -49,7 +50,6 @@ import QRCode from "react-qr-code";
 import { Progress } from "@/components/ui/progress";
 import { calculateProgress } from "@/utils/calculateProgress";
 import { Skeleton } from "@/components/ui/skeleton";
-import { NETWORKS } from "@/constants/networks";
 import { useToast } from "@/components/ui/use-toast";
 import { useRouter } from "next/navigation";
 import OwnerAvatarBadge from "@/components/OwnerAvatarBadge";
@@ -88,7 +88,7 @@ export default function FaucetCreationDialog({
 
   const network = NETWORKS[node.chain_id];
 
-  const [subscribe, actions] = useCheckout(config);
+  const [subscribe, actions] = useCheckout(network);
 
   const [faucetFactorySubscribe, faucetFactoryActions] =
     useFaucetFactoryContract(config, actions.getSessionService());
