@@ -1,6 +1,7 @@
 import {
   CommunityFactoryContractService,
   Network,
+  SessionService,
   useCheckout,
   useCommunityFactoryContract,
   useSafeEffect,
@@ -22,7 +23,8 @@ export default function Container({
   onValidityChange?: (valid: boolean) => void;
   onCheckout: (
     owner: string,
-    factoryService: CommunityFactoryContractService
+    factoryService: CommunityFactoryContractService,
+    checkoutService: SessionService
   ) => void;
 }) {
   const isDesktop = useMediaQuery("(min-width: 768px)");
@@ -70,7 +72,11 @@ export default function Container({
 
   const handleCheckout = () => {
     if (!sessionOwner) return;
-    onCheckout(sessionOwner, factoryActions.communityFactoryService);
+    onCheckout(
+      sessionOwner,
+      factoryActions.communityFactoryService,
+      actions.getSessionService()
+    );
   };
 
   const handleCancel = () => {

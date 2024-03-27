@@ -13,10 +13,10 @@ import {
   ConfigScan,
   ConfigToken,
   Network,
+  SessionService,
 } from "@citizenwallet/sdk";
 import { isValidUrl } from "@/utils/url";
 import { generateKey } from "@/utils/random";
-import { writeCommunityFile } from "@/services/community";
 import { ConfigureResponse } from "@/app/api/configure/route";
 
 class ConfigLogic {
@@ -99,15 +99,16 @@ class ConfigLogic {
   async deploy(
     owner: string,
     factoryService: CommunityFactoryContractService,
-    tokenAddress: string
+    tokenAddress: string,
+    checkoutService: SessionService
   ): Promise<boolean> {
     try {
       this.store.getState().deployRequest();
 
       // deploy community
-      //   const tx = await factoryService.create(owner, tokenAddress, 0);
+      const tx = await factoryService.create(owner, tokenAddress, 0);
 
-      //   await tx.wait();
+      await tx.wait();
 
       const [
         tokenEntryPointAddress,
@@ -191,10 +192,12 @@ class ConfigLogic {
 
       const { hash } = (await response.json()) as ConfigureResponse;
 
-      console.log("hash", hash);
-      // transfer partial checkout balance out to sponsor
+      // TODO: transfer partial checkout balance out to sponsor
 
-      // transfer remainder to cw
+      // TODO: transfer remainder to cw
+
+      // TODO: remove this when the above is implemented
+      await checkoutService.refund();
 
       this.store.getState().deploySuccess();
 

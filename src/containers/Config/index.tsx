@@ -42,6 +42,7 @@ import {
   CommunityFactoryContractService,
   NETWORKS,
   Network,
+  SessionService,
   useERC20,
   useSafeEffect,
 } from "@citizenwallet/sdk";
@@ -176,13 +177,19 @@ export default function Container({}) {
 
   const handleDeploy = async (
     owner: string,
-    factoryService: CommunityFactoryContractService
+    factoryService: CommunityFactoryContractService,
+    checkoutService: SessionService
   ) => {
     if (!network || !community || !valid || deployment.loading) {
       return;
     }
 
-    const success = await logic.deploy(owner, factoryService, validAddress);
+    const success = await logic.deploy(
+      owner,
+      factoryService,
+      validAddress,
+      checkoutService
+    );
     if (!success) {
       return;
     }
