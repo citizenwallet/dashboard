@@ -13,7 +13,6 @@ export interface ConfigureResponse {
 export async function POST(req: Request) {
   try {
     const config = await req.json(); // assuming the config is sent in the request body
-    console.log("config", config);
 
     if (communityFileExists()) {
       return Response.json({ message: "File already exists" }, { status: 400 });

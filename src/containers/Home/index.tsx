@@ -26,6 +26,8 @@ export default function Container({
 
   const qrLink = `${appBaseUrl}${faucetDeepLink}`;
 
+  console.log("qrLink", qrLink);
+
   const handleCopy = (address: string) => {
     navigator.clipboard.writeText(address);
     setCopied(true);
