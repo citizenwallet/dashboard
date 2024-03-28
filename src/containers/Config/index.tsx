@@ -144,7 +144,9 @@ export default function Container({}) {
     }
 
     if (e.target.files) {
-      setFile(URL.createObjectURL(e.target.files[0]));
+      const url = URL.createObjectURL(e.target.files[0]);
+
+      setFile(url);
     }
   };
 

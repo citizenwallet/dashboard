@@ -21,6 +21,10 @@ import { ConfigureResponse } from "@/app/api/configure/route";
 
 class ConfigLogic {
   store: StoreApi<ConfigStore>;
+  baseUrl: string =
+    process.env.NODE_ENV === "production"
+      ? process.env.NEXT_PUBLIC_BASE_PATH || ""
+      : "";
   constructor() {
     this.store = useConfigStore;
   }
@@ -31,6 +35,34 @@ class ConfigLogic {
 
   updatePrimaryColor(color: string) {
     this.store.setState({ primaryColor: color });
+  }
+
+  async imageUpload(logo: string): Promise<boolean> {
+    try {
+      // Fetch the Object URL
+      const logoResponse = await fetch(logo);
+
+      // Convert the response to a Blob
+      const logoBlob = await logoResponse.blob();
+
+      // Create a new FormData instance
+      const logoData = new FormData();
+
+      // Append the file to the FormData instance
+      logoData.append("file", logoBlob, "logo.svg");
+
+      // Send the FormData with fetch
+      await fetch(`${this.baseUrl}/api/assets`, {
+        method: "POST",
+        body: logoData,
+      });
+
+      return true;
+    } catch (error) {
+      console.error("Error:", error);
+    }
+
+    return false;
   }
 
   selectNetwork(network: Network) {
@@ -122,6 +154,19 @@ class ConfigLogic {
         throw new Error("Community not found");
       }
 
+      // upload community logo to next asset folder
+      const logo = community.logo;
+
+      const success = await this.imageUpload(logo);
+      if (!success) {
+        throw new Error("Failed to upload image");
+      }
+
+      const protocol = window.location.protocol;
+      const baseUrl = window.location.host;
+
+      community.logo = `${protocol}//${baseUrl}/assets/logo.svg`;
+
       const token = this.store.getState().token;
       if (!token) {
         throw new Error("Token not found");
@@ -149,7 +194,7 @@ class ConfigLogic {
         address: profileAddress,
       };
 
-      const indexerUrl = `${window.location.protocol}//${window.location.host}/indexer`;
+      const indexerUrl = `${protocol}//${baseUrl}/indexer`;
       const indexer: ConfigIndexer = {
         url: indexerUrl,
         ipfs_url: indexerUrl,
