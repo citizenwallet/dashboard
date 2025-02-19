@@ -11,15 +11,24 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
+import { getCommunity_supabaseclient,getCommunity,getCommunitychainid } from './actions';
 
 
 export default async function ProductsPage(props: {
   params: Promise<{ alias: string }>;
 }) {
-  
+
   const { alias } = await props.params;
+  console.log(alias)
 
+  // const respon = await getCommunity(alias)
+  // console.log(respon)
 
+    // const chainid = await getCommunitychainid(alias);
+    // console.log(chainid)
+
+  const supabaseUrl = await getCommunity_supabaseclient(alias);
+  console.log(supabaseUrl)
 
   return (
     <div className="grid grid-cols-4 gap-4">
@@ -33,6 +42,8 @@ export default async function ProductsPage(props: {
       >
         {getMembersOverview()}
       </Suspense>
+
+
 
       <Suspense
         fallback={
