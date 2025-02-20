@@ -2,7 +2,7 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { Config } from '@citizenwallet/sdk';
+import { Config,LogsService,CommunityConfig,tokenTransferEventTopic  } from '@citizenwallet/sdk';
 // import { createClient } from '@supabase/supabase-js';
 
 export async function getCommunities() {
@@ -47,3 +47,24 @@ export async function getCommunity_supabaseclient(alias: string) {
 
   // return createClient(supabaseUrl, supabaseKey);
 }
+
+export async function getTransactions(alias: string,page:number) {
+  const community = await getCommunity(alias);
+  const communityConfig = new CommunityConfig(community);
+  const logsService = new LogsService(communityConfig);
+  
+  const tokenAddress = community.community.primary_token.address;
+  const transactions = await logsService.getAllLogs(
+    tokenAddress,
+    tokenTransferEventTopic,
+    {
+      limit: 10,
+      offset: (page-1)*10,
+      maxDate: new Date().toISOString()
+    }
+  );
+  
+  return transactions;
+}
+
+
