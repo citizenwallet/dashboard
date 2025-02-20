@@ -26,10 +26,10 @@ export default async function TransactionsPage(props: {
   searchParams: Promise<{ q: string; offset: string,page:number }>;
 }) {
   const { alias } = await props.params;
-  const { page } = await props.searchParams;
+  const page = (await props.searchParams)?.page ? (await props.searchParams).page : 1;
 
-  const transactions = await getTransactions(alias,page);
-  console.log(transactions)
+  const transactions = await getTransactions(alias, page);
+
 
   return (
     <div>
@@ -45,29 +45,19 @@ export default async function TransactionsPage(props: {
               <TableRow>
                 <TableHead className="w-[100px]">From</TableHead>
                 <TableHead>To</TableHead>
-                <TableHead>Type</TableHead>
-                <TableHead className="text-right">Amount</TableHead>
+                <TableHead>value</TableHead>
+                <TableHead className="text-right">created_at</TableHead>
               </TableRow>
             </TableHeader>
             <TableBody>
-              <TableRow>
-                <TableCell className="font-medium">0x1234...5678</TableCell>
-                <TableCell>0xabcd...efgh</TableCell>
-                <TableCell>Transfer</TableCell>
-                <TableCell className="text-right">100 DEMO</TableCell>
+              {transactions.array.map((transaction,index) => (
+                <TableRow key={index}>
+                  <TableCell className="font-medium">{transaction.data?.from}</TableCell>
+                  <TableCell>{transaction.data?.to}</TableCell>
+                  <TableCell>{transaction.data?.value}</TableCell>
+                  <TableCell className="text-right"> {new Date(transaction.created_at).toLocaleDateString('en-US')} {new Date(transaction.created_at).toLocaleTimeString('en-US')}</TableCell> 
               </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">0xabcd...efgh</TableCell>
-                <TableCell>0x9876...4321</TableCell>
-                <TableCell>Transfer</TableCell>
-                <TableCell className="text-right">50 DEMO</TableCell>
-              </TableRow>
-              <TableRow>
-                <TableCell className="font-medium">0x8765...4321</TableCell>
-                <TableCell>0x1234...5678</TableCell>
-                <TableCell>Transfer</TableCell>
-                <TableCell className="text-right">75 DEMO</TableCell>
-              </TableRow>
+              ))}
             </TableBody>
           </Table>
           <div className="mt-7">
