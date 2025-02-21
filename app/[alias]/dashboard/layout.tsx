@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Home, LineChart, PanelLeft, Users2 } from 'lucide-react';
+import { Home, LayoutTemplate, LineChart, PanelLeft, Users2 } from 'lucide-react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -72,17 +72,22 @@ function DesktopNav() {
           <span className="sr-only">{community.name}</span>
         </Link>
 
-        <NavItem href={`/${community.alias}`} label="Dashboard">
+        <NavItem href={`/${community.alias}/dashboard`} label="Dashboard">
           <Home className="h-5 w-5" />
         </NavItem>
 
-        <NavItem href={`/${community.alias}/members`} label="Members">
+        <NavItem href={`/${community.alias}/dashboard/members`} label="Members">
           <Users2 className="h-5 w-5" />
         </NavItem>
 
-        <NavItem href={`/${community.alias}/transactions`} label="Transactions">
+        <NavItem href={`/${community.alias}/dashboard/transactions`} label="Transactions">
           <LineChart className="h-5 w-5" />
         </NavItem>
+
+        <NavItem href={`/${community.alias}/dashboard/community`} label="community">
+          <LayoutTemplate className="h-5 w-5" />
+        </NavItem>
+
       </nav>
     </aside>
   );
