@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { Home, LayoutTemplate, LineChart, PanelLeft, Users2 } from 'lucide-react';
+import { Home, LayoutTemplate, LineChart, PanelLeft, Users2, CreditCard, LayoutDashboard } from 'lucide-react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -22,6 +22,7 @@ import { CommunityLogo } from '@/components/icons';
 import { NavItem } from '@/components/custom/nav-item';
 import { SearchInput } from '@/components/custom/url-search';
 import Providers from './providers';
+import { SidebarMenuItem } from '@/components/custom/sidebar-menu';
 
 // TODO: read from community config of alias
 const community = {
@@ -37,11 +38,12 @@ export default function DashboardLayout({
 }: {
   children: React.ReactNode;
 }) {
+
   return (
     <Providers>
       <main className="flex min-h-screen w-full flex-col bg-muted/40 overflow-x-hidden">
         <DesktopNav />
-        <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
+        <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-[10rem]">
           <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
             <div className="flex w-full items-center justify-between sm:justify-end">
               <MobileNav />
@@ -60,35 +62,13 @@ export default function DashboardLayout({
 
 function DesktopNav() {
   return (
-    <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
+    <aside className="fixed inset-y-0 left-auto z-10 hidden w-[10.5rem] flex-col border-r bg-background sm:flex">
       <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
-        <Link
-          href={community.url}
-          className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
-        >
-          <CommunityLogo
-            logoUrl={community.logoUrl}
-            tokenSymbol={community.tokenSymbol}
-          />
-          <span className="sr-only">{community.name}</span>
-        </Link>
-
-        <NavItem href={`/${community.alias}/dashboard`} label="Dashboard">
-          <Home className="h-5 w-5" />
-        </NavItem>
-
-        <NavItem href={`/${community.alias}/dashboard/members`} label="Members">
-          <Users2 className="h-5 w-5" />
-        </NavItem>
-
-        <NavItem href={`/${community.alias}/dashboard/transactions`} label="Transactions">
-          <LineChart className="h-5 w-5" />
-        </NavItem>
-
-        <NavItem href={`/community`} label="community">
-          <LayoutTemplate className="h-5 w-5" />
-        </NavItem>
-
+        <span className="text-xl font-bold text-primary tracking-wide">
+          Citizen Wallet
+        </span>
+        <SidebarMenuItem href="/community" label="Community" icon={<LayoutTemplate className="h-5 w-5" />} />
+        
       </nav>
     </aside>
   );
@@ -106,40 +86,11 @@ function MobileNav() {
       <SheetContent side="left" className="sm:max-w-xs">
         <SheetTitle className="sr-only">Menu</SheetTitle>
         <nav className="grid gap-6 text-lg font-medium">
-          <Link
-            href={community.url}
-            className="group flex h-10 w-10 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:text-base"
-          >
-            <CommunityLogo
-              logoUrl={community.logoUrl}
-              tokenSymbol={community.tokenSymbol}
-            />
-            <span className="sr-only">{community.name}</span>
-          </Link>
 
-          <Link
-            href={`/${community.alias}`}
-            className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-          >
-            <Home className="h-5 w-5" />
-            Dashboard
-          </Link>
-
-          <Link
-            href={`/${community.alias}/members`}
-            className="flex items-center gap-4 px-2.5 text-muted-foreground hover:text-foreground"
-          >
-            <Users2 className="h-5 w-5" />
-            Members
-          </Link>
-
-          <Link
-            href={`/${community.alias}/transactions`}
-            className="flex items-center gap-4 px-2.5 text-foreground"
-          >
-            <LineChart className="h-5 w-5" />
-            Transactions
-          </Link>
+          <span className="text-xl font-bold text-primary tracking-wide">
+            Citizen Wallet
+          </span>
+          <SidebarMenuItem href="/community" label="Community" icon={<LayoutTemplate className="h-5 w-5" />} />
         </nav>
       </SheetContent>
     </Sheet>

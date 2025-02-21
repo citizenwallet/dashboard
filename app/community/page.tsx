@@ -9,7 +9,8 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import { Suspense } from 'react';
-import {getCommunitiesData} from './action'
+import { getCommunitiesData } from './action'
+import { SearchInput } from '@/components/custom/url-search';
 
 
 
@@ -26,39 +27,47 @@ export default async function CommunitiesPage(props: {
   const { alias } = await props.params;
   const { query = '', page = '1' } = await props.searchParams;
 
-const communities = await getCommunitiesData(Number(page),query);
-const total = communities.total;
-const communitiesData: ICommunity[] = communities.communities.map(({ community }) => ({
-  alias: community.alias,
-  name: community.name,
-  logo: community.logo
-}));
+  const communities = await getCommunitiesData(Number(page), query);
+  const total = communities.total;
+  const communitiesData: ICommunity[] = communities.communities.map(({ community }) => ({
+    alias: community.alias,
+    name: community.name,
+    logo: community.logo
+  }));
 
 
   return (
-    <Card className="overflow-hidden h-full flex flex-col">
-      <CardHeader>
-        <CardTitle>Communities</CardTitle>
-        <CardDescription>Browse the list of available communities.</CardDescription>
-      </CardHeader>
-      <CardContent className="flex-1">
-        <div className="relative w-full h-full overflow-auto">
-          <div className="min-w-[800px]">
-            <Suspense
-              fallback={
-                <DataTable columns={skeletonColumns} data={placeholderData} />
-              }
-            >
-              {getCommunities(communitiesData,total)}
-            </Suspense>
+    <div className="grid gap-4">
+      <div className="flex justify-end">
+        <SearchInput />
+      </div>
+
+      <Card className="overflow-hidden h-full flex flex-col">
+        <CardHeader>
+          <CardTitle>Communities</CardTitle>
+          <CardDescription>Browse the list of available communities.</CardDescription>
+        </CardHeader>
+        <CardContent className="flex-1">
+          <div className="relative w-full h-full overflow-auto">
+            <div className="min-w-[800px]">
+              <Suspense
+                fallback={
+                  <DataTable columns={skeletonColumns} data={placeholderData} />
+                }
+              >
+                {getCommunities(communitiesData, total)}
+              </Suspense>
+            </div>
           </div>
-        </div>
-      </CardContent>
-    </Card>
+        </CardContent>
+      </Card>
+    </div>
+
+
   );
 }
 
-async function getCommunities(community:ICommunity[],total:number) {
+async function getCommunities(community: ICommunity[], total: number) {
   await new Promise((resolve) => setTimeout(resolve, 3000));
 
   return (
@@ -66,7 +75,7 @@ async function getCommunities(community:ICommunity[],total:number) {
       columns={columns}
       rows={community}
       total={total}
-      totalPages={Math.ceil(total/10)}
+      totalPages={Math.ceil(total / 10)}
     />
   );
 }
