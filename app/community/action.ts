@@ -1,6 +1,6 @@
 'use server';
+import { Config} from '@citizenwallet/sdk';
 
-import { Config } from '@citizenwallet/sdk';
 // import { createClient } from '@supabase/supabase-js';
 
 export async function getCommunitiesData(page: number = 1,query: string = '') {
@@ -31,3 +31,6 @@ export async function getCommunitiesData(page: number = 1,query: string = '') {
     total
   };
 }
+
+
+

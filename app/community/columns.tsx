@@ -18,7 +18,7 @@ export const columns: ColumnDef<ICommunity>[] = [
     accessorKey: 'alias',
     cell: ({ row }) => {
       let username = row.original.alias;
-      const profileUrl = `/${username}/dashboard/transactions`;
+      const profileUrl = `/community/${username}/dashboard/transactions`;
 
       return (
         <Link href={profileUrl} className="text-blue-500 hover:underline">

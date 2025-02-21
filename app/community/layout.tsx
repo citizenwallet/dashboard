@@ -18,9 +18,10 @@ import {
 import { Analytics } from '@vercel/analytics/react';
 import { User } from '@/components/custom/user';
 import { CommunityLogo } from '@/components/icons';
-import Providers from './providers';
+// import Providers from './providers'; // Removing since module not found
 import { NavItem } from '@/components/custom/nav-item';
 import { SearchInput } from '@/components/custom/url-search';
+import Providers from './providers';
 
 // TODO: read from community config of alias
 const community = {
