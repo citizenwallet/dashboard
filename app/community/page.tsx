@@ -11,7 +11,7 @@ import {
 import { Suspense } from 'react';
 import { getCommunitiesData } from './action'
 import { SearchInput } from '@/components/custom/url-search';
-
+import CommunityLayout from './mainlayout';
 
 
 const placeholderData: ICommunity[] = Array(5).fill({
@@ -37,32 +37,35 @@ export default async function CommunitiesPage(props: {
 
 
   return (
-    <div className="grid gap-4">
-      <div className="flex justify-end">
-        <SearchInput />
-      </div>
+    <CommunityLayout>
 
-      <Card className="overflow-hidden h-full flex flex-col">
-        <CardHeader>
-          <CardTitle>Communities</CardTitle>
-          <CardDescription>Browse the list of available communities.</CardDescription>
-        </CardHeader>
-        <CardContent className="flex-1">
-          <div className="relative w-full h-full overflow-auto">
-            <div className="min-w-[800px]">
-              <Suspense
-                fallback={
-                  <DataTable columns={skeletonColumns} data={placeholderData} />
-                }
-              >
-                {getCommunities(communitiesData, total)}
-              </Suspense>
+
+      <div className="grid gap-4">
+        <div className="flex justify-end">
+          <SearchInput />
+        </div>
+
+        <Card className="overflow-hidden h-full flex flex-col">
+          <CardHeader>
+            <CardTitle>Communities</CardTitle>
+            <CardDescription>Browse the list of available communities.</CardDescription>
+          </CardHeader>
+          <CardContent className="flex-1">
+            <div className="relative w-full h-full overflow-auto">
+              <div className="min-w-[800px]">
+                <Suspense
+                  fallback={
+                    <DataTable columns={skeletonColumns} data={placeholderData} />
+                  }
+                >
+                  {getCommunities(communitiesData, total)}
+                </Suspense>
+              </div>
             </div>
-          </div>
-        </CardContent>
-      </Card>
-    </div>
-
+          </CardContent>
+        </Card>
+      </div>
+    </CommunityLayout>
 
   );
 }
