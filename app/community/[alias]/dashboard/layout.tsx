@@ -1,3 +1,4 @@
+
 import Link from 'next/link';
 import { Home, LayoutTemplate, LineChart, PanelLeft, Users2 } from 'lucide-react';
 import {
@@ -20,30 +21,31 @@ import { User } from '@/components/custom/user';
 import { CommunityLogo } from '@/components/icons';
 import Providers from './providers';
 import { NavItem } from '@/components/custom/nav-item';
-import { SearchInput } from '@/components/custom/url-search';
+import { getCommunity } from './action';
+import { Config  } from '@citizenwallet/sdk';
+
 
 // TODO: read from community config of alias
-const community = {
-  alias: 'bread',
-  name: 'Breadchain Community Token',
-  url: 'https://breadchain.xyz/',
-  logoUrl: 'https://bread.citizenwallet.xyz/uploads/logo.svg',
-  tokenSymbol: 'BREAD'
-};
 
-export default function MemberLayout({
-  children
+export default async  function MemberLayout({
+  children,
+  params
 }: {
   children: React.ReactNode;
+  params: Promise<{ alias: string }>;
 }) {
+
+  const {alias } = await params;
+  const community:Config = await getCommunity(alias);
+
   return (
     <Providers>
       <main className="flex min-h-screen w-full flex-col bg-muted/40 overflow-x-hidden">
-        <DesktopNav />
+        <DesktopNav data={community} />
         <div className="flex flex-col sm:gap-4 sm:py-4 sm:pl-14">
           <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
             <div className="flex w-full items-center justify-between sm:justify-end">
-              <MobileNav />
+              <MobileNav data={community}/>
               <User />
             </div>
           </header>
@@ -57,19 +59,19 @@ export default function MemberLayout({
   );
 }
 
-function DesktopNav() {
+function DesktopNav({data}:{data:Config}) {
   return (
     <aside className="fixed inset-y-0 left-0 z-10 hidden w-14 flex-col border-r bg-background sm:flex">
       <nav className="flex flex-col items-center gap-4 px-2 sm:py-5">
         <Link
-          href={community.url}
+          href={data.community.url}
           className="group flex h-9 w-9 shrink-0 items-center justify-center gap-2 rounded-full bg-primary text-lg font-semibold text-primary-foreground md:h-8 md:w-8 md:text-base"
         >
           <CommunityLogo
-            logoUrl={community.logoUrl}
-            tokenSymbol={community.tokenSymbol}
+            logoUrl={data.community.logo}
+            tokenSymbol={data.community.name}
           />
-          <span className="sr-only">{community.name}</span>
+          <span className="sr-only">{data.community.name}</span>
         </Link>
 
 
@@ -87,7 +89,7 @@ function DesktopNav() {
   );
 }
 
-function MobileNav() {
+function MobileNav({data}:{data:Config}) {
   return (
     <Sheet>
       <SheetTrigger asChild>
@@ -100,14 +102,14 @@ function MobileNav() {
         <SheetTitle className="sr-only">Menu</SheetTitle>
         <nav className="grid gap-6 text-lg font-medium">
           <Link
-            href={community.url}
+            href={data.community.url}
             className="group flex items-center gap-2 rounded-full px-4 py-2 text-lg font-semibold text-primary-foreground md:text-base"
           >
             <CommunityLogo
-              logoUrl={community.logoUrl}
-              tokenSymbol={community.tokenSymbol}
+              logoUrl={data.community.logo}
+              tokenSymbol={data.community.name}
             />
-            <span className="text-black">{community.name}</span>
+            <span className="text-black">{data.community.name}</span>
           </Link>
 
           <Link
