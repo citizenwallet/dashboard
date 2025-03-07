@@ -1,35 +1,34 @@
-'use client';
+import { Button } from '@/components/ui/button';
+import {
+  Card,
+  CardDescription,
+  CardFooter,
+  CardHeader,
+  CardTitle
+} from '@/components/ui/card';
 
-import { useState } from 'react';
-import EmailForm from './email-form';
-import OtpForm from './otp-form';
-
-export default function Page() {
-  const [step, setStep] = useState<'email' | 'otp'>('email');
-  const [email, setEmail] = useState('');
-
-  function onEmailSuccess(email: string) {
-    setEmail(email);
-    setStep('otp');
-  }
-
-  function onOtpSuccess() {
-    // TODO: navigate to last alias or home page
-  }
-
-  function goToEmail() {
-    setStep('email');
-  }
-
+export default function LoginPage() {
   return (
-    <div className="flex min-h-screen items-center justify-center bg-muted p-4">
-      <div className="w-full max-w-sm">
-        {step === 'email' ? (
-          <EmailForm onSuccess={onEmailSuccess} />
-        ) : (
-          <OtpForm email={email} onBack={goToEmail} onSuccess={onOtpSuccess} />
-        )}
-      </div>
+    <div className="min-h-screen flex justify-center items-start md:items-center p-8">
+      <Card className="w-full max-w-sm">
+        <CardHeader>
+          <CardTitle className="text-2xl">Login</CardTitle>
+          <CardDescription>
+            This demo uses GitHub for authentication.
+          </CardDescription>
+        </CardHeader>
+        <CardFooter>
+          <form
+            action={async () => {
+              'use server';
+              console.log('Sign In');
+            }}
+            className="w-full"
+          >
+            <Button className="w-full">Sign in with GitHub</Button>
+          </form>
+        </CardFooter>
+      </Card>
     </div>
   );
 }
