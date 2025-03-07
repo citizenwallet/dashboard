@@ -19,13 +19,10 @@ export default async function Table<T>({
       <DataTable columns={columns} data={rows} />
       <div className="w-full flex justify-center items-center">
         <p className="flex flex-row gap-2 whitespace-nowrap">
-         {/* Total: {total} */}
+         Total: {total}
         </p>
-        <div className='mt-4'>
-
         <Pagination totalPages={totalPages} />
       </div>
-        </div>
     </div>
   );
 }

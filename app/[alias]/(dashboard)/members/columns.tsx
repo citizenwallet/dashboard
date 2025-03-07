@@ -1,30 +1,51 @@
 'use client';
 
 import { ColumnDef } from '@tanstack/react-table';
-
-export interface IMember {
-  created_at: string;
+export interface AProfile {
   account: string;
   username: string;
   name: string;
-  description: string;
   image: string;
-  image_medium: string;
-  image_small: string;
-  token_id: string | null;
+  created_at: string;
   updated_at: string;
 }
-
 import { ExternalLink } from 'lucide-react';
 import { formatAddress } from '@/helpers/formatting';
 import Link from 'next/link';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
-export const columns: ColumnDef<IMember>[] = [
+export const columns: ColumnDef<AProfile>[] = [
+  {
+    header: 'Account',
+    accessorKey: 'account',
+    cell: ({ row }) => {
+      const address = formatAddress(row.original.account);
+
+      return (
+        <div className="flex items-center gap-2">
+          <Link
+            href="#"
+            target="_self"
+            className="flex items-center gap-2 px-3 py-1 bg-blue-100 hover:bg-blue-200 text-blue-700 rounded-md transition-colors"
+          >
+            <span className="text-sm font-medium">{address}</span>
+            <ExternalLink className="w-4 h-4" />
+          </Link>
+        </div>
+      );
+    }
+  },
+  {
+    header: 'Username',
+    accessorKey: 'username'
+  },
+  {
+    header: 'Name',
+    accessorKey: 'name'
+  },
   {
     header: 'Image',
     accessorKey: 'image',
-    size: 80,
     cell: ({ row }) => {
       const image = row.original.image;
       const username = row.original.username;
@@ -37,89 +58,27 @@ export const columns: ColumnDef<IMember>[] = [
     }
   },
   {
-    header: 'Username',
-    accessorKey: 'username',
-    size: 120,
-    cell: ({ row }) => {
-      let username = row.original.username;
-      if (!username.startsWith('@')) {
-        username = `@${username}`;
-      }
-      const profileUrl = `/profile/${username.replace('@', '')}`;
-
-      return (
-        <Link href={profileUrl} className="text-blue-500 hover:underline">
-          {username}
-        </Link>
-      );
-    }
-  },
-  {
-    header: 'Name',
-    accessorKey: 'name',
-    size: 150
-  },
-  {
-    header: 'Creation Date',
-    accessorKey: 'created_at',
-    size: 180,
-    cell: ({ row }) => {
-      const date = new Date(row.original.created_at);
-      const formattedDate = date.toLocaleString('en-US', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-      });
-      return <span className="whitespace-nowrap">{formattedDate}</span>;
-    }
+    header: 'Created At',
+    accessorKey: 'created_at'
   },
   {
     header: 'Updated At',
-    accessorKey: 'updated_at',
-    size: 180,
-    cell: ({ row }) => {
-      const date = new Date(row.original.updated_at);
-      const formattedDate = date.toLocaleString('en-US', {
-        year: 'numeric',
-        month: '2-digit',
-        day: '2-digit',
-        hour: '2-digit',
-        minute: '2-digit',
-        second: '2-digit',
-        hour12: false
-      });
-      return <span className="whitespace-nowrap">{formattedDate}</span>;
-    }
-  },
-  {
-    header: 'Description',
-    accessorKey: 'description',
-    size: 400,
-    cell: ({ row }) => {
-      const description = row.original.description;
-      return <div className="max-w-[400px]">{description}</div>;
-    }
-  },
-  {
-    header: 'Account Number',
-    accessorKey: 'account',
-    size: 160,
-    cell: ({ row }) => {
-      return <span className="whitespace-nowrap">{row.original.account}</span>;
-    }
+    accessorKey: 'updated_at'
   }
 ];
 
-export const skeletonColumns: ColumnDef<IMember>[] = [
+
+
+
+
+export const skeletonColumns: ColumnDef<AProfile>[] = [
   {
-    header: 'Image',
-    accessorKey: 'image',
+    header: 'Account',
+    accessorKey: 'account',
     cell: () => (
-      <div className="w-10 h-10 bg-gray-200 animate-pulse rounded-full" />
+      <div className="flex items-center gap-2">
+        <div className="w-32 h-8 bg-gray-200 animate-pulse rounded-md" />
+      </div>
     )
   },
   {
@@ -137,31 +96,22 @@ export const skeletonColumns: ColumnDef<IMember>[] = [
     )
   },
   {
-    header: 'Creation Date',
-    accessorKey: 'creation_date',
+    header: 'Image',
+    accessorKey: 'image',
     cell: () => (
-      <div className="flex items-center gap-2">
-        <div className="w-32 h-8 bg-gray-200 animate-pulse rounded-md" />
-      </div>
+      <div className="w-10 h-10 bg-gray-200 animate-pulse rounded-full" />
+    )
+  },
+  {
+    header: 'Created At',
+    accessorKey: 'created_at',
+    cell: () => (
+      <div className="w-24 h-4 bg-gray-200 animate-pulse rounded-md" />
     )
   },
   {
     header: 'Updated At',
     accessorKey: 'updated_at',
-    cell: () => (
-      <div className="w-24 h-4 bg-gray-200 animate-pulse rounded-md" />
-    )
-  },
-  {
-    header: 'Description',
-    accessorKey: 'description',
-    cell: () => (
-      <div className="w-24 h-4 bg-gray-200 animate-pulse rounded-md" />
-    )
-  },
-  {
-    header: 'Account Number',
-    accessorKey: 'account_number',
     cell: () => (
       <div className="w-24 h-4 bg-gray-200 animate-pulse rounded-md" />
     )
