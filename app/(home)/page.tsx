@@ -7,7 +7,7 @@ import {
 } from '@/components/ui/card';
 import { Suspense } from 'react';
 import { skeletonColumns } from './_table/columns';
-import {DataTable } from '@/components/ui/data-table';
+import { DataTable } from '@/components/ui/data-table';
 import { CommunitiesTable } from './_table/communities-table';
 import { placeholderData } from './_table/columns';
 
