@@ -25,14 +25,18 @@ export function DataTable<TData, TValue>({
   columns,
   data
 }: DataTableProps<TData, TValue>) {
+  // Ensure data and columns are always arrays
+  const tableData = Array.isArray(data) ? data : [];
+  const tableColumns = Array.isArray(columns) ? columns : [];
+
   const table = useReactTable({
-    data,
-    columns,
+    data: tableData,
+    columns: tableColumns,
     getCoreRowModel: getCoreRowModel()
   });
 
   return (
-    <div className="rounded-md border">
+    <div className="w-full">
       <Table>
         <TableHeader>
           {table.getHeaderGroups().map((headerGroup) => (
