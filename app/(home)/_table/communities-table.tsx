@@ -1,7 +1,7 @@
 import { columns } from './columns';
 import { DataTable } from '@/components/ui/data-table';
 import { Config } from '@citizenwallet/sdk';
-import { fetchCommunitiesOfChainAction } from '@/app/(home)/actions';
+import { fetchCommunitiesOfChainAction } from '@/app/_actions/community-actions';
 import UrlPagination from '@/components/custom/pagination-via-url';
 
 const ROWS_PER_PAGE = 10;
