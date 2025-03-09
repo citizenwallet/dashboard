@@ -21,9 +21,8 @@ export async function CommunitiesTable({
   let communities: Config[] = [];
   let total: number = 0;
   try {
-    await new Promise((resolve) => setTimeout(resolve, 3000));
     const result = await fetchCommunitiesOfChainAction(chainId, query);
-    communities = [...result.communities, ...result.communities, ...result.communities];
+    communities = result.communities;
     total = result.total;
   } catch (error) {
     console.error(error);
