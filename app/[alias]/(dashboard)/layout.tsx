@@ -1,5 +1,11 @@
 import Link from 'next/link';
-import { Home, LayoutTemplate, LineChart, PanelLeft, Users2 } from 'lucide-react';
+import {
+  Home,
+  LayoutTemplate,
+  LineChart,
+  PanelLeft,
+  Users2
+} from 'lucide-react';
 import {
   Breadcrumb,
   BreadcrumbItem,
@@ -87,7 +93,6 @@ function DesktopNav() {
         <NavItem href={`/community`} label="community">
           <LayoutTemplate className="h-5 w-5" />
         </NavItem>
-
       </nav>
     </aside>
   );

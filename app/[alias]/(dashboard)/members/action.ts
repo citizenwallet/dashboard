@@ -1,5 +1,5 @@
 import demoData from './demodata.json';
-import {IMember} from './columns'
+import { IMember } from './columns';
 
 export async function getMembersData(page: number = 1, query: string = '') {
   const pageSize = 10;
@@ -8,10 +8,11 @@ export async function getMembersData(page: number = 1, query: string = '') {
 
   const searchQuery = query.trim().toLowerCase();
 
-  const filteredMembers = (demoData.Members as IMember[]).filter(member =>
-    member.username.toLowerCase().includes(searchQuery) ||
-    member.name.toLowerCase().includes(searchQuery) ||
-    member.account.toLowerCase().includes(searchQuery)
+  const filteredMembers = (demoData.Members as IMember[]).filter(
+    (member) =>
+      member.username.toLowerCase().includes(searchQuery) ||
+      member.name.toLowerCase().includes(searchQuery) ||
+      member.account.toLowerCase().includes(searchQuery)
   );
 
   return {

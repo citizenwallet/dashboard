@@ -20,7 +20,9 @@ export const fetchCommunitiesOfChainAction = async (
     const isHidden = hidden || false;
     const isMatchChain = primary_token.chain_id === chainId;
 
-    const isMatchName = name.toLowerCase().includes(query?.toLowerCase().trim() || '');
+    const isMatchName = name
+      .toLowerCase()
+      .includes(query?.toLowerCase().trim() || '');
     const isMatchAlias = alias
       .toLowerCase()
       .includes(query?.toLowerCase().trim() || '');

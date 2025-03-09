@@ -18,7 +18,7 @@ export default function RootLayout({
     <html lang="en">
       <body className="flex min-h-screen w-full flex-col">
         {children}
-        <Toaster/>
+        <Toaster />
       </body>
       <Analytics />
     </html>
