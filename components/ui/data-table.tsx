@@ -36,14 +36,14 @@ export function DataTable<TData, TValue>({
   });
 
   return (
-    <div className="w-full">
+    <div className="w-full h-full flex flex-col">
       <Table>
-        <TableHeader>
+        <TableHeader className="sticky top-0 bg-gray-100 z-10 border-b">
           {table.getHeaderGroups().map((headerGroup) => (
             <TableRow key={headerGroup.id}>
               {headerGroup.headers.map((header) => {
                 return (
-                  <TableHead key={header.id}>
+                  <TableHead key={header.id} className="bg-gray-100">
                     {header.isPlaceholder
                       ? null
                       : flexRender(

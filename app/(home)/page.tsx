@@ -28,7 +28,7 @@ export default async function Page(props: {
         <Suspense
           key={query + page}
           fallback={
-            <div className="rounded-md border">
+            <div className="h-full overflow-y-auto rounded-md border">
               <DataTable columns={skeletonColumns} data={placeholderData} />
             </div>
           }
