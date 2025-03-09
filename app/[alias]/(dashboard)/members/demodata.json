@@ -60,53 +60,53 @@
       "token_id": "278131704171442314471693678418200304994191022991",
       "updated_at": "2024-10-27T12:06:44.962348+00:00"
     },
-        {
-          "created_at": "2024-10-27T12:06:44.962348+00:00",
-          "account": "0x30B7Db6198634D96e3C3422Fe2ce6751d3861b8f",
-          "username": "cryptokastaar-1",
-          "name": "Crypto Kastaar",
-          "description": "",
-          "image": "https://ipfs.internal.citizenwallet.xyz/QmNhqeQAVVZJZp3GXDru6BAPLvjgvJi63NtuaDWwQUyxek",
-          "image_medium": "https://ipfs.internal.citizenwallet.xyz/QmXcGVRu9FG8nC56n2QPahnHs6GGzaYG9KS1aLFGRYQ7XE",
-          "image_small": "https://ipfs.internal.citizenwallet.xyz/QmRjBQBT5dNEXEPFGM3cH2whFwQLVjob1VaeQuzTbzVT3i",
-          "token_id": "278131704171442314471693678418200304994191022991",
-          "updated_at": "2024-10-27T12:06:44.962348+00:00"
-        },
-            {
-              "created_at": "2024-10-27T12:06:44.962348+00:00",
-              "account": "0x30B7Db6198634D96e3C3422Fe2ce6751d3861b8f",
-              "username": "cryptokastaar-1",
-              "name": "Crypto Kastaar",
-              "description": "",
-              "image": "https://ipfs.internal.citizenwallet.xyz/QmNhqeQAVVZJZp3GXDru6BAPLvjgvJi63NtuaDWwQUyxek",
-              "image_medium": "https://ipfs.internal.citizenwallet.xyz/QmXcGVRu9FG8nC56n2QPahnHs6GGzaYG9KS1aLFGRYQ7XE",
-              "image_small": "https://ipfs.internal.citizenwallet.xyz/QmRjBQBT5dNEXEPFGM3cH2whFwQLVjob1VaeQuzTbzVT3i",
-              "token_id": "278131704171442314471693678418200304994191022991",
-              "updated_at": "2024-10-27T12:06:44.962348+00:00"
-            }
-            ,    {
-              "created_at": "2024-10-27T12:06:44.962348+00:00",
-              "account": "0x30B7Db6198634D96e3C3422Fe2ce6751d3861b8f",
-              "username": "cryptokastaar-1",
-              "name": "Crypto Kastaar",
-              "description": "",
-              "image": "https://ipfs.internal.citizenwallet.xyz/QmNhqeQAVVZJZp3GXDru6BAPLvjgvJi63NtuaDWwQUyxek",
-              "image_medium": "https://ipfs.internal.citizenwallet.xyz/QmXcGVRu9FG8nC56n2QPahnHs6GGzaYG9KS1aLFGRYQ7XE",
-              "image_small": "https://ipfs.internal.citizenwallet.xyz/QmRjBQBT5dNEXEPFGM3cH2whFwQLVjob1VaeQuzTbzVT3i",
-              "token_id": "278131704171442314471693678418200304994191022991",
-              "updated_at": "2024-10-27T12:06:44.962348+00:00"
-            },
-                {
-                  "created_at": "2024-10-27T12:06:44.962348+00:00",
-                  "account": "0x30B7Db6198634D96e3C3422Fe2ce6751d3861b8f",
-                  "username": "cryptokastaar-1",
-                  "name": "Crypto Kastaar",
-                  "description": "",
-                  "image": "https://ipfs.internal.citizenwallet.xyz/QmNhqeQAVVZJZp3GXDru6BAPLvjgvJi63NtuaDWwQUyxek",
-                  "image_medium": "https://ipfs.internal.citizenwallet.xyz/QmXcGVRu9FG8nC56n2QPahnHs6GGzaYG9KS1aLFGRYQ7XE",
-                  "image_small": "https://ipfs.internal.citizenwallet.xyz/QmRjBQBT5dNEXEPFGM3cH2whFwQLVjob1VaeQuzTbzVT3i",
-                  "token_id": "278131704171442314471693678418200304994191022991",
-                  "updated_at": "2024-10-27T12:06:44.962348+00:00"
-                }
+    {
+      "created_at": "2024-10-27T12:06:44.962348+00:00",
+      "account": "0x30B7Db6198634D96e3C3422Fe2ce6751d3861b8f",
+      "username": "cryptokastaar-1",
+      "name": "Crypto Kastaar",
+      "description": "",
+      "image": "https://ipfs.internal.citizenwallet.xyz/QmNhqeQAVVZJZp3GXDru6BAPLvjgvJi63NtuaDWwQUyxek",
+      "image_medium": "https://ipfs.internal.citizenwallet.xyz/QmXcGVRu9FG8nC56n2QPahnHs6GGzaYG9KS1aLFGRYQ7XE",
+      "image_small": "https://ipfs.internal.citizenwallet.xyz/QmRjBQBT5dNEXEPFGM3cH2whFwQLVjob1VaeQuzTbzVT3i",
+      "token_id": "278131704171442314471693678418200304994191022991",
+      "updated_at": "2024-10-27T12:06:44.962348+00:00"
+    },
+    {
+      "created_at": "2024-10-27T12:06:44.962348+00:00",
+      "account": "0x30B7Db6198634D96e3C3422Fe2ce6751d3861b8f",
+      "username": "cryptokastaar-1",
+      "name": "Crypto Kastaar",
+      "description": "",
+      "image": "https://ipfs.internal.citizenwallet.xyz/QmNhqeQAVVZJZp3GXDru6BAPLvjgvJi63NtuaDWwQUyxek",
+      "image_medium": "https://ipfs.internal.citizenwallet.xyz/QmXcGVRu9FG8nC56n2QPahnHs6GGzaYG9KS1aLFGRYQ7XE",
+      "image_small": "https://ipfs.internal.citizenwallet.xyz/QmRjBQBT5dNEXEPFGM3cH2whFwQLVjob1VaeQuzTbzVT3i",
+      "token_id": "278131704171442314471693678418200304994191022991",
+      "updated_at": "2024-10-27T12:06:44.962348+00:00"
+    },
+    {
+      "created_at": "2024-10-27T12:06:44.962348+00:00",
+      "account": "0x30B7Db6198634D96e3C3422Fe2ce6751d3861b8f",
+      "username": "cryptokastaar-1",
+      "name": "Crypto Kastaar",
+      "description": "",
+      "image": "https://ipfs.internal.citizenwallet.xyz/QmNhqeQAVVZJZp3GXDru6BAPLvjgvJi63NtuaDWwQUyxek",
+      "image_medium": "https://ipfs.internal.citizenwallet.xyz/QmXcGVRu9FG8nC56n2QPahnHs6GGzaYG9KS1aLFGRYQ7XE",
+      "image_small": "https://ipfs.internal.citizenwallet.xyz/QmRjBQBT5dNEXEPFGM3cH2whFwQLVjob1VaeQuzTbzVT3i",
+      "token_id": "278131704171442314471693678418200304994191022991",
+      "updated_at": "2024-10-27T12:06:44.962348+00:00"
+    },
+    {
+      "created_at": "2024-10-27T12:06:44.962348+00:00",
+      "account": "0x30B7Db6198634D96e3C3422Fe2ce6751d3861b8f",
+      "username": "cryptokastaar-1",
+      "name": "Crypto Kastaar",
+      "description": "",
+      "image": "https://ipfs.internal.citizenwallet.xyz/QmNhqeQAVVZJZp3GXDru6BAPLvjgvJi63NtuaDWwQUyxek",
+      "image_medium": "https://ipfs.internal.citizenwallet.xyz/QmXcGVRu9FG8nC56n2QPahnHs6GGzaYG9KS1aLFGRYQ7XE",
+      "image_small": "https://ipfs.internal.citizenwallet.xyz/QmRjBQBT5dNEXEPFGM3cH2whFwQLVjob1VaeQuzTbzVT3i",
+      "token_id": "278131704171442314471693678418200304994191022991",
+      "updated_at": "2024-10-27T12:06:44.962348+00:00"
+    }
   ]
 }
