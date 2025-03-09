@@ -11,7 +11,6 @@ import {
 import { Suspense } from 'react';
 import { getMembersData } from './action';
 
-
 const placeholderData: IMember[] = Array(5).fill({
   created_at: '',
   account: '',
@@ -21,8 +20,8 @@ const placeholderData: IMember[] = Array(5).fill({
   image: '',
   image_medium: '',
   image_small: '',
-  token_id:'',
-  updated_at: '',
+  token_id: '',
+  updated_at: ''
 });
 
 export default async function MembersPage(props: {
@@ -32,7 +31,7 @@ export default async function MembersPage(props: {
   const { alias } = await props.params;
   const { query = '', page = '1' } = await props.searchParams;
 
-  const res = await getMembersData(Number(page),query);
+  const res = await getMembersData(Number(page), query);
   const member: IMember[] = res.data;
 
   return (
@@ -49,7 +48,7 @@ export default async function MembersPage(props: {
                 <DataTable columns={skeletonColumns} data={placeholderData} />
               }
             >
-              {getMembers(member,res.total)}
+              {getMembers(member, res.total)}
             </Suspense>
           </div>
         </div>
@@ -58,7 +57,7 @@ export default async function MembersPage(props: {
   );
 }
 
-async function getMembers(member:IMember[],total:number) {
+async function getMembers(member: IMember[], total: number) {
   await new Promise((resolve) => setTimeout(resolve, 3000));
 
   return (
@@ -66,8 +65,7 @@ async function getMembers(member:IMember[],total:number) {
       columns={columns}
       rows={member}
       total={total}
-      totalPages={Math.ceil(total/10)}
+      totalPages={Math.ceil(total / 10)}
     />
   );
 }
-

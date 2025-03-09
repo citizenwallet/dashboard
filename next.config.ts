@@ -11,7 +11,7 @@ export default {
         hostname: '*.public.blob.vercel-storage.com',
         search: ''
       },
-       {
+      {
         protocol: 'https',
         hostname: 'randomuser.me',
         pathname: '/api/portraits/**'

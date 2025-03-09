@@ -5,15 +5,19 @@ import {
 } from '@/components/custom/metric-card';
 import { Suspense } from 'react';
 
-import { getCommunity_supabaseclient, getCommunity, getCommunitychainid, getTransactions } from './actions';
+import {
+  getCommunity_supabaseclient,
+  getCommunity,
+  getCommunitychainid,
+  getTransactions
+} from './actions';
 
-
-export default async function ProductsPage(props: { //http://localhost:3000/bread/dashboard?page=1
+export default async function ProductsPage(props: {
+  //http://localhost:3000/bread/dashboard?page=1
   params: Promise<{ alias: string }>;
 }) {
-
   const { alias } = await props.params;
-  console.log(alias)
+  console.log(alias);
 
   // const respon = await getCommunity(alias)
   // console.log(respon)
@@ -28,31 +32,29 @@ export default async function ProductsPage(props: { //http://localhost:3000/brea
   // console.log(transactions)
 
   return (
+    <div className="grid grid-cols-4 gap-4">
+      <Suspense
+        fallback={
+          <MetricCardSkeleton
+            icon={<Users className="h-full w-full text-slate-600" />}
+            title="Members"
+          />
+        }
+      >
+        {getMembersOverview()}
+      </Suspense>
 
-      <div className="grid grid-cols-4 gap-4">
-        <Suspense
-          fallback={
-            <MetricCardSkeleton
-              icon={<Users className="h-full w-full text-slate-600" />}
-              title="Members"
-            />
-          }
-        >
-          {getMembersOverview()}
-        </Suspense>
-
-        <Suspense
-          fallback={
-            <MetricCardSkeleton
-              icon={<CreditCard className="h-full w-full text-slate-600" />}
-              title="Transactions"
-            />
-          }
-        >
-          {getTransactionsOverview()}
-        </Suspense>
-      </div>
-
+      <Suspense
+        fallback={
+          <MetricCardSkeleton
+            icon={<CreditCard className="h-full w-full text-slate-600" />}
+            title="Transactions"
+          />
+        }
+      >
+        {getTransactionsOverview()}
+      </Suspense>
+    </div>
   );
 }
 

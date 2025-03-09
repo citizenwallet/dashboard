@@ -58,7 +58,6 @@ export default function Page() {
 
   function resendLoginCode() {
     startTimer();
-    
   }
 
   function onOtpSuccess() {

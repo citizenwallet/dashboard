@@ -15,27 +15,27 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-} from "@/components/ui/table";
+  TableRow
+} from '@/components/ui/table';
 import { PaginationWithLinks } from '@/components/ui/pagination-with-links';
 import { getTransactions } from '../actions';
 
-
 export default async function TransactionsPage(props: {
   params: Promise<{ alias: string }>;
-  searchParams: Promise<{ q: string; offset: string,page:number }>;
+  searchParams: Promise<{ q: string; offset: string; page: number }>;
 }) {
   const { alias } = await props.params;
-  const page = (await props.searchParams)?.page ? (await props.searchParams).page : 1;
+  const page = (await props.searchParams)?.page
+    ? (await props.searchParams).page
+    : 1;
 
   const transactions = await getTransactions(alias, page);
-
 
   return (
     <div>
       {/* <h1>Transactions for {alias}</h1> */}
 
-      <Card >
+      <Card>
         <CardHeader>
           <CardTitle>Transactions for {alias}</CardTitle>
         </CardHeader>
@@ -50,13 +50,23 @@ export default async function TransactionsPage(props: {
               </TableRow>
             </TableHeader>
             <TableBody>
-              {transactions.array.map((transaction,index) => (
+              {transactions.array.map((transaction, index) => (
                 <TableRow key={index}>
-                  <TableCell className="font-medium">{transaction.data?.from}</TableCell>
+                  <TableCell className="font-medium">
+                    {transaction.data?.from}
+                  </TableCell>
                   <TableCell>{transaction.data?.to}</TableCell>
                   <TableCell>{transaction.data?.value}</TableCell>
-                  <TableCell className="text-right"> {new Date(transaction.created_at).toLocaleDateString('en-US')} {new Date(transaction.created_at).toLocaleTimeString('en-US')}</TableCell> 
-              </TableRow>
+                  <TableCell className="text-right">
+                    {' '}
+                    {new Date(transaction.created_at).toLocaleDateString(
+                      'en-US'
+                    )}{' '}
+                    {new Date(transaction.created_at).toLocaleTimeString(
+                      'en-US'
+                    )}
+                  </TableCell>
+                </TableRow>
               ))}
             </TableBody>
           </Table>
