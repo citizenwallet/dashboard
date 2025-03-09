@@ -1,4 +1,4 @@
-import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+import { Avatar, AvatarFallback, AvatarImage } from './ui/avatar';
 
 export function UsersIcon(props: React.SVGProps<SVGSVGElement>) {
   return (
@@ -127,18 +127,13 @@ export function VercelLogo(props: React.SVGProps<SVGSVGElement>) {
   );
 }
 
-
-
 /**
  * Renders a community logo as an avatar with a fallback to the token symbol
  * @param props.logoUrl - URL of the community logo image (e.g. "https://bread.citizenwallet.xyz/uploads/logo.svg")
  * @param props.tokenSymbol - Symbol of the community token (e.g. "BREAD")
  * @returns A circular avatar component displaying the logo or token symbol fallback
  */
-export function CommunityLogo(props: {
-  logoUrl: string
-  tokenSymbol: string
-}) {
+export function CommunityLogo(props: { logoUrl: string; tokenSymbol: string }) {
   return (
     <Avatar className="h-10 w-10">
       <AvatarImage src={props.logoUrl} alt="community logo" />
@@ -146,7 +141,3 @@ export function CommunityLogo(props: {
     </Avatar>
   );
 }
-
-
-
-

@@ -2,7 +2,12 @@
 
 import { revalidatePath } from 'next/cache';
 
-import { Config,LogsService,CommunityConfig,tokenTransferEventTopic  } from '@citizenwallet/sdk';
+import {
+  Config,
+  LogsService,
+  CommunityConfig,
+  tokenTransferEventTopic
+} from '@citizenwallet/sdk';
 // import { createClient } from '@supabase/supabase-js';
 
 export async function getCommunities() {
@@ -19,8 +24,9 @@ export async function getCommunity(alias: string): Promise<Config> {
   const communities = await getCommunities();
 
   const community = communities.find(
-    (community: Config) => 
-      community.community?.alias === alias || community.community?.alias.includes(alias)
+    (community: Config) =>
+      community.community?.alias === alias ||
+      community.community?.alias.includes(alias)
   );
   return community;
 }
@@ -41,30 +47,27 @@ export async function getCommunity_supabaseclient(alias: string) {
   const supabaseUrl = process.env[`SUPABASE_${chainId}_URL`];
   return supabaseUrl;
 
-
   // const supabaseUrl = process.env[`SUPABASE_${chainId}_URL`];
   // const supabaseKey = process.env[`SUPABASE_${chainId}_ANON_KEY`];
 
   // return createClient(supabaseUrl, supabaseKey);
 }
 
-export async function getTransactions(alias: string,page:number) {
+export async function getTransactions(alias: string, page: number) {
   const community = await getCommunity(alias);
   const communityConfig = new CommunityConfig(community);
   const logsService = new LogsService(communityConfig);
-  
+
   const tokenAddress = community.community.primary_token.address;
   const transactions = await logsService.getAllLogs(
     tokenAddress,
     tokenTransferEventTopic,
     {
       limit: 10,
-      offset: (page-1)*10,
+      offset: (page - 1) * 10,
       maxDate: new Date().toISOString()
     }
   );
-  
+
   return transactions;
 }
-
-
