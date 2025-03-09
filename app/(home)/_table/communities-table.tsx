@@ -1,6 +1,5 @@
 import { columns } from './columns';
 import { DataTable } from '@/components/ui/data-table';
-import { Separator } from '@/components/ui/separator';
 import { Config } from '@citizenwallet/sdk';
 import { fetchCommunitiesOfChainAction } from '@/app/(home)/actions';
 import UrlPagination from '@/components/custom/pagination-via-url';
