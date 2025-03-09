@@ -21,14 +21,23 @@ import {
 } from '@/components/ui/input-otp';
 import { useTransition } from 'react';
 import { toast } from 'sonner';
+import { Mail } from 'lucide-react';
 
 interface OtpFormProps {
   email: string;
   onBack: () => void;
   onSuccess: () => void;
+  resendCountDown: number;
+  onResend: () => void;
 }
 
-export default function OtpForm({ email, onBack, onSuccess }: OtpFormProps) {
+export default function OtpForm({
+  email,
+  onBack,
+  onSuccess,
+  resendCountDown,
+  onResend
+}: OtpFormProps) {
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<z.infer<typeof otpFormSchema>>({
@@ -53,10 +62,14 @@ export default function OtpForm({ email, onBack, onSuccess }: OtpFormProps) {
   return (
     <Card className="w-full">
       <CardContent className="p-6">
-        <div className="space-y-2 text-center">
+        <div className="space-y-2 text-center flex flex-col items-center">
           <h1 className="text-2xl font-bold">Verify Login</h1>
+          <div className="flex h-16 w-16 items-center justify-center rounded-full bg-green-100">
+            <Mail className="h-8 w-8 text-green-600" />
+          </div>
           <p className="text-sm text-muted-foreground">
-            Enter the one-time password sent to {email}
+            We&apos;ve sent a 6-digit login code to your email {email}. Please
+            enter it below
           </p>
         </div>
 
@@ -70,9 +83,7 @@ export default function OtpForm({ email, onBack, onSuccess }: OtpFormProps) {
               name="otp"
               render={({ field }) => (
                 <FormItem className="flex flex-col items-center">
-                  <FormLabel className="text-center mb-2">
-                    One-Time Password
-                  </FormLabel>
+                  <FormLabel className="text-center mb-2">Login Code</FormLabel>
                   <FormControl>
                     <InputOTP maxLength={6} {...field}>
                       <InputOTPGroup>
@@ -95,17 +106,27 @@ export default function OtpForm({ email, onBack, onSuccess }: OtpFormProps) {
             </Button>
           </form>
         </Form>
+
+        <div className="h-4" />
+
+        <Button
+          variant="ghost"
+          className="w-full"
+          disabled={isPending || resendCountDown > 0}
+          onClick={onResend}
+        >
+          {resendCountDown > 0
+            ? `Resend code in ${resendCountDown}s`
+            : 'Resend login code'}
+        </Button>
       </CardContent>
       <CardFooter className="flex">
-        <div className="text-center text-sm">
-          Didn&apos;t receive login code?{' '}
-          <span
-            className="font-medium underline underline-offset-4 hover:text-primary"
-            onClick={onBack}
-          >
-            Resend login code
-          </span>
-        </div>
+        <span
+          className="text-sm text-muted-foreground text-center w-full cursor-pointer"
+          onClick={onBack}
+        >
+          Try a different email
+        </span>
       </CardFooter>
     </Card>
   );
