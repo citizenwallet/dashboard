@@ -32,8 +32,9 @@ export default async function ProductsPage(props: {
   // console.log(transactions)
 
   return (
-    <div className="grid grid-cols-4 gap-4">
+    <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
       <Suspense
+        key={`${alias}-members`}
         fallback={
           <MetricCardSkeleton
             icon={<Users className="h-full w-full text-slate-600" />}
@@ -45,10 +46,11 @@ export default async function ProductsPage(props: {
       </Suspense>
 
       <Suspense
+        key={`${alias}-transactions`}
         fallback={
           <MetricCardSkeleton
             icon={<CreditCard className="h-full w-full text-slate-600" />}
-            title="Transactions"
+            title="Transfers"
           />
         }
       >
