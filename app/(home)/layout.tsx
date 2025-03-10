@@ -2,9 +2,7 @@ import User from './user';
 import UrlSearch from '@/components/custom/url-search';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import {
-  getAdminByEmailAction,
-} from '@/app/_actions/admin-actions';
+import { getAdminByEmailAction } from '@/app/_actions/admin-actions';
 import { cookies } from 'next/headers';
 
 export default async function Layout({
@@ -14,12 +12,14 @@ export default async function Layout({
 }) {
   const session = await auth();
   const lastViewedAlias = await (await cookies()).get('lastViewedAlias')?.value;
-  
+
   if (!session?.user) {
     redirect('/login');
   }
 
-  console.log('lastViewedAlias', lastViewedAlias);
+  if (lastViewedAlias) {
+    redirect(`/${lastViewedAlias}`);
+  }
 
   const admin = await getAdminByEmailAction({
     email: session.user.email ?? '',

@@ -4,9 +4,10 @@ import { auth } from '@/auth';
 
 export async function middleware(request: NextRequest) {
   const session = await auth();
+  const pathname = request.nextUrl.pathname;
 
   // Redirect authenticated users from /login to /
-  if (session && request.nextUrl.pathname === '/login') {
+  if (session && pathname === '/login') {
     return NextResponse.redirect(new URL('/', request.url));
   }
 
