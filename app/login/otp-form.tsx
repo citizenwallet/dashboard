@@ -23,6 +23,7 @@ import { useTransition } from 'react';
 import { toast } from 'sonner';
 import { Mail } from 'lucide-react';
 import { signInWithOTP } from './actions';
+import { useRouter } from 'next/navigation';
 
 interface OtpFormProps {
   email: string;
@@ -38,7 +39,7 @@ export default function OtpForm({
   onResend
 }: OtpFormProps) {
   const [isPending, startTransition] = useTransition();
-
+  const router = useRouter();
   const form = useForm<z.infer<typeof otpFormSchema>>({
     resolver: zodResolver(otpFormSchema),
     defaultValues: {
@@ -46,20 +47,26 @@ export default function OtpForm({
     }
   });
 
-  async function onSubmit(values: z.infer<typeof otpFormSchema>) {
-    const { code } = values;
-    startTransition(async () => {
-      try {
-        await signInWithOTP({ email, code, chainId: 42220 });
-      } catch (error) {
-        if (error instanceof Error) {
-          toast.error(error.message);
-        } else {
-          toast.error('Could not verify login code');
-        }
+async function onSubmit(values: z.infer<typeof otpFormSchema>) {
+  const { code } = values;
+  startTransition(async () => {
+    try {
+      const result = await signInWithOTP({ email, code, chainId: 42220 });
+      if (result?.success) {
+        toast.success('Login successful!');
+        router.push('/');
       }
-    });
-  }
+    } catch (error) {
+      console.error(error);
+      if (error instanceof Error) {
+        // Display the exact error message from auth.config.ts
+        toast.error(error.message);
+      } else {
+        toast.error('Could not verify login code');
+      }
+    }
+  });
+}
 
   return (
     <Card className="w-full">

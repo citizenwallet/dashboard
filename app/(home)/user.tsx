@@ -1,17 +1,28 @@
+'use client';
+
 import { Button } from '@/components/ui/button';
-import Image from 'next/image';
 import {
   DropdownMenu,
   DropdownMenuContent,
   DropdownMenuItem,
-  DropdownMenuLabel,
-  DropdownMenuSeparator,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import Link from 'next/link';
+import {
+  signOutAction
+} from '@/app/_actions/admin-actions';
+import { useState } from 'react';
+import { AdminT } from '@/services/db/admin';
+import { Avatar, AvatarImage, AvatarFallback } from '@radix-ui/react-avatar';
+import { Session } from 'next-auth';
 
-export default function User() {
-  const avatar = 'https://randomuser.me/api/portraits/women/0.jpg';
+interface UserProps {
+  session: Session;
+  admin: AdminT | null;
+}
+
+export default function User(props: UserProps) {
+  const [admin, setAdmin] = useState<AdminT | null>(props.admin);
+
 
   return (
     <DropdownMenu>
@@ -21,33 +32,21 @@ export default function User() {
           size="icon"
           className="overflow-hidden rounded-full"
         >
-          <Image
-            src={avatar ?? '/placeholder-user.jpg'}
-            width={36}
-            height={36}
-            alt="Avatar"
-            className="overflow-hidden rounded-full"
-          />
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={admin?.avatar ?? ''} alt="admin avatar" />
+            <AvatarFallback>{admin?.name ?? ''}</AvatarFallback>
+          </Avatar>
         </Button>
       </DropdownMenuTrigger>
       <DropdownMenuContent align="end">
-        <DropdownMenuLabel>My Account</DropdownMenuLabel>
-        <DropdownMenuSeparator />
-        <DropdownMenuItem>Settings</DropdownMenuItem>
-        <DropdownMenuItem>Support</DropdownMenuItem>
-        <DropdownMenuSeparator />
         <DropdownMenuItem>
           <form
             action={async () => {
-              'use server';
-              console.log('Sign Out');
+              await signOutAction();
             }}
           >
             <button type="submit">Sign Out</button>
           </form>
-        </DropdownMenuItem>
-        <DropdownMenuItem>
-          <Link href="/login">Sign In</Link>
         </DropdownMenuItem>
       </DropdownMenuContent>
     </DropdownMenu>

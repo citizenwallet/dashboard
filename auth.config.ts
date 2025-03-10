@@ -1,11 +1,11 @@
-import { NextAuthConfig } from 'next-auth';
+import { NextAuthConfig, CredentialsSignin } from 'next-auth';
 import CredentialProvider from 'next-auth/providers/credentials';
 import { getServiceRoleClient } from '@/services/db';
 import { getOTPOfSource, deleteOTPOfSource } from '@/services/db/otp';
 import { getAdminByEmail } from '@/services/db/admin';
 
-const authConfig = {
 
+const authConfig = {
   providers: [
     CredentialProvider({
       name: 'OTP Login',
@@ -29,19 +29,19 @@ const authConfig = {
         const { data, error } = await getOTPOfSource({ client, source: email });
 
         if (error) {
-          throw new Error(`Failed to get login code for email ${email}`);
+          throw new CredentialsSignin(`Failed to get login code for email ${email}`);
         }
 
         if (!data) {
-          throw new Error(`No login code found for email ${email}`);
+          throw new CredentialsSignin(`No login code found for email ${email}`);
         }
 
         if (data.expires_at < new Date()) {
-          throw new Error(`Login code expired for email ${email}`);
+          throw new CredentialsSignin(`Login code expired for email ${email}`);
         }
 
         if (data.code !== code) {
-          throw new Error(`Invalid login code for email ${email}`);
+          throw new CredentialsSignin(`Invalid login code for email ${email}`);
         }
 
         const { data: adminData, error: adminError } = await getAdminByEmail({
@@ -50,11 +50,11 @@ const authConfig = {
         });
 
         if (adminError) {
-          throw new Error(`Failed to get admin by email ${email}`);
+          throw new CredentialsSignin(`Failed to get admin by email ${email}`);
         }
 
         if (!adminData) {
-          throw new Error(`Admin not found for email ${email}`);
+          throw new CredentialsSignin(`Admin not found for email ${email}`);
         }
 
         deleteOTPOfSource({ client, source: email });
@@ -68,12 +68,11 @@ const authConfig = {
         return user;
       }
     })
-    
   ],
   pages: {
     signIn: '/login'
   },
-  
+
   callbacks: {
     jwt: async ({ token, user }) => {
       if (user) {
@@ -89,6 +88,13 @@ const authConfig = {
           id: `${token.id}`
         }
       };
+    },
+    redirect({ url, baseUrl }) {
+      // Allow redirects to the home page
+      if (url.startsWith('/')) return url;
+      // Allow redirects to the same origin
+      if (url.startsWith(baseUrl)) return url;
+      return baseUrl;
     }
   }
 } satisfies NextAuthConfig;

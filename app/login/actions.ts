@@ -5,6 +5,7 @@ import { saveOTP } from '@/services/db/otp';
 import { generateOTP } from '@/lib/utils';
 import { sendOtpEmail } from '@/services/brevo';
 import { signIn } from '@/auth';
+import { CredentialsSignin } from 'next-auth';
 
 export async function getAdminByEmailAction(args: {
   email: string;
@@ -53,18 +54,25 @@ export async function signInWithOTP(args: {
 }) {
   const { email, code, chainId } = args;
 
-  const result = await signIn(
-    'credentials',
-    {
+  try {
+    await signIn('credentials', {
       email,
       code,
       chainId,
-      callbackUrl: '/'
-    },
-    {
-      redirectTo: '/'
-    }
-  );
+      redirect: false
+    });
 
-  return result;
+    return { success: true };
+  } catch (error) {
+    console.log('error', JSON.stringify(error, null, 2));
+    if (error instanceof CredentialsSignin) {
+      throw new Error(
+        error.message.replace(
+          'Read more at https://errors.authjs.dev#credentialssignin',
+          ''
+        )
+      );
+    }
+    throw new Error('Sign in failed');
+  }
 }
