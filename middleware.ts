@@ -23,6 +23,9 @@ export const config = {
      * - _next/image (image optimization files)
      * - favicon.ico (metadata files)
      */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)'
+    '/((?!api|_next/static|_next/image|favicon.ico).*)',
+    '/(home)/:path*',
+    // Match all paths under /[alias]
+    '/:alias/:path*'
   ]
 };

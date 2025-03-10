@@ -3,6 +3,8 @@
 import { useState, useEffect, useCallback } from 'react';
 import EmailForm from './email-form';
 import OtpForm from './otp-form';
+import { sendOTPAction } from './actions';
+import { toast } from 'sonner';
 
 export default function Page() {
   const [step, setStep] = useState<'email' | 'otp'>('email'); // toggle between email and otp form
@@ -56,13 +58,14 @@ export default function Page() {
     startTimer(); // Start countdown when OTP is requested
   }
 
-  function resendLoginCode() {
-    startTimer();
-  }
-
-  function onOtpSuccess() {
-    stopTimer(); // Stop countdown on successful OTP
-    // TODO: navigate to last alias or home page
+  async function resendLoginCode(email: string) {
+    try {
+      startTimer();
+      await sendOTPAction({ email, chainId: 42220 });
+      toast.success(`New login code sent to ${email}`);
+    } catch (error) {
+      toast.error('Could not send login code');
+    }
   }
 
   function goToEmail() {
@@ -79,7 +82,6 @@ export default function Page() {
           <OtpForm
             email={email}
             onBack={goToEmail}
-            onSuccess={onOtpSuccess}
             resendCountDown={resendCountDown}
             onResend={resendLoginCode}
           />

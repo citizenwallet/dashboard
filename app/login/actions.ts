@@ -4,6 +4,7 @@ import { getAdminByEmail } from '@/services/db/admin';
 import { saveOTP } from '@/services/db/otp';
 import { generateOTP } from '@/lib/utils';
 import { sendOtpEmail } from '@/services/brevo';
+import { signIn } from '@/auth';
 
 export async function getAdminByEmailAction(args: {
   email: string;
@@ -28,7 +29,8 @@ export async function sendOTPAction(args: { email: string; chainId: number }) {
   const otp = generateOTP();
 
   // brevo
-  await sendOtpEmail({ email, otp });
+  // TODO: uncomment later
+  // await sendOtpEmail({ email, otp });
 
   // db
   const { error: saveOTPError } = await saveOTP({
@@ -42,4 +44,27 @@ export async function sendOTPAction(args: { email: string; chainId: number }) {
     console.error(saveOTPError);
     throw new Error('Failed to save OTP');
   }
+}
+
+export async function signInWithOTP(args: {
+  email: string;
+  code: string;
+  chainId: number;
+}) {
+  const { email, code, chainId } = args;
+
+  const result = await signIn(
+    'credentials',
+    {
+      email,
+      code,
+      chainId,
+      callbackUrl: '/'
+    },
+    {
+      redirectTo: '/'
+    }
+  );
+
+  return result;
 }

@@ -1,6 +1,6 @@
 import 'server-only';
 
-import { SupabaseClient, PostgrestSingleResponse } from '@supabase/supabase-js';
+import { SupabaseClient, PostgrestSingleResponse, PostgrestMaybeSingleResponse } from '@supabase/supabase-js';
 const TABLE_NAME = 'otp';
 
 export interface OtpT {
@@ -31,4 +31,21 @@ export const saveOTP = async (args: {
       onConflict: 'source'
     }
   );
+};
+
+export const getOTPOfSource = async (args: {
+  client: SupabaseClient;
+  source: string;
+}): Promise<PostgrestMaybeSingleResponse<OtpT>> => {
+  const { client, source } = args;
+
+  return client.from(TABLE_NAME).select('*').eq('source', source).maybeSingle();
+};
+
+export const deleteOTPOfSource = async (args: {
+  client: SupabaseClient;
+  source: string;
+}) => {
+  const { client, source } = args;
+  return client.from(TABLE_NAME).delete().eq('source', source);
 };
