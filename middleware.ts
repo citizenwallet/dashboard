@@ -1,8 +1,10 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
+import { auth } from '@/auth';
 
-export function middleware(request: NextRequest) {
-  // Check for the cookie and redirect if it exists
+export async function middleware(request: NextRequest) {
+  const session = await auth();
+
   const lastViewedAlias = request.cookies.get('lastViewedAlias')?.value;
   if (request.nextUrl.pathname === '/' && lastViewedAlias) {
     return NextResponse.redirect(new URL(`/${lastViewedAlias}`, request.url));
