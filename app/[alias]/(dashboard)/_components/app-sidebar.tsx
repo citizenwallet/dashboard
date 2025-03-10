@@ -71,7 +71,8 @@ export function AppSidebar({
       },
       {
         name: 'Transfers',
-        url: `/${selectedCommunity?.community.alias}/transfers`,
+        url: `/${selectedCommunity?.community.alias}          <User />
+nsfers`,
         icon: LucideLineChart
       }
     ]

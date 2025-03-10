@@ -77,12 +77,14 @@ export function CommunitySwitcher({
             </DropdownMenuLabel>
             {communities.map((community, index) => {
               const communityConfig = new CommunityConfig(community);
+              const alias = communityConfig.community.alias;
               const primaryToken = communityConfig.primaryToken;
               const logo = communityConfig.community.logo;
 
               const onSelectCommunity = () => {
+                document.cookie = `lastViewedAlias=${alias}; path=/; max-age=31536000`;
                 setActiveCommunity(community);
-                router.push(`/${community.community.alias}`);
+                router.push(`/${alias}`);
               };
 
               return (
