@@ -14,7 +14,7 @@ export const emailFormSchema = z.object({
 });
 
 export const otpFormSchema = z.object({
-  otp: z
+  code: z
     .string({
       required_error: 'Enter one-time password'
     })

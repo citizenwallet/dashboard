@@ -16,6 +16,7 @@ import {
   FormControl,
   FormMessage
 } from '@/components/ui/form';
+import { getAdminByEmailAction, sendOTPAction } from './actions';
 
 interface EmailFormProps {
   onSuccess: (email: string) => void;
@@ -32,13 +33,24 @@ export default function EmailForm({ onSuccess }: EmailFormProps) {
   });
 
   async function onSubmit(values: z.infer<typeof emailFormSchema>) {
+    const { email } = values;
     startTransition(async () => {
       try {
-        await new Promise((resolve) => setTimeout(resolve, 3000));
+        const admin = await getAdminByEmailAction({ email, chainId: 42220 });
+
+        if (!admin) {
+          throw new Error(`Admin with email ${email} not found`);
+        }
+
+        await sendOTPAction({ email, chainId: 42220 });
         onSuccess(values.email);
         toast.success(`Login code sent to ${values.email}`);
       } catch (error) {
-        toast.error('Could not send login code');
+        if (error instanceof Error) {
+          toast.error(error.message);
+        } else {
+          toast.error('Could not send login code');
+        }
       }
     });
   }

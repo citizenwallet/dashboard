@@ -20,7 +20,8 @@
       "@/lib/*": ["lib/*"],
       "@/helpers/*": ["helpers/*"],
       "@/app/*": ["app/*"],
-      "@/services/*": ["services/*"]
+      "@/services/*": ["services/*"],
+      "@/auth": ["auth.ts"]
     },
     "plugins": [
       {
