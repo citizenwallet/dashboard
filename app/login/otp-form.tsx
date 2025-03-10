@@ -22,19 +22,18 @@ import {
 import { useTransition } from 'react';
 import { toast } from 'sonner';
 import { Mail } from 'lucide-react';
+import { signInWithOTP } from './actions';
 
 interface OtpFormProps {
   email: string;
   onBack: () => void;
-  onSuccess: () => void;
   resendCountDown: number;
-  onResend: () => void;
+  onResend: (email: string) => void;
 }
 
 export default function OtpForm({
   email,
   onBack,
-  onSuccess,
   resendCountDown,
   onResend
 }: OtpFormProps) {
@@ -43,18 +42,21 @@ export default function OtpForm({
   const form = useForm<z.infer<typeof otpFormSchema>>({
     resolver: zodResolver(otpFormSchema),
     defaultValues: {
-      otp: ''
+      code: ''
     }
   });
 
   async function onSubmit(values: z.infer<typeof otpFormSchema>) {
+    const { code } = values;
     startTransition(async () => {
       try {
-        await new Promise((resolve) => setTimeout(resolve, 3000));
-        onSuccess();
-        toast.success('Login successful');
+        await signInWithOTP({ email, code, chainId: 42220 });
       } catch (error) {
-        toast.error('Could not verify login code');
+        if (error instanceof Error) {
+          toast.error(error.message);
+        } else {
+          toast.error('Could not verify login code');
+        }
       }
     });
   }
@@ -80,7 +82,7 @@ export default function OtpForm({
           >
             <FormField
               control={form.control}
-              name="otp"
+              name="code"
               render={({ field }) => (
                 <FormItem className="flex flex-col items-center">
                   <FormLabel className="text-center mb-2">Login Code</FormLabel>
@@ -113,7 +115,7 @@ export default function OtpForm({
           variant="ghost"
           className="w-full"
           disabled={isPending || resendCountDown > 0}
-          onClick={onResend}
+          onClick={() => onResend(email)}
         >
           {resendCountDown > 0
             ? `Resend code in ${resendCountDown}s`
