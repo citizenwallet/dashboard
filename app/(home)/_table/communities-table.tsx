@@ -16,7 +16,6 @@ interface CommunitiesTableProps {
 
 export async function CommunitiesTable({
   query,
-  page,
   chainId
 }: CommunitiesTableProps) {
   const session = await auth();
