@@ -3,6 +3,8 @@ import { DataTable } from '@/components/ui/data-table';
 import { Config } from '@citizenwallet/sdk';
 import { fetchCommunitiesOfChainAction } from '@/app/_actions/community-actions';
 import UrlPagination from '@/components/custom/pagination-via-url';
+import { auth } from '@/auth';
+import { getAdminByEmailAction } from '@/app/_actions/admin-actions';
 
 const ROWS_PER_PAGE = 10;
 
@@ -17,10 +19,21 @@ export async function CommunitiesTable({
   page,
   chainId
 }: CommunitiesTableProps) {
+  const session = await auth();
+
+  const admin = await getAdminByEmailAction({
+    email: session?.user?.email ?? '',
+    chainId: 42220
+  });
+
   let communities: Config[] = [];
   let total: number = 0;
   try {
-    const result = await fetchCommunitiesOfChainAction(chainId, query);
+    const result = await fetchCommunitiesOfChainAction({
+      chainId: 42220,
+      accessList: admin?.community_access_list ?? [],
+      query: query
+    });
     communities = result.communities;
     total = result.total;
   } catch (error) {

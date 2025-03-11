@@ -2,9 +2,6 @@
 
 import type * as React from 'react';
 import {
-  AudioWaveform,
-  Command,
-  GalleryVerticalEnd,
   Home,
   Users,
   LucideLineChart
@@ -20,15 +17,18 @@ import {
   SidebarRail
 } from '@/components/ui/sidebar';
 import { Config } from '@citizenwallet/sdk';
+import { AdminT } from '@/services/db/admin';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   communities: Config[];
   selectedAlias: string;
+  admin: AdminT | null;
 }
 
 export function AppSidebar({
   communities,
   selectedAlias,
+  admin,
   ...props
 }: AppSidebarProps) {
   const selectedCommunity = communities.find(
@@ -37,27 +37,10 @@ export function AppSidebar({
 
   const data = {
     user: {
-      name: 'shadcn',
-      email: 'm@example.com',
-      avatar: '/avatars/shadcn.jpg'
+      name: admin?.name ?? '',
+      email: admin?.email ?? '',
+      avatar: admin?.avatar ?? ''
     },
-    teams: [
-      {
-        name: 'Acme Inc',
-        logo: GalleryVerticalEnd,
-        plan: 'Enterprise'
-      },
-      {
-        name: 'Acme Corp.',
-        logo: AudioWaveform,
-        plan: 'Startup'
-      },
-      {
-        name: 'Evil Corp.',
-        logo: Command,
-        plan: 'Free'
-      }
-    ],
     projects: [
       {
         name: 'Home',
@@ -71,8 +54,7 @@ export function AppSidebar({
       },
       {
         name: 'Transfers',
-        url: `/${selectedCommunity?.community.alias}          <User />
-nsfers`,
+        url: `/${selectedCommunity?.community.alias}/transfers`,
         icon: LucideLineChart
       }
     ]
