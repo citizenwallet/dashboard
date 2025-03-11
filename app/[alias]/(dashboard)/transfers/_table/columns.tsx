@@ -78,7 +78,7 @@ export const createColumns = (
 
       return (
         <div className="flex items-center gap-1 min-w-[100px]">
-          <span className="font-medium">{formattedValue}</span>
+          <span className="font-medium">{value}</span>
           <CommunityLogo
             logoUrl={communityConfig.community.logo}
             tokenSymbol={communityConfig.primaryToken.symbol}

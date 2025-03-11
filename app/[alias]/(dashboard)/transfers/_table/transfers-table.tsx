@@ -40,7 +40,7 @@ export default async function TransferTable({
     page
   });
 
-  const totalPages = Math.ceil(totalCount ?? 0 / ROWS_PER_PAGE);
+  const totalPages = Math.ceil(Number(totalCount) / ROWS_PER_PAGE);
 
   return (
     <div className="flex flex-col h-full">

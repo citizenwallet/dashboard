@@ -32,19 +32,29 @@ export const getTransfersOfToken = async (args: {
   const { client, token, query, page } = args;
 
   const offset = (page - 1) * PAGE_SIZE;
+  const searchQuery = query.trim();
 
-  return client
+  let queryBuilder = client
     .from(TABLE_NAME)
     .select(
       `
       *,
-      from_member:a_members!from_member_id (*),
-      to_member:a_members!to_member_id (*)
+      from_member:a_members!from_member_id!inner(*),
+      to_member:a_members!to_member_id!inner(*)
     `,
       { count: 'exact' }
     )
     .eq('token_contract', token)
-    .eq('status', 'success')
+    .eq('status', 'success');
+
+  if (searchQuery) {
+    queryBuilder = queryBuilder.or(
+      `account.ilike.*${searchQuery}*,username.ilike.*${searchQuery}*,name.ilike.*${searchQuery}*,description.ilike.*${searchQuery}*`,
+      { referencedTable: 'a_members' } // or 'a_members' if needed
+    );
+  }
+
+  return queryBuilder
     .order('created_at', { ascending: false })
     .range(offset, offset + PAGE_SIZE - 1)
     .limit(PAGE_SIZE);
