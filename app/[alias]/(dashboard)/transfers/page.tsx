@@ -19,12 +19,12 @@ export default async function TransactionsPage(props: {
   const page = pageParam || '1';
 
   return (
-    <Card className="h-full flex flex-col">
-      <CardHeader className="flex-none">
+    <Card className="w-full h-[calc(100vh-theme(spacing.32))]">
+      <CardHeader>
         <CardTitle>Transfers</CardTitle>
         <CardDescription>Browse transfers of your community</CardDescription>
       </CardHeader>
-      <CardContent className="flex-1 overflow-hidden">
+      <CardContent className="h-[calc(100%-theme(spacing.24))]">
         <Suspense
           key={query + page}
           fallback={
@@ -39,5 +39,3 @@ export default async function TransactionsPage(props: {
     </Card>
   );
 }
-
-
