@@ -2,9 +2,6 @@
 
 import type * as React from 'react';
 import {
-  AudioWaveform,
-  Command,
-  GalleryVerticalEnd,
   Home,
   Users,
   LucideLineChart
@@ -41,23 +38,6 @@ export function AppSidebar({
       email: 'm@example.com',
       avatar: '/avatars/shadcn.jpg'
     },
-    teams: [
-      {
-        name: 'Acme Inc',
-        logo: GalleryVerticalEnd,
-        plan: 'Enterprise'
-      },
-      {
-        name: 'Acme Corp.',
-        logo: AudioWaveform,
-        plan: 'Startup'
-      },
-      {
-        name: 'Evil Corp.',
-        logo: Command,
-        plan: 'Free'
-      }
-    ],
     projects: [
       {
         name: 'Home',
@@ -71,8 +51,7 @@ export function AppSidebar({
       },
       {
         name: 'Transfers',
-        url: `/${selectedCommunity?.community.alias}          <User />
-nsfers`,
+        url: `/${selectedCommunity?.community.alias}/transfers`,
         icon: LucideLineChart
       }
     ]
