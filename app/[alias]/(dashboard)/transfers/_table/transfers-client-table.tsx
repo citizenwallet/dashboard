@@ -18,7 +18,5 @@ export function TransferClientTable({
 
   const columns = createColumns(communityConfig);
 
-  return (
-     <DataTable columns={columns} data={data} />
-  );
+  return <DataTable columns={columns} data={data} />;
 }

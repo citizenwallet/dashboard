@@ -1,11 +1,7 @@
 'use client';
 
 import type * as React from 'react';
-import {
-  Home,
-  Users,
-  LucideLineChart
-} from 'lucide-react';
+import { Home, Users, LucideLineChart } from 'lucide-react';
 import { NavProjects } from './nav-projects';
 import { NavUser } from './nav-user';
 import { CommunitySwitcher } from './community-switcher';

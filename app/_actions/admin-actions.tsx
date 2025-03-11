@@ -1,16 +1,14 @@
 'use server';
 
-import { getServiceRoleClient } from "@/services/db";
-import { getAdminByEmail } from "@/services/db/admin";
-import {signOut} from '@/auth'
-
+import { getServiceRoleClient } from '@/services/db';
+import { getAdminByEmail } from '@/services/db/admin';
+import { signOut } from '@/auth';
 
 export async function getAdminByEmailAction(args: {
   email: string;
   chainId: number;
 }) {
   const { email, chainId } = args;
-  
 
   const client = getServiceRoleClient(chainId);
   const { data, error } = await getAdminByEmail({ client, email });
@@ -24,5 +22,5 @@ export async function getAdminByEmailAction(args: {
 }
 
 export async function signOutAction() {
-    await signOut()
+  await signOut();
 }

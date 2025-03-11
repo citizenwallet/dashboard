@@ -63,7 +63,7 @@ export default function Page() {
       startTimer();
       await sendOTPAction({ email, chainId: 42220 });
       toast.success(`New login code sent to ${email}`);
-    } catch  {
+    } catch {
       toast.error('Could not send login code');
     }
   }

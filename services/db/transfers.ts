@@ -23,30 +23,29 @@ export interface TransferWithMembersT extends TransferT {
   to_member: MemberT;
 }
 
-
 export const getTransfersOfToken = async (args: {
   client: SupabaseClient;
-    token: string;
-    query: string;
-    page: number;
+  token: string;
+  query: string;
+  page: number;
 }): Promise<PostgrestResponse<TransferWithMembersT>> => {
-    const { client, token, query, page } = args;
+  const { client, token, query, page } = args;
 
-    const offset = (page - 1) * PAGE_SIZE;
+  const offset = (page - 1) * PAGE_SIZE;
 
-   return client
-     .from(TABLE_NAME)
-     .select(
-       `
+  return client
+    .from(TABLE_NAME)
+    .select(
+      `
       *,
       from_member:a_members!from_member_id (*),
       to_member:a_members!to_member_id (*)
     `,
-       { count: 'exact' }
-     )
-     .eq('token_contract', token)
-     .eq('status', 'success')
-     .order('created_at', { ascending: false })
-     .range(offset, offset + PAGE_SIZE - 1)
-     .limit(PAGE_SIZE); 
+      { count: 'exact' }
+    )
+    .eq('token_contract', token)
+    .eq('status', 'success')
+    .order('created_at', { ascending: false })
+    .range(offset, offset + PAGE_SIZE - 1)
+    .limit(PAGE_SIZE);
 };

@@ -4,7 +4,6 @@ import { getServiceRoleClient } from '@/services/db';
 import { getOTPOfSource, deleteOTPOfSource } from '@/services/db/otp';
 import { getAdminByEmail } from '@/services/db/admin';
 
-
 const authConfig = {
   providers: [
     CredentialProvider({
@@ -29,7 +28,9 @@ const authConfig = {
         const { data, error } = await getOTPOfSource({ client, source: email });
 
         if (error) {
-          throw new CredentialsSignin(`Failed to get login code for email ${email}`);
+          throw new CredentialsSignin(
+            `Failed to get login code for email ${email}`
+          );
         }
 
         if (!data) {

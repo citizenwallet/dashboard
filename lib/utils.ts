@@ -2,7 +2,7 @@ import { type ClassValue, clsx } from 'clsx';
 import { twMerge } from 'tailwind-merge';
 import { randomInt } from 'crypto';
 import { CommunityConfig } from '@citizenwallet/sdk';
-import { formatUnits, parseUnits } from 'ethers';
+import { parseUnits } from 'ethers';
 
 export function cn(...inputs: ClassValue[]) {
   return twMerge(clsx(inputs));
