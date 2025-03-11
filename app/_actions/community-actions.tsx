@@ -3,9 +3,16 @@
 import { Config } from '@citizenwallet/sdk';
 
 export const fetchCommunitiesOfChainAction = async (
-  chainId: number,
-  query?: string
+  args: {
+    chainId: number,
+    accessList: string[],
+    query?: string
+  }
 ): Promise<{ communities: Config[]; total: number }> => {
+
+  const { chainId, accessList, query } = args;
+
+
   if (!process.env.COMMUNITIES_CONFIG_URL) {
     throw new Error('COMMUNITIES_CONFIG_URL is not set');
   }
@@ -20,6 +27,8 @@ export const fetchCommunitiesOfChainAction = async (
     const isHidden = hidden || false;
     const isMatchChain = primary_token.chain_id === chainId;
 
+    const isMatchAccessList = accessList.includes(alias);
+
     const isMatchName = name
       .toLowerCase()
       .includes(query?.toLowerCase().trim() || '');
@@ -33,7 +42,8 @@ export const fetchCommunitiesOfChainAction = async (
     return (
       !isHidden &&
       isMatchChain &&
-      (isMatchName || isMatchAlias || isMatchDescription)
+      (isMatchName || isMatchAlias || isMatchDescription) &&
+      isMatchAccessList
     );
   });
 
