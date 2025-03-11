@@ -1,8 +1,6 @@
 import { Config, CommunityConfig } from '@citizenwallet/sdk';
 import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 import { getTransfersOfTokenAction } from '../actions';
-import { DataTable } from '@/components/ui/data-table';
-import { createColumns } from './columns';
 import UrlPagination from '@/components/custom/pagination-via-url';
 import { TransferClientTable } from './transfers-client-table';
 
