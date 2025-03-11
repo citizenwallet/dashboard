@@ -10,6 +10,7 @@ import {
   formatERC20TransactionValue
 } from '@/lib/utils';
 import { CommunityLogo } from '@/components/icons';
+import { Skeleton } from '@/components/ui/skeleton';
 
 export const createColumns = (
   communityConfig: CommunityConfig
@@ -111,3 +112,63 @@ export const createColumns = (
     }
   }
 ];
+
+export const skeletonColumns: ColumnDef<TransferWithMembersT>[] = [
+  {
+    header: 'Hash',
+    accessorKey: 'hash',
+    cell: () => <Skeleton className="h-4 w-20" />,
+    size: 120
+  },
+  {
+    header: 'From',
+    accessorKey: 'from_member',
+    cell: () => (
+      <div className="flex items-center gap-2 min-w-[200px]">
+        <Skeleton className="h-6 w-6 rounded-full flex-shrink-0" />
+        <div className="flex flex-col gap-1">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-3 w-32" />
+        </div>
+      </div>
+    )
+  },
+  {
+    header: 'To',
+    accessorKey: 'to_member',
+    cell: () => (
+      <div className="flex items-center gap-2 min-w-[200px]">
+        <Skeleton className="h-6 w-6 rounded-full flex-shrink-0" />
+        <div className="flex flex-col gap-1">
+          <Skeleton className="h-3 w-24" />
+          <Skeleton className="h-3 w-32" />
+        </div>
+      </div>
+    )
+  },
+  {
+    header: 'Value',
+    accessorKey: 'value',
+    cell: () => (
+      <div className="flex items-center gap-1 min-w-[100px]">
+        <Skeleton className="h-4 w-16" />
+        <Skeleton className="h-6 w-6 rounded-full" />
+      </div>
+    )
+  },
+  {
+    header: 'Description',
+    accessorKey: 'description',
+    cell: () => (
+      <div className="min-w-[200px]">
+        <Skeleton className="h-4 w-full" />
+      </div>
+    )
+  },
+  {
+    header: 'Created at',
+    accessorKey: 'created_at',
+    cell: () => <Skeleton className="h-4 w-32" />
+  }
+];
+export const placeholderData: TransferWithMembersT[] = Array(5);

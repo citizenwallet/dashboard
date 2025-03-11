@@ -7,6 +7,8 @@ import {
 } from '@/components/ui/card';
 import { Suspense } from 'react';
 import TransferTable from './_table/transfers-table';
+import { skeletonColumns, placeholderData } from './_table/columns';
+import { DataTable } from '@/components/ui/data-table';
 
 export default async function TransactionsPage(props: {
   params: Promise<{ alias: string }>;
@@ -29,7 +31,7 @@ export default async function TransactionsPage(props: {
           key={query + page}
           fallback={
             <div className="h-full overflow-y-auto rounded-md border">
-              Loading...
+              <DataTable columns={skeletonColumns} data={placeholderData} />
             </div>
           }
         >
