@@ -8,22 +8,6 @@ import Link from 'next/link';
 
 export const columns: ColumnDef<Config>[] = [
   {
-    header: 'Logo',
-    accessorKey: 'community.logo',
-    cell: ({ row }) => {
-      const logo = row.original.community.logo;
-      const name = row.original.community.name;
-      return (
-        <div className="min-w-[50px]">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={logo} alt={`logo for ${name}`} />
-            <AvatarFallback>{name}</AvatarFallback>
-          </Avatar>
-        </div>
-      );
-    }
-  },
-  {
     header: 'Name',
     accessorKey: 'community.name',
     cell: ({ row }) => {
@@ -44,6 +28,22 @@ export const columns: ColumnDef<Config>[] = [
             {name}
             <ExternalLink className="w-4 h-4" />
           </Link>
+        </div>
+      );
+    }
+  },
+  {
+    header: 'Logo',
+    accessorKey: 'community.logo',
+    cell: ({ row }) => {
+      const logo = row.original.community.logo;
+      const name = row.original.community.name;
+      return (
+        <div className="min-w-[50px]">
+          <Avatar className="h-10 w-10">
+            <AvatarImage src={logo} alt={`logo for ${name}`} />
+            <AvatarFallback>{name}</AvatarFallback>
+          </Avatar>
         </div>
       );
     }
