@@ -9,6 +9,7 @@ import { Suspense } from 'react';
 import MembersTable from './_table/members-table';
 import { DataTable } from '@/components/ui/data-table';
 import { placeholderData, skeletonColumns } from './_table/columns';
+import UrlSearch from '@/components/custom/url-search';
 
 export default async function TransactionsPage(props: {
   params: Promise<{ alias: string }>;
@@ -30,6 +31,7 @@ export default async function TransactionsPage(props: {
           <CardTitle>Members</CardTitle>
           <CardDescription>Browse members of your community</CardDescription>
         </div>
+        <UrlSearch />
       </CardHeader>
       <CardContent className="h-[calc(100%-theme(spacing.24))]">
         <Suspense

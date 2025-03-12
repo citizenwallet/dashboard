@@ -23,8 +23,6 @@ export default async function TransactionsPage(props: {
   const from = fromParam;
   const to = toParam;
 
-  console.log('from', from, 'to', to);
-
   return (
     <Card className="w-full h-[calc(100vh-theme(spacing.32))]">
       <CardHeader className="flex flex-col sm:flex-row justify-between items-center gap-4">
