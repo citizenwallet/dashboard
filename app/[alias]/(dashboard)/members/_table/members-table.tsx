@@ -2,8 +2,8 @@ import { Config } from '@citizenwallet/sdk';
 import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 import UrlPagination from '@/components/custom/pagination-via-url';
 import { getMembersAction } from '../action';
-import { DataTable } from '@/components/ui/data-table';
-import { columns } from './columns';
+import { MembersClientTable } from './members-client-table';
+
 const ROWS_PER_PAGE = 10;
 
 interface MembersTableProps {
@@ -46,7 +46,7 @@ export default async function MembersTable({
     <div className="flex flex-col h-full">
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto rounded-md border">
-          <DataTable columns={columns} data={data ?? []} />
+          <MembersClientTable data={data ?? []} config={config} />
         </div>
       </div>
       <div className="sticky bottom-0 left-0 right-0 bg-background py-3 flex flex-col sm:flex-row justify-between items-center gap-2">
