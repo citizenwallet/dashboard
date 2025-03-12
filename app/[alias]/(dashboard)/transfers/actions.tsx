@@ -8,8 +8,10 @@ export const getTransfersOfTokenAction = async (args: {
   tokenAddress: string;
   query: string;
   page: number;
+  from?: string;
+  to?: string;
 }) => {
-  const { chainId, tokenAddress, query, page } = args;
+  const { chainId, tokenAddress, query, page, from, to } = args;
 
   const supabase = getServiceRoleClient(chainId);
 
@@ -17,7 +19,9 @@ export const getTransfersOfTokenAction = async (args: {
     client: supabase,
     token: tokenAddress,
     query,
-    page
+    page,
+    from,
+    to
   });
 
   if (error) {

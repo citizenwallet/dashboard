@@ -10,12 +10,16 @@ interface TransferTableProps {
   query: string;
   page: number;
   alias: string;
+  from?: string;
+  to?: string;
 }
 
 export default async function TransferTable({
   query,
   page,
-  alias
+  alias,
+  from,
+  to
 }: TransferTableProps) {
   let config: Config | null = null;
 
@@ -37,7 +41,9 @@ export default async function TransferTable({
     chainId: primaryToken.chain_id,
     tokenAddress: primaryToken.address,
     query,
-    page
+    page,
+    from,
+    to
   });
 
   const totalPages = Math.ceil(Number(totalCount) / ROWS_PER_PAGE);
