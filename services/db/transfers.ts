@@ -46,7 +46,7 @@ export const getTransfersOfToken = async (args: {
     `,
       { count: 'exact' }
     )
-    .eq('token_contract', token)
+    .ilike('token_contract', token)
     .eq('status', 'success');
 
   if (from) {
