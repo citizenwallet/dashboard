@@ -28,8 +28,10 @@ export const getTransfersOfToken = async (args: {
   token: string;
   query: string;
   page: number;
+  from?: string;
+  to?: string;
 }): Promise<PostgrestResponse<TransferWithMembersT>> => {
-  const { client, token, query, page } = args;
+  const { client, token, query, page, from, to } = args;
 
   const offset = (page - 1) * PAGE_SIZE;
   const searchQuery = query.trim();
@@ -47,10 +49,24 @@ export const getTransfersOfToken = async (args: {
     .eq('token_contract', token)
     .eq('status', 'success');
 
+  if (from) {
+    // Convert to start of day in ISO format with UTC timezone
+    const fromDate = new Date(from);
+    fromDate.setUTCHours(0, 0, 0, 0);
+    queryBuilder = queryBuilder.gte('created_at', fromDate.toISOString());
+  }
+
+  if (to) {
+    // Convert to end of day in ISO format with UTC timezone
+    const toDate = new Date(to);
+    toDate.setUTCHours(23, 59, 59, 999);
+    queryBuilder = queryBuilder.lte('created_at', toDate.toISOString());
+  }
+
   if (searchQuery) {
     queryBuilder = queryBuilder.or(
       `account.ilike.*${searchQuery}*,username.ilike.*${searchQuery}*,name.ilike.*${searchQuery}*,description.ilike.*${searchQuery}*`,
-      { referencedTable: 'a_members' } // or 'a_members' if needed
+      { referencedTable: 'a_members' }
     );
   }
 
