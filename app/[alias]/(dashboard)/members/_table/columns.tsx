@@ -9,7 +9,7 @@ export const columns: ColumnDef<MemberT>[] = [
   {
     header: 'Member',
     cell: ({ row }) => {
-      const { image, username, account, name } = row.original;
+      const { image, username, account } = row.original;
 
       return (
         <div className="flex items-center gap-2 min-w-[200px]">
@@ -65,7 +65,7 @@ export const columns: ColumnDef<MemberT>[] = [
   }
 ];
 
-export const skeletonColumns: ColumnDef<any>[] = [
+export const skeletonColumns: ColumnDef<MemberT>[] = [
   {
     header: 'Member',
     cell: () => {

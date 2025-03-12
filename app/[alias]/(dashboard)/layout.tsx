@@ -8,7 +8,6 @@ import { fetchCommunitiesOfChainAction } from '@/app/_actions/community-actions'
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
 import { getAdminByEmailAction } from '@/app/_actions/admin-actions';
-import UrlSearch from '@/components/custom/url-search';
 
 export default async function DashboardLayout({
   children,

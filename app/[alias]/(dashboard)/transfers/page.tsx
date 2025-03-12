@@ -13,11 +13,21 @@ import { DatePickerWithPresets } from '@/components/custom/date-picker-with-pres
 
 export default async function TransactionsPage(props: {
   params: Promise<{ alias: string }>;
-  searchParams: Promise<{ query?: string; page?: string; from?: string; to?: string }>;
+  searchParams: Promise<{
+    query?: string;
+    page?: string;
+    from?: string;
+    to?: string;
+  }>;
 }) {
   const { alias } = await props.params;
 
-  const { query: queryParam, page: pageParam, from: fromParam, to: toParam } = await props.searchParams;
+  const {
+    query: queryParam,
+    page: pageParam,
+    from: fromParam,
+    to: toParam
+  } = await props.searchParams;
   const query = queryParam || '';
   const page = pageParam || '1';
   const from = fromParam;
@@ -41,7 +51,13 @@ export default async function TransactionsPage(props: {
             </div>
           }
         >
-          <TransferTable query={query} page={parseInt(page)} alias={alias} from={from} to={to} />
+          <TransferTable
+            query={query}
+            page={parseInt(page)}
+            alias={alias}
+            from={from}
+            to={to}
+          />
         </Suspense>
       </CardContent>
     </Card>
