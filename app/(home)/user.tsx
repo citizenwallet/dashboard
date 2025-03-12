@@ -7,10 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import {
-  signOutAction
-} from '@/app/_actions/admin-actions';
-import { useState } from 'react';
+import { signOutAction } from '@/app/_actions/admin-actions';
 import { AdminT } from '@/services/db/admin';
 import { Avatar, AvatarImage, AvatarFallback } from '@radix-ui/react-avatar';
 import { Session } from 'next-auth';
@@ -21,8 +18,7 @@ interface UserProps {
 }
 
 export default function User(props: UserProps) {
-  const [admin, setAdmin] = useState<AdminT | null>(props.admin);
-
+  const { admin } = props;
 
   return (
     <DropdownMenu>

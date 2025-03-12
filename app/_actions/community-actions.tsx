@@ -2,16 +2,12 @@
 
 import { Config } from '@citizenwallet/sdk';
 
-export const fetchCommunitiesOfChainAction = async (
-  args: {
-    chainId: number,
-    accessList: string[],
-    query?: string
-  }
-): Promise<{ communities: Config[]; total: number }> => {
-
+export const fetchCommunitiesOfChainAction = async (args: {
+  chainId: number;
+  accessList: string[];
+  query?: string;
+}): Promise<{ communities: Config[]; total: number }> => {
   const { chainId, accessList, query } = args;
-
 
   if (!process.env.COMMUNITIES_CONFIG_URL) {
     throw new Error('COMMUNITIES_CONFIG_URL is not set');

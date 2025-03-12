@@ -21,11 +21,8 @@ export default function UrlSearch() {
       params.delete('query');
     }
 
-    // Simulate search delay and update URL
-    setTimeout(() => {
-      router.push(`${pathname}?${params.toString()}`);
-      setIsSearching(false);
-    }, 1000);
+    router.push(`${pathname}?${params.toString()}`);
+    setIsSearching(false);
   }, 300); // Debounce for 300ms
 
   const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {

@@ -75,7 +75,7 @@ export function CommunitySwitcher({
             <DropdownMenuLabel className="text-xs text-muted-foreground">
               Communities
             </DropdownMenuLabel>
-            {communities.map((community, index) => {
+            {communities.map((community) => {
               const communityConfig = new CommunityConfig(community);
               const alias = communityConfig.community.alias;
               const primaryToken = communityConfig.primaryToken;

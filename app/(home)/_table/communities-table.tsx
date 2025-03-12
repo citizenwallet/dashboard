@@ -16,21 +16,20 @@ interface CommunitiesTableProps {
 
 export async function CommunitiesTable({
   query,
-  page,
   chainId
 }: CommunitiesTableProps) {
   const session = await auth();
 
   const admin = await getAdminByEmailAction({
     email: session?.user?.email ?? '',
-    chainId: 42220
+    chainId
   });
 
   let communities: Config[] = [];
   let total: number = 0;
   try {
     const result = await fetchCommunitiesOfChainAction({
-      chainId: 42220,
+      chainId,
       accessList: admin?.community_access_list ?? [],
       query: query
     });
