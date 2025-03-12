@@ -36,7 +36,7 @@ export const createColumns = (
         <div className="flex items-center gap-2 min-w-[200px]">
           <Avatar className="h-6 w-6 flex-shrink-0">
             <AvatarImage src={image} alt={username} />
-            <AvatarFallback>{username}</AvatarFallback>
+            <AvatarFallback>{username.slice(0, 2)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
             <span className="text-xs text-muted-foreground">@{username}</span>
@@ -56,7 +56,7 @@ export const createColumns = (
         <div className="flex items-center gap-2 min-w-[200px]">
           <Avatar className="h-6 w-6 flex-shrink-0">
             <AvatarImage src={image} alt={username} />
-            <AvatarFallback>{username}</AvatarFallback>
+            <AvatarFallback>{username.slice(0, 2)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
             <span className="text-xs text-muted-foreground">@{username}</span>

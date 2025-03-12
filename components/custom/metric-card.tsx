@@ -18,7 +18,7 @@ export function MetricCard({ icon, title, value, change }: MetricCardProps) {
         <h3 className="text-lg md:text-xl font-medium text-zinc-800">
           {title}
         </h3>
-        <span className="text-lg md:text-xl text-zinc-500">{icon}</span>
+        <span className="text-lg md:text-xl text-zinc-500 ml-10">{icon}</span>
       </CardHeader>
       <CardContent className="pb-6">
         <div className="space-y-1">
