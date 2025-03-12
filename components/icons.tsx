@@ -133,9 +133,15 @@ export function VercelLogo(props: React.SVGProps<SVGSVGElement>) {
  * @param props.tokenSymbol - Symbol of the community token (e.g. "BREAD")
  * @returns A circular avatar component displaying the logo or token symbol fallback
  */
-export function CommunityLogo(props: { logoUrl: string; tokenSymbol: string }) {
+export function CommunityLogo(props: {
+  logoUrl: string;
+  tokenSymbol: string;
+  size?: number;
+}) {
+  const size = props.size ?? 10;
+
   return (
-    <Avatar className="h-10 w-10">
+    <Avatar className={`h-${size} w-${size}`}>
       <AvatarImage src={props.logoUrl} alt="community logo" />
       <AvatarFallback>{props.tokenSymbol}</AvatarFallback>
     </Avatar>

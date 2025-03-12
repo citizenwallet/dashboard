@@ -1,6 +1,10 @@
 import 'server-only';
 
-import { SupabaseClient, PostgrestSingleResponse, PostgrestMaybeSingleResponse } from '@supabase/supabase-js';
+import {
+  SupabaseClient,
+  PostgrestSingleResponse,
+  PostgrestMaybeSingleResponse
+} from '@supabase/supabase-js';
 const TABLE_NAME = 'otp';
 
 export interface OtpT {

@@ -30,8 +30,7 @@ export async function sendOTPAction(args: { email: string; chainId: number }) {
   const otp = generateOTP();
 
   // brevo
-  // TODO: uncomment later
-  // await sendOtpEmail({ email, otp });
+  sendOtpEmail({ email, otp });
 
   // db
   const { error: saveOTPError } = await saveOTP({

@@ -47,26 +47,26 @@ export default function OtpForm({
     }
   });
 
-async function onSubmit(values: z.infer<typeof otpFormSchema>) {
-  const { code } = values;
-  startTransition(async () => {
-    try {
-      const result = await signInWithOTP({ email, code, chainId: 42220 });
-      if (result?.success) {
-        toast.success('Login successful!');
-        router.push('/');
+  async function onSubmit(values: z.infer<typeof otpFormSchema>) {
+    const { code } = values;
+    startTransition(async () => {
+      try {
+        const result = await signInWithOTP({ email, code, chainId: 42220 });
+        if (result?.success) {
+          toast.success('Login successful!');
+          router.push('/');
+        }
+      } catch (error) {
+        console.error(error);
+        if (error instanceof Error) {
+          // Display the exact error message from auth.config.ts
+          toast.error(error.message);
+        } else {
+          toast.error('Could not verify login code');
+        }
       }
-    } catch (error) {
-      console.error(error);
-      if (error instanceof Error) {
-        // Display the exact error message from auth.config.ts
-        toast.error(error.message);
-      } else {
-        toast.error('Could not verify login code');
-      }
-    }
-  });
-}
+    });
+  }
 
   return (
     <Card className="w-full">
