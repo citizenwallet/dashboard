@@ -34,7 +34,7 @@ export const getTransfersOfToken = async (args: {
   const { client, token, query, page, from, to } = args;
 
   const offset = (page - 1) * PAGE_SIZE;
-  const searchQuery = query.trim();
+  const searchQuery = query.trim().toLowerCase();
 
   let queryBuilder = client
     .from(TABLE_NAME)
@@ -65,8 +65,7 @@ export const getTransfersOfToken = async (args: {
 
   if (searchQuery) {
     queryBuilder = queryBuilder.or(
-      `account.ilike.*${searchQuery}*,username.ilike.*${searchQuery}*,name.ilike.*${searchQuery}*,description.ilike.*${searchQuery}*`,
-      { referencedTable: 'a_members' }
+      `from_member_id.ilike.*${searchQuery}*,to_member_id.ilike.*${searchQuery}*,hash.ilike.*${searchQuery}*,description.ilike.*${searchQuery}*`
     );
   }
 
