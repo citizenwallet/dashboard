@@ -36,7 +36,7 @@ export default async function TransactionsPage(props: {
       </CardHeader>
       <CardContent className="h-[calc(100%-theme(spacing.24))]">
         <Suspense
-          key={query + page + from + to}
+          key={alias + query + page + from + to}
           fallback={
             <div className="h-full overflow-y-auto rounded-md border">
               <DataTable columns={skeletonColumns} data={placeholderData} />
