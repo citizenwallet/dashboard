@@ -5,16 +5,44 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
+import { Suspense } from 'react';
+import MembersTable from './_table/members-table';
+import { DataTable } from '@/components/ui/data-table';
+import { placeholderData, skeletonColumns } from './_table/columns';
 
-export default async function MembersPage() {
+export default async function TransactionsPage(props: {
+  params: Promise<{ alias: string }>;
+  searchParams: Promise<{
+    query?: string;
+    page?: string;
+  }>;
+}) {
+  const { alias } = await props.params;
+
+  const { query: queryParam, page: pageParam } = await props.searchParams;
+  const query = queryParam || '';
+  const page = pageParam || '1';
 
   return (
-    <Card className="overflow-hidden h-full flex flex-col">
-      <CardHeader>
-        <CardTitle>Members</CardTitle>
-        <CardDescription>Members of the community.</CardDescription>
+    <Card className="w-full h-[calc(100vh-theme(spacing.32))]">
+      <CardHeader className="flex flex-col sm:flex-row justify-between items-center gap-4">
+        <div>
+          <CardTitle>Members</CardTitle>
+          <CardDescription>Browse members of your community</CardDescription>
+        </div>
       </CardHeader>
-      <CardContent className="flex-1"></CardContent>
+      <CardContent className="h-[calc(100%-theme(spacing.24))]">
+        <Suspense
+          key={alias + query + page}
+          fallback={
+            <div className="h-full overflow-y-auto rounded-md border">
+              <DataTable columns={skeletonColumns} data={placeholderData} />
+            </div>
+          }
+        >
+          <MembersTable query={query} page={Number(page)} alias={alias} />
+        </Suspense>
+      </CardContent>
     </Card>
   );
 }
