@@ -26,7 +26,7 @@ export const createColumns = (
         <div className="flex items-center gap-2 w-[250px]">
           <Avatar className="h-10 w-10 flex-shrink-0">
             <AvatarImage src={image} alt={username} />
-            <AvatarFallback>{username}</AvatarFallback>
+            <AvatarFallback>{username.slice(0, 2)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col min-w-0">
             <span className="font-medium truncate">@{username}</span>

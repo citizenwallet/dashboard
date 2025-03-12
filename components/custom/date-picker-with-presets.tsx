@@ -68,8 +68,8 @@ export function DatePickerWithPresets() {
   const pathname = usePathname();
   const router = useRouter();
   const [date, setDate] = React.useState<DateRange | undefined>({
-    from: undefined, // TODO: get from url params
-    to: undefined // TODO: get from url params
+    from: new Date(searchParams.get('from') || ''),
+    to: new Date(searchParams.get('to') || '')
   });
   const [preset, setPreset] = React.useState<Preset>('all');
   const [isCustomRange, setIsCustomRange] = React.useState(false);
