@@ -37,7 +37,6 @@ export const formatERC20TransactionValue = (
 
   console.log('value', value, 'decimals', token.decimals);
 
-
   try {
     if (token.decimals === 0) {
       // Handle non-decimal tokens
@@ -46,16 +45,12 @@ export const formatERC20TransactionValue = (
       return trimZeros || '0'; // return '0' if empty string
     }
 
-     if (token.decimals === 6) {
-       // Handle non-decimal tokens
-       const noDecimal = value.replace('.', '');
-       const trimZeros = noDecimal.replace(/^0+/, '');
-       return trimZeros || '0'; // return '0' if empty string
-     }
-
-    
-
-
+    if (token.decimals === 6) {
+      // Handle non-decimal tokens
+      const noDecimal = value.replace('.', '');
+      const trimZeros = noDecimal.replace(/^0+/, '');
+      return trimZeros || '0'; // return '0' if empty string
+    }
 
     // For decimal tokens, first convert to whole number
     const valueWithoutDecimals = parseUnits(value, token.decimals).toString();
