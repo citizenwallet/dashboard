@@ -25,7 +25,7 @@ export function MetricCard({ icon, title, value, change }: MetricCardProps) {
           <p className="text-3xl md:text-5xl font-bold tracking-tighter text-zinc-900">
             {value}
           </p>
-          <p className="text-xs md:text-sm text-zinc-600">
+          {/* <p className="text-xs md:text-sm text-zinc-600">
             <span
               className={
                 change?.trend === 'down' ? 'text-red-600' : 'text-emerald-600'
@@ -35,7 +35,7 @@ export function MetricCard({ icon, title, value, change }: MetricCardProps) {
               {change?.value}
             </span>{' '}
             from last month
-          </p>
+          </p> */}
         </div>
       </CardContent>
     </Card>
