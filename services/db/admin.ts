@@ -2,8 +2,10 @@ import 'server-only';
 
 import {
   SupabaseClient,
-  PostgrestMaybeSingleResponse
+  PostgrestMaybeSingleResponse,
+  PostgrestResponse
 } from '@supabase/supabase-js';
+
 const TABLE_NAME = 'admin';
 
 export interface AdminT {
@@ -23,4 +25,13 @@ export const getAdminByEmail = async (args: {
   const { client, email } = args;
 
   return client.from(TABLE_NAME).select('*').eq('email', email).maybeSingle();
+};
+
+
+export const getAdmins = async (args: {
+  client: SupabaseClient;
+}): Promise<PostgrestResponse<AdminT>> => {
+  const { client } = args;
+
+  return client.from(TABLE_NAME).select('*', { count: 'exact' });
 };
