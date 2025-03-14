@@ -26,6 +26,11 @@ export default async function Layout({
     chainId: 42220
   });
 
+  if (admin?.community_access_list.length !== 0) {
+    const firstCommunity = admin?.community_access_list[0];
+    redirect(`/${firstCommunity}`);
+  }
+
   return (
     <main className="flex min-h-screen w-full flex-col bg-muted/40">
       <div className="flex flex-col sm:gap-4 sm:py-4">
