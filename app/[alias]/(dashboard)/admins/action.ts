@@ -1,14 +1,15 @@
 'use server';
 
 import { getServiceRoleClient } from '@/services/db';
-import { getAdmins } from '@/services/db/admin';
+import { getAdminsOfCommunity } from '@/services/db/admin';
 
-export const getAdminsAction = async (args: { chainId: number }) => {
-  const { chainId } = args;
+export const getAdminsOfCommunityAction = async (args: { chainId: number, alias: string }) => {
+  const { chainId, alias } = args;
 
   const supabase = getServiceRoleClient(chainId);
 
-  const { data, count, error } = await getAdmins({
+  const { data, count, error } = await getAdminsOfCommunity({
+    alias: alias,
     client: supabase
   });
 

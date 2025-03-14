@@ -1,15 +1,18 @@
-import { Config } from '@citizenwallet/sdk';
-import { fetchCommunitiesOfChainAction } from '@/app/_actions/community-actions';
 import UrlPagination from '@/components/custom/pagination-via-url';
-import { getAdminsAction } from '../action';
+import { getAdminsOfCommunityAction } from '../action';
 import { AdminsClientTable } from './admins-client-table';
 
 const ROWS_PER_PAGE = 10;
 
-export default async function AdminsTable() {
+interface AdminsTableProps {
+  alias: string;
+}
 
-  const { data, count: totalCount } = await getAdminsAction({
-    chainId: 42220
+export default async function AdminsTable({ alias }: AdminsTableProps) {
+
+  const { data, count: totalCount } = await getAdminsOfCommunityAction({
+    chainId: 42220,
+    alias: alias
   });
 
   const totalPages = Math.ceil(Number(totalCount) / ROWS_PER_PAGE);
