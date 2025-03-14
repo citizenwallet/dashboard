@@ -28,10 +28,11 @@ export const getAdminByEmail = async (args: {
 };
 
 
-export const getAdmins = async (args: {
+export const getAdminsOfCommunity = async (args: {
+  alias: string;
   client: SupabaseClient;
 }): Promise<PostgrestResponse<AdminT>> => {
-  const { client } = args;
+  const { alias, client } = args;
 
-  return client.from(TABLE_NAME).select('*', { count: 'exact' });
+  return client.from(TABLE_NAME).select('*', { count: 'exact' }).contains('community_access_list', [alias]);
 };
