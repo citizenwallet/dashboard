@@ -11,7 +11,7 @@ import { skeletonColumns, placeholderData } from './_table/columns';
 import { DataTable } from '@/components/ui/data-table';
 import { DatePickerWithPresets } from '@/components/custom/date-picker-with-presets';
 
-export default async function TransactionsPage(props: {
+export default async function Page(props: {
   params: Promise<{ alias: string }>;
   searchParams: Promise<{
     query?: string;
