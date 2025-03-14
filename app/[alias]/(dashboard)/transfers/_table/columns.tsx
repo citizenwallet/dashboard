@@ -6,11 +6,10 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TransferWithMembersT } from '@/services/db/transfers';
 import {
   formatAddress,
-  formatDate,
-  formatERC20TransactionValue
 } from '@/lib/utils';
 import { CommunityLogo } from '@/components/icons';
 import { Skeleton } from '@/components/ui/skeleton';
+import { format } from 'date-fns';
 
 export const createColumns = (
   communityConfig: CommunityConfig
@@ -71,11 +70,7 @@ export const createColumns = (
     accessorKey: 'value',
     cell: ({ row }) => {
       const value = row.original.value;
-      const formattedValue = formatERC20TransactionValue(
-        communityConfig,
-        value
-      );
-
+   
       return (
         <div className="flex items-center gap-1 min-w-[100px]">
           <span className="font-medium">{value}</span>
@@ -101,12 +96,11 @@ export const createColumns = (
     header: 'Created at',
     accessorKey: 'created_at',
     cell: ({ row }) => {
-      const createdAt = row.original.created_at;
-      const createdAtFormatted = formatDate(createdAt);
+      const createdAt = new Date(row.original.created_at);
 
       return (
         <span className="text-muted-foreground text-sm whitespace-nowrap min-w-[150px]">
-          {createdAtFormatted}
+          {createdAt.toLocaleString()}
         </span>
       );
     }
