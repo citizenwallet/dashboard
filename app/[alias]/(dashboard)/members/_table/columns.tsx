@@ -120,13 +120,12 @@ export const createColumns = (
     header: 'Created at',
     accessorKey: 'created_at',
     cell: ({ row }) => {
-      const createdAt = row.original.created_at;
-      const createdAtFormatted = formatDate(createdAt);
+      const createdAt = new Date(row.original.created_at);
 
       return (
         <div className="w-[150px]">
           <span className="text-muted-foreground text-sm whitespace-nowrap">
-            {createdAtFormatted}
+            {createdAt.toLocaleString()}
           </span>
         </div>
       );
@@ -136,13 +135,12 @@ export const createColumns = (
     header: 'Updated at',
     accessorKey: 'updated_at',
     cell: ({ row }) => {
-      const updatedAt = row.original.updated_at;
-      const updatedAtFormatted = formatDate(updatedAt);
+      const updatedAt = new Date(row.original.updated_at);
 
       return (
         <div className="w-[150px]">
           <span className="text-muted-foreground text-sm whitespace-nowrap">
-            {updatedAtFormatted}
+            {updatedAt.toLocaleString()}
           </span>
         </div>
       );
