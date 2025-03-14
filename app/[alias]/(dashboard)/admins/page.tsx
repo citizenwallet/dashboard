@@ -34,7 +34,7 @@ export default async function Page(props: {
             </div>
           }
         >
-          <AdminsTable />
+          <AdminsTable alias={alias} />
         </Suspense>
       </CardContent>
     </Card>
