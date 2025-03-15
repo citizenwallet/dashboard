@@ -4,19 +4,16 @@ import { ColumnDef } from '@tanstack/react-table';
 import { CommunityConfig } from '@citizenwallet/sdk';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { TransferWithMembersT } from '@/services/db/transfers';
-import {
-  formatAddress,
-} from '@/lib/utils';
+import { formatAddress } from '@/lib/utils';
 import { CommunityLogo } from '@/components/icons';
 import { Skeleton } from '@/components/ui/skeleton';
-import { format } from 'date-fns';
 
 export const createColumns = (
   communityConfig: CommunityConfig
 ): ColumnDef<TransferWithMembersT>[] => [
   {
-    header: 'Hash',
-    accessorKey: 'hash',
+    header: 'ID',
+    accessorKey: 'id',
     cell: ({ row }) => {
       const hash = row.original.hash;
       const hashFormatted = formatAddress(hash);
@@ -29,17 +26,25 @@ export const createColumns = (
     header: 'From',
     accessorKey: 'from_member',
     cell: ({ row }) => {
-      const { image, username, account } = row.original.from_member;
+      const { image, username, name, account } = row.original.from_member;
+
+      const isAnonymous = username?.includes('anonymous');
 
       return (
         <div className="flex items-center gap-2 min-w-[200px]">
-          <Avatar className="h-6 w-6 flex-shrink-0">
+          <Avatar className="h-8 w-8 flex-shrink-0">
             <AvatarImage src={image} alt={username} />
             <AvatarFallback>{username.slice(0, 2)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
             <span className="text-xs text-muted-foreground">@{username}</span>
-            <span className="text-xs font-mono">{formatAddress(account)}</span>
+            {isAnonymous ? (
+              <span className="text-xs font-mono">
+                {formatAddress(account)}
+              </span>
+            ) : (
+              <span className="text-xs font-mono">{name}</span>
+            )}
           </div>
         </div>
       );
@@ -49,17 +54,25 @@ export const createColumns = (
     header: 'To',
     accessorKey: 'to_member',
     cell: ({ row }) => {
-      const { image, username, account } = row.original.to_member;
+      const { image, username, name, account } = row.original.to_member;
+
+      const isAnonymous = username?.includes('anonymous');
 
       return (
         <div className="flex items-center gap-2 min-w-[200px]">
-          <Avatar className="h-6 w-6 flex-shrink-0">
+          <Avatar className="h-8 w-8 flex-shrink-0">
             <AvatarImage src={image} alt={username} />
             <AvatarFallback>{username.slice(0, 2)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
             <span className="text-xs text-muted-foreground">@{username}</span>
-            <span className="text-xs font-mono">{formatAddress(account)}</span>
+            {isAnonymous ? (
+              <span className="text-xs font-mono">
+                {formatAddress(account)}
+              </span>
+            ) : (
+              <span className="text-xs font-mono">{name}</span>
+            )}
           </div>
         </div>
       );
@@ -70,7 +83,7 @@ export const createColumns = (
     accessorKey: 'value',
     cell: ({ row }) => {
       const value = row.original.value;
-   
+
       return (
         <div className="flex items-center gap-1 min-w-[100px]">
           <span className="font-medium">{value}</span>
@@ -93,7 +106,7 @@ export const createColumns = (
     }
   },
   {
-    header: 'Created at',
+    header: 'Date',
     accessorKey: 'created_at',
     cell: ({ row }) => {
       const createdAt = new Date(row.original.created_at);
