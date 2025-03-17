@@ -29,6 +29,8 @@ export const createColumns = (
       const { image, username, name, account } = row.original.from_member;
 
       const isAnonymous = username?.includes('anonymous');
+      const isZeroAddress =
+        account === '0x0000000000000000000000000000000000000000';
 
       return (
         <div className="flex items-center gap-2 min-w-[200px]">
@@ -37,10 +39,16 @@ export const createColumns = (
             <AvatarFallback>{username.slice(0, 2)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">@{username}</span>
+            <span className="text-xs text-muted-foreground">
+              {isZeroAddress
+                ? `@${communityConfig.primaryToken.symbol}`
+                : `@${username}`}
+            </span>
             {isAnonymous ? (
               <span className="text-xs font-mono">
-                {formatAddress(account)}
+                {isZeroAddress
+                  ? communityConfig.community.name
+                  : formatAddress(account)}
               </span>
             ) : (
               <span className="text-xs font-mono">{name}</span>
@@ -57,6 +65,8 @@ export const createColumns = (
       const { image, username, name, account } = row.original.to_member;
 
       const isAnonymous = username?.includes('anonymous');
+      const isZeroAddress =
+        account === '0x0000000000000000000000000000000000000000';
 
       return (
         <div className="flex items-center gap-2 min-w-[200px]">
@@ -65,10 +75,16 @@ export const createColumns = (
             <AvatarFallback>{username.slice(0, 2)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">@{username}</span>
+            <span className="text-xs text-muted-foreground">
+              {isZeroAddress
+                ? `@${communityConfig.primaryToken.symbol}`
+                : `@${username}`}
+            </span>
             {isAnonymous ? (
               <span className="text-xs font-mono">
-                {formatAddress(account)}
+                {isZeroAddress
+                  ? communityConfig.community.name
+                  : formatAddress(account)}
               </span>
             ) : (
               <span className="text-xs font-mono">{name}</span>

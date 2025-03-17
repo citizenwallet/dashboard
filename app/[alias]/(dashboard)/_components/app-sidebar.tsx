@@ -1,7 +1,13 @@
 'use client';
 
 import type * as React from 'react';
-import { Home, Users, LucideLineChart, Shield} from 'lucide-react';
+import {
+  Home,
+  Users,
+  LucideLineChart,
+  Shield,
+  HandHeartIcon
+} from 'lucide-react';
 import { NavProjects } from './nav-projects';
 import { NavUser } from './nav-user';
 import { CommunitySwitcher } from './community-switcher';
@@ -52,6 +58,11 @@ export function AppSidebar({
         name: 'Transfers',
         url: `/${selectedCommunity?.community.alias}/transfers`,
         icon: LucideLineChart
+      },
+      {
+        name: 'Marketplace',
+        url: `/${selectedCommunity?.community.alias}/marketplace`,
+        icon: HandHeartIcon
       },
       {
         name: 'Admins',

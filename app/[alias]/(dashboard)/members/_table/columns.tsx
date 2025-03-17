@@ -20,7 +20,11 @@ export const createColumns = (
   {
     header: 'Member',
     cell: ({ row }) => {
-      const { image, username, account } = row.original;
+      const { image, username, name, account } = row.original;
+
+      const isAnonymous = username?.includes('anonymous');
+      const isZeroAddress =
+        account === '0x0000000000000000000000000000000000000000';
 
       return (
         <div className="flex items-center gap-2 w-[250px]">
@@ -29,9 +33,19 @@ export const createColumns = (
             <AvatarFallback>{username.slice(0, 2)}</AvatarFallback>
           </Avatar>
           <div className="flex flex-col min-w-0">
-            <span className="font-medium truncate">@{username}</span>
+            <span className="font-medium truncate">
+              {isAnonymous
+                ? isZeroAddress
+                  ? communityConfig.community.name
+                  : `@${username}`
+                : `@${username}`}
+            </span>
             <span className="text-xs font-mono truncate">
-              {formatAddress(account)}
+              {isAnonymous
+                ? isZeroAddress
+                  ? communityConfig.community.name
+                  : formatAddress(account)
+                : name}
             </span>
           </div>
         </div>
