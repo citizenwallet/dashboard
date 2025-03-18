@@ -1,11 +1,11 @@
 'use client';
 
 import { DataTable } from '@/components/ui/data-table';
-import { AdminT } from '@/services/db/admin';
+import { AdminT, AdminCommunityAccessT } from '@/services/db/admin';
 import { createColumns } from './columns';
 
 interface AdminsClientTableProps {
-  data: AdminT[];
+  data: (AdminCommunityAccessT & { admin: AdminT })[];
 }
 
 export function AdminsClientTable({

@@ -1,14 +1,18 @@
 'use client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { AdminT } from '@/services/db/admin';
+import { AdminT, AdminCommunityAccessT } from '@/services/db/admin';
 import { ColumnDef } from '@tanstack/react-table';
 import { Skeleton } from '@/components/ui/skeleton';
+import { cn } from '@/lib/utils';
 
-export const createColumns = (): ColumnDef<AdminT>[] => [
+export const createColumns = (): ColumnDef<
+  AdminCommunityAccessT & { admin: AdminT }
+>[] => [
   {
     header: 'Member',
     cell: ({ row }) => {
-      const { avatar, name, email } = row.original;
+      const { admin } = row.original;
+      const { avatar, name, email } = admin;
 
       return (
         <div className="flex items-center gap-2 w-[250px]">
@@ -20,6 +24,31 @@ export const createColumns = (): ColumnDef<AdminT>[] => [
             <span className="font-medium truncate">{name}</span>
             <span className="text-xs font-mono truncate">{email}</span>
           </div>
+        </div>
+      );
+    }
+  },
+  {
+    header: 'Role',
+    accessorKey: 'role',
+    cell: ({ row }) => {
+      const role = row.original.role;
+
+      return (
+        <div className="inline-flex items-center w-[150px]">
+          <span
+            className={cn(
+              'rounded-full font-medium flex items-center justify-center text-sm py-1 px-2.5 capitalize',
+              {
+                'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400':
+                  role === 'owner',
+                'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400':
+                  role === 'member'
+              }
+            )}
+          >
+            {role}
+          </span>
         </div>
       );
     }
@@ -41,7 +70,7 @@ export const createColumns = (): ColumnDef<AdminT>[] => [
   }
 ];
 
-export const skeletonColumns: ColumnDef<AdminT>[] = [
+export const skeletonColumns: ColumnDef<AdminCommunityAccessT & { admin: AdminT }>[] = [
   {
     header: 'Member',
     cell: () => (
@@ -64,4 +93,4 @@ export const skeletonColumns: ColumnDef<AdminT>[] = [
   }
 ];
 
-export const placeholderData: AdminT[] = Array(5);
+export const placeholderData: (AdminCommunityAccessT & { admin: AdminT })[] = Array(5);
