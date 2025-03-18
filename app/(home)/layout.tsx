@@ -26,8 +26,10 @@ export default async function Layout({
     chainId: 42220
   });
 
-  if (admin?.community_access_list.length !== 0) {
-    const firstCommunity = admin?.community_access_list[0];
+  const accessList = admin?.admin_community_access.map((access) => access.alias) ?? [];
+
+  if (accessList.length !== 0) {
+    const firstCommunity = accessList[0];
     redirect(`/${firstCommunity}`);
   }
 
