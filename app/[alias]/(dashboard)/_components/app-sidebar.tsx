@@ -43,6 +43,7 @@ export function AppSidebar({
       email: admin?.email ?? '',
       avatar: admin?.avatar ?? ''
     },
+    // TODO: add treasury
     projects: [
       {
         name: 'Home',
@@ -59,11 +60,11 @@ export function AppSidebar({
         url: `/${selectedCommunity?.community.alias}/transfers`,
         icon: LucideLineChart
       },
-      {
-        name: 'Marketplace',
-        url: `/${selectedCommunity?.community.alias}/marketplace`,
-        icon: HandHeartIcon
-      },
+      // {
+      //   name: 'Marketplace',
+      //   url: `/${selectedCommunity?.community.alias}/marketplace`,
+      //   icon: HandHeartIcon
+      // },
       {
         name: 'Admins',
         url: `/${selectedCommunity?.community.alias}/admins`,
