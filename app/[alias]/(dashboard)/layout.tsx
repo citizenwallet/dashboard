@@ -29,13 +29,16 @@ export default async function DashboardLayout({
 
   const { alias } = await params;
 
-  if (!admin?.community_access_list.includes(alias)) {
+  const accessList =
+    admin?.admin_community_access.map((access) => access.alias) ?? [];
+
+  if (!accessList.includes(alias)) {
     redirect('/');
   }
 
   const { communities } = await fetchCommunitiesOfChainAction({
     chainId: 42220,
-    accessList: admin.community_access_list
+    accessList: accessList
   });
 
   return (
