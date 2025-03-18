@@ -63,7 +63,7 @@ export async function signInWithOTP(args: {
 
     return { success: true };
   } catch (error) {
-    console.log('error', JSON.stringify(error, null, 2));
+    console.error('error', JSON.stringify(error, null, 2));
     if (error instanceof CredentialsSignin) {
       throw new Error(
         error.message.replace(

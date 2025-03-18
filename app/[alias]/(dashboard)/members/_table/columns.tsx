@@ -70,18 +70,19 @@ export const createColumns = (
   },
   {
     header: 'Has mint role access?',
-    cell: ({ row }) => {
+    cell: function Cell({ row }) {
       const [hasMintRole, setHasMintRole] = useState<boolean | null>(null);
       const [isPending, setIsPending] = useState(true);
       const account = row.original.account;
       const tokenAddress = communityConfig.primaryToken.address;
       const primaryRpcUrl = communityConfig.primaryRPCUrl;
-      const rpc = new JsonRpcProvider(primaryRpcUrl);
 
       useEffect(() => {
         const checkMintRole = async () => {
           try {
             setIsPending(true);
+            const rpc = new JsonRpcProvider(primaryRpcUrl);
+
             const hasRole = await CWCheckRoleAccess(
               tokenAddress,
               MINTER_ROLE,
@@ -98,7 +99,7 @@ export const createColumns = (
         };
 
         checkMintRole();
-      }, [account, communityConfig]);
+      }, [account, primaryRpcUrl, tokenAddress]);
 
       if (isPending) {
         return <Skeleton className="h-4 w-24" />;

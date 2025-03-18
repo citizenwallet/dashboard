@@ -28,9 +28,10 @@ export async function CommunitiesTable({
   let communities: Config[] = [];
   let total: number = 0;
   try {
+    const accessList = admin?.admin_community_access.map((access) => access.alias);
     const result = await fetchCommunitiesOfChainAction({
       chainId,
-      accessList: admin?.community_access_list ?? [],
+      accessList: accessList ?? [],
       query: query
     });
     communities = result.communities;
