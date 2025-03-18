@@ -6,7 +6,8 @@ import {
   PostgrestResponse
 } from '@supabase/supabase-js';
 
-const TABLE_NAME = 'admin';
+const ADMIN_TABLE_NAME = 'admin';
+const ADMIN_COMMUNITY_ACCESS_TABLE_NAME = 'admin_community_access';
 
 export type AdminRoleT = 'owner' | 'member';
 export interface AdminT {
@@ -38,7 +39,7 @@ export const getAdminByEmail = async (args: {
   const { client, email } = args;
 
   return client
-    .from(TABLE_NAME)
+    .from(ADMIN_TABLE_NAME)
     .select(
       `
       *,
@@ -49,15 +50,17 @@ export const getAdminByEmail = async (args: {
     .maybeSingle();
 };
 
-// TODO: take from admin_community_access table
 export const getAdminsOfCommunity = async (args: {
   alias: string;
   client: SupabaseClient;
-}): Promise<PostgrestResponse<AdminT>> => {
+}): Promise<PostgrestResponse<AdminCommunityAccessT & { admin: AdminT }>> => {
   const { alias, client } = args;
 
   return client
-    .from(TABLE_NAME)
-    .select('*', { count: 'exact' })
-    .contains('community_access_list', [alias]);
+    .from(ADMIN_COMMUNITY_ACCESS_TABLE_NAME)
+    .select(`
+      *,
+      admin!admin_id(*)
+    `, { count: 'exact' })
+    .eq('alias', alias);
 };
