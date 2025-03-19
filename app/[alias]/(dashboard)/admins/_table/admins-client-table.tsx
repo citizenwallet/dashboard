@@ -10,12 +10,14 @@ interface AdminsClientTableProps {
   data: (AdminCommunityAccessT & { admin: AdminT })[];
   adminRole?: AdminRoleT;
   alias: string;
+  chainId: number;
 }
 
 export function AdminsClientTable({
   data,
   alias,
-  adminRole
+  adminRole,
+  chainId
 }: AdminsClientTableProps) {
   const [isPending, startTransition] = useTransition();
   const [optimisticAdmins, addOptimisticRemoval] = useOptimistic(
@@ -33,7 +35,7 @@ export function AdminsClientTable({
         await removeAdminFromCommunityAction({
           adminIdToRemove: adminId,
           alias: alias,
-          chainId: 42220
+          chainId: chainId
         });
       } catch (error) {
         // If the removal fails, the state will automatically revert

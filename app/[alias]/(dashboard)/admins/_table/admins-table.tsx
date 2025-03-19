@@ -58,6 +58,7 @@ export default async function AdminsTable({ alias }: AdminsTableProps) {
             data={data ?? []}
             adminRole={adminRole}
             alias={alias}
+            chainId={chainId}
           />
         </div>
       </div>
