@@ -141,7 +141,7 @@ export const createColumns = (
                     <span className="font-bold">{name}</span> as an admin?
                   </DialogDescription>
                 </DialogHeader>
-                <DialogFooter className="sm:justify-start">
+                <DialogFooter className="sm:justify-start gap-2">
                   <Button
                     disabled={props.isPending}
                     onClick={onRemoveAdmin}
