@@ -22,7 +22,7 @@ export default function AddAdmin({ alias }: AddAdminProps) {
       )}
     >
       <UserPlus className="h-4 w-4" />
-      Add Admin
+      <span className="hidden sm:inline">Add Admin</span>
     </Link>
   );
 }
