@@ -60,7 +60,7 @@ export const addAdminToCommunity = async (args: {
 
   const { data: admin, error: adminError } = await client
     .from(ADMIN_TABLE_NAME)
-    .insert({ email, name, avatar })
+    .upsert({ email, name, avatar }, { onConflict: 'email' })
     .select()
     .single();
 
@@ -71,7 +71,7 @@ export const addAdminToCommunity = async (args: {
     .insert({
       admin_id: admin.id,
       chain_id,
-      alias,  
+      alias,
       role
     })
     .select()
@@ -80,6 +80,20 @@ export const addAdminToCommunity = async (args: {
   if (accessError) throw accessError;
 
   return { admin, access };
+};
+
+export const removeAdminFromCommunity = async (args: {
+  client: SupabaseClient;
+  data: Pick<AdminCommunityAccessT, 'admin_id' | 'alias'>;
+}) => {
+  const { client, data } = args;
+  const { admin_id, alias } = data;
+
+  return client
+    .from(ADMIN_COMMUNITY_ACCESS_TABLE_NAME)
+    .delete()
+    .eq('admin_id', admin_id)
+    .eq('alias', alias);
 };
 
 export const getAdminsOfCommunity = async (args: {

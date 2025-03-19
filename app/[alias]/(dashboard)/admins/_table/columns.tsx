@@ -1,76 +1,180 @@
 'use client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { AdminT, AdminCommunityAccessT } from '@/services/db/admin';
+import { AdminT, AdminCommunityAccessT, AdminRoleT } from '@/services/db/admin';
 import { ColumnDef } from '@tanstack/react-table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
+import { Button } from '@/components/ui/button';
+import { Trash2 } from 'lucide-react';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
+import { useState } from 'react';
+import { toast } from 'sonner';
 
-export const createColumns = (): ColumnDef<
-  AdminCommunityAccessT & { admin: AdminT }
->[] => [
-  {
-    header: 'Member',
-    cell: ({ row }) => {
-      const { admin } = row.original;
-      const { avatar, name, email } = admin;
+interface CreateColumnsProps {
+  adminRole?: AdminRoleT;
+  alias: string;
+  onRemoveAdmin: (adminId: number) => Promise<void>;
+  isPending: boolean;
+}
 
-      return (
-        <div className="flex items-center gap-2 w-[250px]">
-          <Avatar className="h-10 w-10 flex-shrink-0">
-            <AvatarImage src={avatar ?? ''} alt={name ?? ''} />
-            <AvatarFallback>{name?.slice(0, 2) ?? ''}</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col min-w-0">
-            <span className="font-medium truncate">{name}</span>
-            <span className="text-xs font-mono truncate">{email}</span>
+export const createColumns = (
+  props: CreateColumnsProps
+): ColumnDef<AdminCommunityAccessT & { admin: AdminT }>[] => {
+  const baseColumns: ColumnDef<AdminCommunityAccessT & { admin: AdminT }>[] = [
+    {
+      header: 'Member',
+      cell: ({ row }) => {
+        const { admin } = row.original;
+        const { avatar, name, email } = admin;
+        return (
+          <div className="flex items-center gap-2 w-[250px]">
+            <Avatar className="h-10 w-10 flex-shrink-0">
+              <AvatarImage src={avatar ?? ''} alt={name ?? ''} />
+              <AvatarFallback>{name?.slice(0, 2) ?? ''}</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col min-w-0">
+              <span className="font-medium truncate">{name}</span>
+              <span className="text-xs font-mono truncate">{email}</span>
+            </div>
           </div>
-        </div>
-      );
+        );
+      }
+    },
+    {
+      header: 'Role',
+      accessorKey: 'role',
+      cell: ({ row }) => {
+        const role = row.original.role;
+        return (
+          <div className="inline-flex items-center w-[150px]">
+            <span
+              className={cn(
+                'rounded-full font-medium flex items-center justify-center text-sm py-1 px-2.5 capitalize',
+                {
+                  'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400':
+                    role === 'owner',
+                  'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400':
+                    role === 'member'
+                }
+              )}
+            >
+              {role}
+            </span>
+          </div>
+        );
+      }
+    },
+    {
+      header: 'Created at',
+      accessorKey: 'created_at',
+      cell: ({ row }) => {
+        const createdAt = new Date(row.original.created_at);
+        return (
+          <div className="w-[150px]">
+            <span className="text-muted-foreground text-sm whitespace-nowrap">
+              {createdAt.toLocaleString()}
+            </span>
+          </div>
+        );
+      }
     }
-  },
-  {
-    header: 'Role',
-    accessorKey: 'role',
-    cell: ({ row }) => {
-      const role = row.original.role;
+  ];
 
-      return (
-        <div className="inline-flex items-center w-[150px]">
-          <span
-            className={cn(
-              'rounded-full font-medium flex items-center justify-center text-sm py-1 px-2.5 capitalize',
-              {
-                'bg-purple-100 text-purple-800 dark:bg-purple-900/30 dark:text-purple-400':
-                  role === 'owner',
-                'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-400':
-                  role === 'member'
-              }
-            )}
-          >
-            {role}
-          </span>
-        </div>
-      );
+  const ownerColumns: ColumnDef<AdminCommunityAccessT & { admin: AdminT }>[] = [
+    {
+      id: 'remove',
+      cell: function RemoveCell({ row }) {
+        const [isDialogOpen, setIsDialogOpen] = useState(false);
+         
+        const {
+            admin_id,
+            admin: { name }
+          } = row.original;
+
+
+
+          const handleOpenDialog = () => {
+            setIsDialogOpen(true);
+          };
+
+          const handleCloseDialog = () => {
+            setIsDialogOpen(false);
+          };
+
+
+        const onRemoveAdmin = async () => {
+          try {
+            await props.onRemoveAdmin(admin_id);
+            handleCloseDialog();
+            toast.success('Admin removed successfully');
+          } catch (error) {
+            toast.error('Failed to remove admin');
+          }
+        };
+
+        return (
+          <>
+            <Button
+              variant="destructive"
+              disabled={props.isPending}
+              size="icon"
+              onClick={handleOpenDialog}
+            >
+              <Trash2 />
+            </Button>
+
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Remove Admin</DialogTitle>
+                  <DialogDescription>
+                    Are you sure you want to remove{' '}
+                    <span className="font-bold">{name}</span> as an admin?
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="sm:justify-start">
+                  <Button
+                    disabled={props.isPending}
+                    onClick={onRemoveAdmin}
+                    type="button"
+                    variant="destructive"
+                  >
+                    {props.isPending ? 'Removing...' : 'Remove'}
+                  </Button>
+                  <DialogClose asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={props.isPending}
+                    >
+                      Cancel
+                    </Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </>
+        );
+      }
     }
-  },
-  {
-    header: 'Created at',
-    accessorKey: 'created_at',
-    cell: ({ row }) => {
-      const createdAt = new Date(row.original.created_at);
+  ];
 
-      return (
-        <div className="w-[150px]">
-          <span className="text-muted-foreground text-sm whitespace-nowrap">
-            {createdAt.toLocaleString()}
-          </span>
-        </div>
-      );
-    }
-  }
-];
+  return props.adminRole === 'owner'
+    ? [...baseColumns, ...ownerColumns]
+    : baseColumns;
+};
 
-export const skeletonColumns: ColumnDef<AdminCommunityAccessT & { admin: AdminT }>[] = [
+export const skeletonColumns: ColumnDef<
+  AdminCommunityAccessT & { admin: AdminT }
+>[] = [
   {
     header: 'Member',
     cell: () => (
@@ -93,4 +197,5 @@ export const skeletonColumns: ColumnDef<AdminCommunityAccessT & { admin: AdminT 
   }
 ];
 
-export const placeholderData: (AdminCommunityAccessT & { admin: AdminT })[] = Array(5);
+export const placeholderData: (AdminCommunityAccessT & { admin: AdminT })[] =
+  Array(5);
