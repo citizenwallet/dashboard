@@ -11,7 +11,7 @@ export interface MetricCardProps {
   };
 }
 
-export function MetricCard({ icon, title, value, change }: MetricCardProps) {
+export function MetricCard({ icon, title, value }: MetricCardProps) {
   return (
     <Card className="bg-white text-zinc-900 rounded-2xl border-zinc-200">
       <CardHeader className="flex flex-row items-center justify-between pb-2 space-y-0">

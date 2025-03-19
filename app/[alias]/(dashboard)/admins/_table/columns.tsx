@@ -116,7 +116,11 @@ export const createColumns = (
             handleCloseDialog();
             toast.success('Admin removed successfully');
           } catch (error) {
-            toast.error('Failed to remove admin');
+             if (error instanceof Error) {
+               toast.error(error.message);
+             } else {
+              toast.error('Could not remove admin');
+            }
           }
         };
 
