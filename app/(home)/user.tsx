@@ -30,7 +30,7 @@ export default function User(props: UserProps) {
         >
           <Avatar className="h-10 w-10">
             <AvatarImage src={admin?.avatar ?? ''} alt="admin avatar" />
-            <AvatarFallback>{admin?.name ?? ''}</AvatarFallback>
+            <AvatarFallback>{admin?.name?.slice(0, 2) ?? ''}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
