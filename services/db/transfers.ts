@@ -2,6 +2,7 @@ import 'server-only';
 
 import { SupabaseClient, PostgrestResponse } from '@supabase/supabase-js';
 import { MemberT } from './members';
+import { ethers } from 'ethers';
 
 const TABLE_NAME = 'a_transfers';
 const PAGE_SIZE = 10;
@@ -70,6 +71,47 @@ export const getTransfersOfToken = async (args: {
   }
 
   return queryBuilder
+    .order('created_at', { ascending: false })
+    .range(offset, offset + PAGE_SIZE - 1)
+    .limit(PAGE_SIZE);
+};
+
+export const getTreasuryTransfersOfToken = async (args: {
+  client: SupabaseClient;
+  token: string;
+  profile: string;
+  query: string;
+  page: number;
+  from?: string;
+  to?: string;
+}): Promise<PostgrestResponse<TransferWithMembersT>> => {
+  const { client, token, profile, page } = args;
+
+  const offset = (page - 1) * PAGE_SIZE;
+
+  const { data: member, error: memberError } = await client
+    .from('a_members')
+    .select('*')
+    .eq('profile_contract', profile)
+    .eq('account', ethers.ZeroAddress)
+    .maybeSingle();
+
+  if (memberError) {
+    console.error(memberError);
+  }
+
+  return client
+    .from('a_transfers')
+    .select(
+      `
+    *,
+    from_member:a_members!from_member_id(*),
+    to_member:a_members!to_member_id(*)
+  `,
+      { count: 'exact' }
+  )
+    .eq('token_contract', token)
+    .or(`from_member_id.eq.${member?.id},to_member_id.eq.${member?.id}`)
     .order('created_at', { ascending: false })
     .range(offset, offset + PAGE_SIZE - 1)
     .limit(PAGE_SIZE);
