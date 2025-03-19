@@ -1,15 +1,7 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card';
 import { Suspense } from 'react';
 import AdminsTable from './_table/admins-table';
 import { DataTable } from '@/components/ui/data-table';
 import { placeholderData, skeletonColumns } from './_table/columns';
-import AddAdmin from './_components/add-admin';
 
 export default async function Page(props: {
   params: Promise<{ alias: string }>;
@@ -17,26 +9,26 @@ export default async function Page(props: {
   const { alias } = await props.params;
 
   return (
-    <Card className="w-full h-[calc(100vh-theme(spacing.32))]">
-      <CardHeader className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div>
-          <CardTitle>Admins</CardTitle>
-          <CardDescription>Admins of your community</CardDescription>
+    <Suspense key={alias} fallback={<Fallback />}>
+      <AdminsTable alias={alias} />
+    </Suspense>
+  );
+}
+
+async function Fallback() {
+  return (
+    <div className="flex flex-1 w-full flex-col h-full">
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="flex flex-col">
+          <h1 className="text-2xl font-bold">Admins</h1>
         </div>
-        <AddAdmin alias={alias} />
-      </CardHeader>
-      <CardContent className="h-[calc(100%-theme(spacing.24))]">
-        <Suspense
-          key={alias}
-          fallback={
-            <div className="h-full overflow-y-auto rounded-md border">
-              <DataTable columns={skeletonColumns} data={placeholderData} />
-            </div>
-          }
-        >
-          <AdminsTable alias={alias} />
-        </Suspense>
-      </CardContent>
-    </Card>
+      </div>
+
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full overflow-y-auto rounded-md border">
+          <DataTable columns={skeletonColumns} data={placeholderData} />
+        </div>
+      </div>
+    </div>
   );
 }
