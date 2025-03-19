@@ -43,7 +43,12 @@ export const getOTPOfSource = async (args: {
 }): Promise<PostgrestMaybeSingleResponse<OtpT>> => {
   const { client, source } = args;
 
-  return client.from(TABLE_NAME).select('*').eq('source', source).maybeSingle();
+  return client
+    .from(TABLE_NAME)
+    .select('*')
+    .eq('source', source)
+    .order('created_at', { ascending: false })
+    .maybeSingle();
 };
 
 export const deleteOTPOfSource = async (args: {
