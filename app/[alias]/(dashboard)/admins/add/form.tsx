@@ -29,6 +29,7 @@ import {
   sendAdminSignInInvitationAction,
   submitAdminInvitation
 } from './actions';
+import { useRouter } from 'next/navigation';
 
 interface InviteAdminFormProps {
   alias: string;
@@ -40,6 +41,7 @@ export default function InviteAdminForm({
   config
 }: InviteAdminFormProps) {
   const [isPending, startTransition] = useTransition();
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof inviteAdminFormSchema>>({
     resolver: zodResolver(inviteAdminFormSchema),
@@ -69,12 +71,21 @@ export default function InviteAdminForm({
           );
         }
 
-        await submitAdminInvitation({ formData: values, chainId });
+        const [invitationResult, signInResult] = await Promise.allSettled([
+          submitAdminInvitation({ formData: values, chainId }),
+          sendAdminSignInInvitationAction({ email, chainId })
+        ]);
 
-        await sendAdminSignInInvitationAction({ email, chainId });
+        // Check if either promise rejected
+        if (invitationResult.status === 'rejected') {
+          throw invitationResult.reason;
+        }
+        if (signInResult.status === 'rejected') {
+          throw signInResult.reason;
+        }
 
         toast.success(`Invitation sent to ${values.email}`);
-        form.reset();
+        router.back();
       } catch (error) {
         if (error instanceof Error) {
           toast.error(error.message);
