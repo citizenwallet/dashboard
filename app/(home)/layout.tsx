@@ -17,10 +17,6 @@ export default async function Layout({
     redirect('/login');
   }
 
-  if (lastViewedAlias) {
-    redirect(`/${lastViewedAlias}`);
-  }
-
   const admin = await getAdminByEmailAction({
     email: session.user.email ?? '',
     chainId: 42220
@@ -28,6 +24,10 @@ export default async function Layout({
 
   const accessList =
     admin?.admin_community_access.map((access) => access.alias) ?? [];
+
+  if (lastViewedAlias && accessList.includes(lastViewedAlias)) {
+    redirect(`/${lastViewedAlias}`);
+  }
 
   if (accessList.length !== 0) {
     const firstCommunity = accessList[0];
