@@ -50,6 +50,38 @@ export const getAdminByEmail = async (args: {
     .maybeSingle();
 };
 
+export const addAdminToCommunity = async (args: {
+  client: SupabaseClient;
+  data: Pick<AdminT, 'email' | 'name' | 'avatar'> &
+    Pick<AdminCommunityAccessT, 'chain_id' | 'alias' | 'role'>;
+}) => {
+  const { client, data } = args;
+  const { email, name, avatar, chain_id, alias, role } = data;
+
+  const { data: admin, error: adminError } = await client
+    .from(ADMIN_TABLE_NAME)
+    .insert({ email, name, avatar })
+    .select()
+    .single();
+
+  if (adminError) throw adminError;
+
+  const { data: access, error: accessError } = await client
+    .from(ADMIN_COMMUNITY_ACCESS_TABLE_NAME)
+    .insert({
+      admin_id: admin.id,
+      chain_id,
+      alias,  
+      role
+    })
+    .select()
+    .single();
+
+  if (accessError) throw accessError;
+
+  return { admin, access };
+};
+
 export const getAdminsOfCommunity = async (args: {
   alias: string;
   client: SupabaseClient;
@@ -58,9 +90,12 @@ export const getAdminsOfCommunity = async (args: {
 
   return client
     .from(ADMIN_COMMUNITY_ACCESS_TABLE_NAME)
-    .select(`
+    .select(
+      `
       *,
       admin!admin_id(*)
-    `, { count: 'exact' })
+    `,
+      { count: 'exact' }
+    )
     .eq('alias', alias);
 };
