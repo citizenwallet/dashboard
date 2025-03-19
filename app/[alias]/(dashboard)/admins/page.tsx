@@ -15,7 +15,7 @@ export default async function Page(props: {
   );
 }
 
-async function Fallback() {
+function Fallback() {
   return (
     <div className="flex flex-1 w-full flex-col h-full">
       <div className="grid grid-cols-2 gap-4 mb-4">

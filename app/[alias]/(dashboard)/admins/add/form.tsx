@@ -24,9 +24,11 @@ import {
   SelectValue
 } from '@/components/ui/select';
 import { getAdminByEmailAction } from '@/app/_actions/admin-actions';
-import { Config, CommunityConfig } from '@citizenwallet/sdk';
-import { sendOTPAction } from '@/app/login/actions';
-import { submitAdminInvitation } from './actions';
+import { Config } from '@citizenwallet/sdk';
+import {
+  sendAdminSignInInvitationAction,
+  submitAdminInvitation
+} from './actions';
 
 interface InviteAdminFormProps {
   alias: string;
@@ -54,8 +56,7 @@ export default function InviteAdminForm({
     const { email } = values;
 
     startTransition(async () => {
-      const communityConfig = new CommunityConfig(config);
-      const chainId = communityConfig.primaryToken.chain_id;
+      const { chain_id: chainId } = config.community.primary_token;
 
       try {
         const admin = await getAdminByEmailAction({ email, chainId });
@@ -64,13 +65,13 @@ export default function InviteAdminForm({
         );
         if (isAdmin) {
           throw new Error(
-            `Admin ${email} already exists in ${communityConfig.community.name}`
+            `Admin ${email} already exists in ${config.community.name}`
           );
         }
 
         await submitAdminInvitation({ formData: values, chainId });
 
-        await sendOTPAction({ email, chainId });
+        await sendAdminSignInInvitationAction({ email, chainId });
 
         toast.success(`Invitation sent to ${values.email}`);
         form.reset();
