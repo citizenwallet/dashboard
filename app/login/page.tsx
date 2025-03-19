@@ -22,27 +22,28 @@ export default function Page() {
     const autoSignIn = searchParams.get('auto_signin');
     const inviteEmail = searchParams.get('email');
     const inviteCode = searchParams.get('code');
+    const inviteAlias = searchParams.get('alias');
 
-    if (autoSignIn === 'true' && inviteEmail && inviteCode) {
+    if (autoSignIn === 'true' && inviteEmail && inviteCode && inviteAlias) {
       setIsAutoSigningIn(true);
       setEmail(inviteEmail);
+      document.cookie = `lastViewedAlias=${inviteAlias}; path=/; max-age=31536000`;
 
-
-      verifyOTP(inviteEmail, inviteCode).finally(() => {
+      verifyOTP(inviteEmail, inviteCode, inviteAlias).finally(() => {
         setIsAutoSigningIn(false);
         window.history.replaceState({}, '', '/login');
       });
     }
   }, [searchParams]);
 
-  async function verifyOTP(email: string, code: string) {
+  async function verifyOTP(email: string, code: string, alias: string) {
     try {
       const result = await signInWithOTP({ email, code, chainId: 42220 });
       if (result?.success) {
         toast.success('Login successful!');
-           setTimeout(() => {
-             router.replace('/');
-           }, 100);
+        setTimeout(() => {
+          router.replace(`/${alias}`);
+        }, 100);
       }
     } catch (error) {
       console.error(error);
