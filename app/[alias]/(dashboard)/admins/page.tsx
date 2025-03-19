@@ -9,7 +9,7 @@ import { Suspense } from 'react';
 import AdminsTable from './_table/admins-table';
 import { DataTable } from '@/components/ui/data-table';
 import { placeholderData, skeletonColumns } from './_table/columns';
-import UrlSearch from '@/components/custom/url-search';
+import AddAdmin from './_components/add-admin';
 
 export default async function Page(props: {
   params: Promise<{ alias: string }>;
@@ -23,7 +23,7 @@ export default async function Page(props: {
           <CardTitle>Admins</CardTitle>
           <CardDescription>Admins of your community</CardDescription>
         </div>
-        {/* <UrlSearch /> */}
+        <AddAdmin alias={alias} />
       </CardHeader>
       <CardContent className="h-[calc(100%-theme(spacing.24))]">
         <Suspense
