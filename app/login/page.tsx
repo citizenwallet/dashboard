@@ -1,14 +1,59 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { useSearchParams } from 'next/navigation';
 import EmailForm from './email-form';
 import OtpForm from './otp-form';
 import { sendOTPAction } from './actions';
 import { toast } from 'sonner';
+import { signInWithOTP } from './actions';
+import { useRouter } from 'next/navigation';
 
 export default function Page() {
+  const searchParams = useSearchParams();
+
   const [step, setStep] = useState<'email' | 'otp'>('email'); // toggle between email and otp form
   const [email, setEmail] = useState(''); // value of email from emai form
+  const [isAutoSigningIn, setIsAutoSigningIn] = useState(false);
+  const router = useRouter();
+
+  // Handle auto-login from invitation link
+  useEffect(() => {
+    const autoSignIn = searchParams.get('auto_signin');
+    const inviteEmail = searchParams.get('email');
+    const inviteCode = searchParams.get('code');
+
+    if (autoSignIn === 'true' && inviteEmail && inviteCode) {
+      setIsAutoSigningIn(true);
+      setEmail(inviteEmail);
+
+
+      verifyOTP(inviteEmail, inviteCode).finally(() => {
+        setIsAutoSigningIn(false);
+        window.history.replaceState({}, '', '/login');
+      });
+    }
+  }, [searchParams]);
+
+  async function verifyOTP(email: string, code: string) {
+    try {
+      const result = await signInWithOTP({ email, code, chainId: 42220 });
+      if (result?.success) {
+        toast.success('Login successful!');
+           setTimeout(() => {
+             router.replace('/');
+           }, 100);
+      }
+    } catch (error) {
+      console.error(error);
+      if (error instanceof Error) {
+        // Display the exact error message from auth.config.ts
+        toast.error(error.message);
+      } else {
+        toast.error('Could not verify login code');
+      }
+    }
+  }
 
   // countdown to resend login code
   const [resendCountDown, setResendCountDown] = useState(60);
@@ -75,7 +120,7 @@ export default function Page() {
 
   return (
     <div className="flex min-h-screen items-center justify-center bg-muted p-4">
-      <div className="w-full max-w-sm">
+      <div className="w-full max-w-sm relative">
         {step === 'email' ? (
           <EmailForm onSuccess={onEmailSuccess} />
         ) : (
@@ -85,6 +130,12 @@ export default function Page() {
             resendCountDown={resendCountDown}
             onResend={resendLoginCode}
           />
+        )}
+
+        {isAutoSigningIn && (
+          <div className="absolute inset-0 flex items-center justify-center bg-muted/80 backdrop-blur-sm rounded-lg">
+            <div className="text-lg font-medium">Signing you in...</div>
+          </div>
         )}
       </div>
     </div>
