@@ -46,4 +46,4 @@ export const sendOtpEmail = async (args: { email: string; otp: string }) => {
   }
 };
 
-// http://localhost:3000/login?auto_signin=true&email=lojito9608@barodis.com&code=327527&alias=community1
+// http://localhost:3000/login?auto_signin=true&email=lojito9608@barodis.com&code=760650&alias=seldesalm
