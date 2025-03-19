@@ -73,7 +73,7 @@ export default function InviteAdminForm({
 
         const [invitationResult, signInResult] = await Promise.allSettled([
           submitAdminInvitation({ formData: values, chainId }),
-          sendAdminSignInInvitationAction({ email, chainId })
+          sendAdminSignInInvitationAction({ email, chainId, alias })
         ]);
 
         // Check if either promise rejected

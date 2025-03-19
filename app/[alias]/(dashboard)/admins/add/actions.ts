@@ -56,8 +56,19 @@ export async function submitAdminInvitation(args: {
 export async function sendAdminSignInInvitationAction(args: {
   email: string;
   chainId: number;
+  alias: string;
 }) {
-  const { email, chainId } = args;
+  const { email, chainId, alias } = args;
+
+  const userRole = await getAuthUserRoleInCommunityAction({
+    chainId,
+    alias
+  });
+
+  if (userRole !== 'owner') {
+    throw new Error('You are not authorized to add admins to this community');
+  }
+
   const client = getServiceRoleClient(chainId);
   const otp = generateOTP();
 
