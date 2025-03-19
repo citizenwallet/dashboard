@@ -7,7 +7,6 @@ import { Suspense } from 'react';
 import { getMembersAction } from '@/app/[alias]/(dashboard)/members/action';
 import { getTransfersOfTokenAction } from '@/app/[alias]/(dashboard)/transfers/actions';
 import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
-import {CommunityConfig} from '@citizenwallet/sdk'
 
 export default async function ProductsPage(props: {
   params: Promise<{ alias: string }>;
@@ -25,7 +24,7 @@ export default async function ProductsPage(props: {
           />
         }
       >
-        {getMembersOverview({alias})}
+        {getMembersOverview({ alias })}
       </Suspense>
 
       <Suspense
@@ -37,27 +36,21 @@ export default async function ProductsPage(props: {
           />
         }
       >
-        {getTransactionsOverview({alias})}
+        {getTransactionsOverview({ alias })}
       </Suspense>
     </div>
   );
 }
 
+async function getMembersOverview({ alias }: { alias: string }) {
+  const { community: config } = await fetchCommunityByAliasAction(alias);
 
-async function getMembersOverview({alias}: {alias: string}) {
-  const config = await fetchCommunityByAliasAction(alias);
+  const { chain_id: chainId, address: profileContract } =
+    config.community.profile;
 
-  if (!config) {
-    return null;
-  }
-
-  const communityConfig = new CommunityConfig(config.community)
-
-  const primaryToken = communityConfig.primaryToken;
-
-  const { data, count } = await getMembersAction({
-    chainId: primaryToken.chain_id,
-    profile_contract: communityConfig.community.profile.address,
+  const { count } = await getMembersAction({
+    chainId,
+    profile_contract: profileContract,
     query: '',
     page: 1
   });
@@ -68,30 +61,25 @@ async function getMembersOverview({alias}: {alias: string}) {
       title="Members"
       value={count || 0}
       // change={{
-      //   value: 11.0, 
+      //   value: 11.0,
       //   trend: 'up'
       // }}
     />
   );
 }
 
-async function getTransactionsOverview({alias}: {alias: string}) {
-  const config = await fetchCommunityByAliasAction(alias);
+async function getTransactionsOverview({ alias }: { alias: string }) {
+  const { community: config } = await fetchCommunityByAliasAction(alias);
 
-  if (!config) {
-    return null;
-  }
+  const { chain_id: chainId, address: tokenAddress } =
+    config.community.primary_token;
 
-   const communityConfig = new CommunityConfig(config.community);
-
-   const primaryToken = communityConfig.primaryToken;
-
-   const { data, count } = await getTransfersOfTokenAction({
-     chainId: primaryToken.chain_id,
-     tokenAddress: primaryToken.address,
-     query: '',
-     page: 1
-   });
+  const { count } = await getTransfersOfTokenAction({
+    chainId,
+    tokenAddress,
+    query: '',
+    page: 1
+  });
 
   return (
     <MetricCard

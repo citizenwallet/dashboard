@@ -36,7 +36,7 @@ export async function submitAdminInvitation(args: {
   const client = getServiceRoleClient(chainId);
 
   try {
-    const admin = await addAdminToCommunity({
+    await addAdminToCommunity({
       client,
       data: {
         email,

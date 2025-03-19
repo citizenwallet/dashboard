@@ -4,7 +4,6 @@ import { AdminsClientTable } from './admins-client-table';
 import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
 import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 import { Separator } from '@/components/ui/separator';
-import { CommunityConfig } from '@citizenwallet/sdk';
 import AddAdmin from '@/app/[alias]/(dashboard)/admins/_components/add-admin';
 
 const ROWS_PER_PAGE = 10;
@@ -15,8 +14,8 @@ interface AdminsTableProps {
 
 export default async function AdminsTable({ alias }: AdminsTableProps) {
   const { community: config } = await fetchCommunityByAliasAction(alias);
-  const communityConfig = new CommunityConfig(config);
-  const { chain_id: chainId } = communityConfig.primaryToken;
+
+  const { chain_id: chainId } = config.community.primary_token;
 
   const [adminsResult, roleResult] = await Promise.allSettled([
     getAdminsOfCommunityAction({
@@ -43,9 +42,7 @@ export default async function AdminsTable({ alias }: AdminsTableProps) {
       <div className="grid grid-cols-2 gap-4 mb-4">
         <div className="flex flex-col">
           <h1 className="text-2xl font-bold">Admins</h1>
-          <p className="text-sm text-gray-500">
-            {communityConfig.community.name}
-          </p>
+          <p className="text-sm text-gray-500">{config.community.name}</p>
         </div>
 
         {adminRole === 'owner' && (

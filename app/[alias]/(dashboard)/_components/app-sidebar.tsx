@@ -5,8 +5,7 @@ import {
   Home,
   Users,
   LucideLineChart,
-  Shield,
-  HandHeartIcon
+  Shield
 } from 'lucide-react';
 import { NavProjects } from './nav-projects';
 import { NavUser } from './nav-user';
