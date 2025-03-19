@@ -45,3 +45,7 @@ export const sendOtpEmail = async (args: { email: string; otp: string }) => {
     throw new Error('Failed to email');
   }
 };
+
+
+
+// http://localhost:3000/login?auto_signin=true&email=lojito9608@barodis.com&code=327527
