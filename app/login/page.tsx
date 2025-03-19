@@ -17,29 +17,27 @@ export default function Page() {
   const [isAutoSigningIn, setIsAutoSigningIn] = useState(false);
   const router = useRouter();
 
-
-
-    const verifyOTP = useCallback(
-      async (email: string, code: string, alias: string) => {
-        try {
-          const result = await signInWithOTP({ email, code, chainId: 42220 });
-          if (result?.success) {
-            toast.success('Login successful!');
-            setTimeout(() => {
-              router.replace(`/${alias}`);
-            }, 100);
-          }
-        } catch (error) {
-          console.error(error);
-          if (error instanceof Error) {
-            toast.error(error.message);
-          } else {
-            toast.error('Could not verify login code');
-          }
+  const verifyOTP = useCallback(
+    async (email: string, code: string, alias: string) => {
+      try {
+        const result = await signInWithOTP({ email, code, chainId: 42220 });
+        if (result?.success) {
+          toast.success('Login successful!');
+          setTimeout(() => {
+            router.replace(`/${alias}`);
+          }, 100);
         }
-      },
-      [router]
-    );
+      } catch (error) {
+        console.error(error);
+        if (error instanceof Error) {
+          toast.error(error.message);
+        } else {
+          toast.error('Could not verify login code');
+        }
+      }
+    },
+    [router]
+  );
 
   // Handle auto-login from invitation link
   useEffect(() => {

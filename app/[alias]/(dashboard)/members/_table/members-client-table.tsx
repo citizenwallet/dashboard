@@ -10,10 +10,7 @@ interface MembersClientTableProps {
   config: Config;
 }
 
-export function MembersClientTable({
-  data,
-  config
-}: MembersClientTableProps) {
+export function MembersClientTable({ data, config }: MembersClientTableProps) {
   const communityConfig = new CommunityConfig(config);
 
   const columns = createColumns(communityConfig);

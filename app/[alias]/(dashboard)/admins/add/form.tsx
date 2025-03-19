@@ -25,7 +25,10 @@ import {
 } from '@/components/ui/select';
 import { getAdminByEmailAction } from '@/app/_actions/admin-actions';
 import { Config } from '@citizenwallet/sdk';
-import { sendAdminSignInInvitationAction, submitAdminInvitation } from './actions';
+import {
+  sendAdminSignInInvitationAction,
+  submitAdminInvitation
+} from './actions';
 
 interface InviteAdminFormProps {
   alias: string;
@@ -53,10 +56,7 @@ export default function InviteAdminForm({
     const { email } = values;
 
     startTransition(async () => {
-     
-      const {chain_id: chainId} = config.community.primary_token
-
-
+      const { chain_id: chainId } = config.community.primary_token;
 
       try {
         const admin = await getAdminByEmailAction({ email, chainId });

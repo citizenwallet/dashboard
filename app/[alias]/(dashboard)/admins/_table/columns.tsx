@@ -93,22 +93,19 @@ export const createColumns = (
       id: 'remove',
       cell: function RemoveCell({ row }) {
         const [isDialogOpen, setIsDialogOpen] = useState(false);
-         
+
         const {
-            admin_id,
-            admin: { name }
-          } = row.original;
+          admin_id,
+          admin: { name }
+        } = row.original;
 
+        const handleOpenDialog = () => {
+          setIsDialogOpen(true);
+        };
 
-
-          const handleOpenDialog = () => {
-            setIsDialogOpen(true);
-          };
-
-          const handleCloseDialog = () => {
-            setIsDialogOpen(false);
-          };
-
+        const handleCloseDialog = () => {
+          setIsDialogOpen(false);
+        };
 
         const onRemoveAdmin = async () => {
           try {
@@ -116,9 +113,9 @@ export const createColumns = (
             handleCloseDialog();
             toast.success('Admin removed successfully');
           } catch (error) {
-             if (error instanceof Error) {
-               toast.error(error.message);
-             } else {
+            if (error instanceof Error) {
+              toast.error(error.message);
+            } else {
               toast.error('Could not remove admin');
             }
           }

@@ -1,7 +1,10 @@
 import * as z from 'zod';
 import { type AdminRoleT } from '@/services/db/admin';
 
-export const roleEnum = z.enum(['owner', 'member'] as [AdminRoleT, ...AdminRoleT[]]);
+export const roleEnum = z.enum(['owner', 'member'] as [
+  AdminRoleT,
+  ...AdminRoleT[]
+]);
 
 export const inviteAdminFormSchema = z.object({
   email: z
@@ -13,8 +16,9 @@ export const inviteAdminFormSchema = z.object({
     })
     .email({
       message: 'Invalid email address'
-    }).trim(),
-    avatar: z.string().nullable().optional(),
+    })
+    .trim(),
+  avatar: z.string().nullable().optional(),
   alias: z.string().describe('Select community'),
   name: z
     .string({

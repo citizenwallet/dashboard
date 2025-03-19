@@ -49,8 +49,8 @@ export async function CommunitiesTable({
     <div className="flex flex-1 w-full flex-col h-full bg-background">
       <h1 className="text-2xl font-bold">Communities</h1>
       <p className="text-sm text-gray-500">Browse communities</p>
-      
-      <div className='my-4' />
+
+      <div className="my-4" />
 
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto rounded-md border">
