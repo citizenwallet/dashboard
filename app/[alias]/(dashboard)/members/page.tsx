@@ -1,17 +1,9 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card';
 import { Suspense } from 'react';
 import MembersTable from './_table/members-table';
 import { DataTable } from '@/components/ui/data-table';
 import { placeholderData, skeletonColumns } from './_table/columns';
-import UrlSearch from '@/components/custom/url-search';
 
-export default async function  Page (props: {
+export default async function Page(props: {
   params: Promise<{ alias: string }>;
   searchParams: Promise<{
     query?: string;
@@ -25,26 +17,26 @@ export default async function  Page (props: {
   const page = pageParam || '1';
 
   return (
-    <Card className="w-full h-[calc(100vh-theme(spacing.32))]">
-      <CardHeader className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div>
-          <CardTitle>Members</CardTitle>
-          <CardDescription>Browse members of your community</CardDescription>
+    <Suspense key={alias + query + page} fallback={<Fallback />}>
+      <MembersTable query={query} page={Number(page)} alias={alias} />
+    </Suspense>
+  );
+}
+
+function Fallback() {
+  return (
+    <div className="flex flex-1 w-full flex-col h-full">
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="flex flex-col">
+          <h1 className="text-2xl font-bold">Members</h1>
         </div>
-        <UrlSearch />
-      </CardHeader>
-      <CardContent className="h-[calc(100%-theme(spacing.24))]">
-        <Suspense
-          key={alias + query + page}
-          fallback={
-            <div className="h-full overflow-y-auto rounded-md border">
-              <DataTable columns={skeletonColumns} data={placeholderData} />
-            </div>
-          }
-        >
-          <MembersTable query={query} page={Number(page)} alias={alias} />
-        </Suspense>
-      </CardContent>
-    </Card>
+      </div>
+
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full overflow-y-auto rounded-md border">
+          <DataTable columns={skeletonColumns} data={placeholderData} />
+        </div>
+      </div>
+    </div>
   );
 }
