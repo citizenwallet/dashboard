@@ -1,23 +1,15 @@
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardHeader,
-  CardTitle
-} from '@/components/ui/card';
 import { Suspense } from 'react';
 import TransferTable from './_table/transfers-table';
 import { skeletonColumns, placeholderData } from './_table/columns';
 import { DataTable } from '@/components/ui/data-table';
-import { DatePickerWithPresets } from '@/components/custom/date-picker-with-presets';
 
 export default async function Page(props: {
   params: Promise<{ alias: string }>;
   searchParams: Promise<{
     query?: string;
     page?: string;
-    from?: string;
-    to?: string;
+    from?: string; // date
+    to?: string; // date
   }>;
 }) {
   const { alias } = await props.params;
@@ -34,32 +26,32 @@ export default async function Page(props: {
   const to = toParam;
 
   return (
-    <Card className="w-full h-[calc(100vh-theme(spacing.32))]">
-      <CardHeader className="flex flex-col sm:flex-row justify-between items-center gap-4">
-        <div>
-          <CardTitle>Transfers</CardTitle>
-          <CardDescription>Browse transfers of your community</CardDescription>
+    <Suspense key={alias + query + page + from + to} fallback={<Fallback />}>
+      <TransferTable
+        query={query}
+        page={parseInt(page)}
+        alias={alias}
+        from={from}
+        to={to}
+      />
+    </Suspense>
+  );
+}
+
+function Fallback() {
+  return (
+    <div className="flex flex-1 w-full flex-col h-full">
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="flex flex-col">
+          <h1 className="text-2xl font-bold">Transfers</h1>
         </div>
-        <DatePickerWithPresets />
-      </CardHeader>
-      <CardContent className="h-[calc(100%-theme(spacing.24))]">
-        <Suspense
-          key={alias + query + page + from + to}
-          fallback={
-            <div className="h-full overflow-y-auto rounded-md border">
-              <DataTable columns={skeletonColumns} data={placeholderData} />
-            </div>
-          }
-        >
-          <TransferTable
-            query={query}
-            page={parseInt(page)}
-            alias={alias}
-            from={from}
-            to={to}
-          />
-        </Suspense>
-      </CardContent>
-    </Card>
+      </div>
+
+      <div className="flex-1 overflow-hidden">
+        <div className="h-full overflow-y-auto rounded-md border">
+          <DataTable columns={skeletonColumns} data={placeholderData} />
+        </div>
+      </div>
+    </div>
   );
 }

@@ -1,7 +1,7 @@
 'use client';
 import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { cn, formatAddress, formatDate } from '@/lib/utils';
+import { cn, formatAddress } from '@/lib/utils';
 import { MemberT } from '@/services/db/members';
 import { ColumnDef } from '@tanstack/react-table';
 import { Skeleton } from '@/components/ui/skeleton';

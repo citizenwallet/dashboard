@@ -12,7 +12,7 @@ export default async function Page(props: {
 }) {
   const { alias } = await props.params;
 
-  const {community: config} = await fetchCommunityByAliasAction(alias);
+  const { community: config } = await fetchCommunityByAliasAction(alias);
 
   return (
     <div className="flex flex-1 flex-col items-center w-full overflow-y-auto">
