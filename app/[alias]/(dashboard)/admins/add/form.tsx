@@ -25,8 +25,7 @@ import {
 } from '@/components/ui/select';
 import { getAdminByEmailAction } from '@/app/_actions/admin-actions';
 import { Config, CommunityConfig } from '@citizenwallet/sdk';
-import { sendOTPAction } from '@/app/login/actions';
-import { submitAdminInvitation } from './actions';
+import { sendAdminSignInInvitationAction, submitAdminInvitation } from './actions';
 
 interface InviteAdminFormProps {
   alias: string;
@@ -70,7 +69,7 @@ export default function InviteAdminForm({
 
         await submitAdminInvitation({ formData: values, chainId });
 
-        await sendOTPAction({ email, chainId });
+        await sendAdminSignInInvitationAction({ email, chainId });
 
         toast.success(`Invitation sent to ${values.email}`);
         form.reset();

@@ -7,6 +7,7 @@ import { addAdminToCommunity } from '@/services/db/admin';
 import { sendOtpEmail } from '@/services/brevo';
 import { generateOTP } from '@/lib/utils';
 import { saveOTP } from '@/services/db/otp';
+import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
 
 export async function submitAdminInvitation(args: {
   formData: z.infer<typeof inviteAdminFormSchema>;
@@ -19,6 +20,15 @@ export async function submitAdminInvitation(args: {
   if (!result.success) {
     console.error(result.error);
     throw new Error('Invalid form data');
+  }
+
+  const userRole = await getAuthUserRoleInCommunityAction({
+    chainId: args.chainId,
+    alias: formData.alias
+  });
+
+  if (userRole !== 'owner') {
+    throw new Error('You are not authorized to add admins to this community');
   }
 
   const { email, name, avatar, alias, role } = result.data;
@@ -43,8 +53,10 @@ export async function submitAdminInvitation(args: {
   }
 }
 
-
-export async function sendAdminSignInInvitationAction(args: { email: string; chainId: number }) {
+export async function sendAdminSignInInvitationAction(args: {
+  email: string;
+  chainId: number;
+}) {
   const { email, chainId } = args;
   const client = getServiceRoleClient(chainId);
   const otp = generateOTP();
