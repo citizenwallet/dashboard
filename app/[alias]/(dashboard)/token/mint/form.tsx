@@ -1,7 +1,7 @@
 'use client';
-import { Config } from '@citizenwallet/sdk';
+import { Config, CommunityConfig } from '@citizenwallet/sdk';
 import { useRouter } from 'next/navigation';
-import { useTransition } from 'react';
+import { ChangeEvent, useRef, useTransition } from 'react';
 import { mintTokenFormSchema } from './form-schema';
 import { useForm, UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
@@ -37,6 +37,9 @@ import { MemberT } from '@/services/db/members';
 import { useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Input } from '@/components/ui/input';
+import { CommunityLogo } from '@/components/icons';
+import { Textarea } from '@/components/ui/textarea';
 
 interface MintTokenFormProps {
   alias: string;
@@ -50,7 +53,7 @@ export default function MintTokenForm({ alias, config }: MintTokenFormProps) {
   const form = useForm<z.infer<typeof mintTokenFormSchema>>({
     resolver: zodResolver(mintTokenFormSchema),
     defaultValues: {
-      member: null,
+      member: undefined,
       amount: '0',
       description: ''
     }
@@ -75,6 +78,11 @@ export default function MintTokenForm({ alias, config }: MintTokenFormProps) {
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
         <MemberField form={form} config={config} />
+        <AmountField form={form} config={config} />
+        <DescriptionField form={form} config={config} />
+        <Button type="submit" className="w-full " disabled={isPending}>
+          {isPending ? 'Minting...' : 'Mint token'}
+        </Button>
       </form>
     </Form>
   );
@@ -85,6 +93,7 @@ interface MemberFieldProps {
   config: Config;
 }
 
+// TODO: mobile responsive design https://ui.shadcn.com/docs/components/combobox#responsive
 export function MemberField({ form, config }: MemberFieldProps) {
   const { chain_id: chainId, address: profileContract } =
     config.community.profile;
@@ -96,7 +105,6 @@ export function MemberField({ form, config }: MemberFieldProps) {
 
   const debouncedSearch = useDebouncedCallback(async (query: string) => {
     if (query.length === 0) {
-      setMembers([]);
       setIsSearching(false);
       return;
     }
@@ -108,7 +116,6 @@ export function MemberField({ form, config }: MemberFieldProps) {
         chainId,
         profileContract
       });
-      console.log('results', results.length);
       setMembers(results);
     } catch (error) {
       setMembers([]);
@@ -121,8 +128,6 @@ export function MemberField({ form, config }: MemberFieldProps) {
       setIsSearching(false);
     }
   }, 300); // 300ms delay
-
-  console.log('members', members.length);
 
   return (
     <FormField
@@ -138,7 +143,7 @@ export function MemberField({ form, config }: MemberFieldProps) {
                   variant="outline"
                   role="combobox"
                   className={cn(
-                    'w-[200px] justify-between',
+                    'w-full justify-between',
                     !field.value && 'text-muted-foreground'
                   )}
                 >
@@ -210,6 +215,141 @@ export function MemberField({ form, config }: MemberFieldProps) {
               </Command>
             </PopoverContent>
           </Popover>
+          <FormDescription></FormDescription>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+}
+
+interface AmountFieldProps {
+  form: UseFormReturn<z.infer<typeof mintTokenFormSchema>>;
+  config: Config;
+}
+
+export function AmountField({ form, config }: AmountFieldProps) {
+  const communityConfig = new CommunityConfig(config);
+  const primaryToken = communityConfig.primaryToken;
+  const min = 0;
+  const max = undefined;
+
+  const inputRef = useRef<HTMLInputElement>(null);
+  const [displayValue, setDisplayValue] = useState('');
+  const [value, setValue] = useState(0);
+  const [isFocused, setIsFocused] = useState(false);
+
+  // Format number to currency string
+  const formatValue = (val: number): string => {
+    return val.toLocaleString('en-US', {
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2
+    });
+  };
+
+  const parseValue = (val: string): number => {
+    // Remove currency symbol and commas
+    const cleanValue = val.replace(/[^0-9.-]/g, '');
+    const parsedValue = Number.parseFloat(cleanValue) || 0;
+
+    // Apply min/max constraints
+    if (min !== undefined && parsedValue < min) return min;
+    if (max !== undefined && parsedValue > max) return max;
+
+    return parsedValue;
+  };
+
+  const handleChange = (e: ChangeEvent<HTMLInputElement>) => {
+    const inputValue = e.target.value;
+
+    // Allow empty input, digits, one decimal point, and minus sign at start
+    if (inputValue === '' || /^-?\d*\.?\d*$/.test(inputValue)) {
+      setDisplayValue(inputValue);
+
+      if (inputValue !== '' && inputValue !== '-' && inputValue !== '.') {
+        const newValue = parseValue(inputValue);
+        setValue(newValue);
+      } else if (inputValue === '') {
+        setValue(0);
+      }
+    }
+  };
+
+  // Handle blur event
+  const handleBlur = () => {
+    setIsFocused(false);
+
+    if (displayValue) {
+      const parsedValue = parseValue(displayValue);
+      setDisplayValue(formatValue(parsedValue));
+      setValue(parsedValue);
+    } else {
+      setDisplayValue(formatValue(0));
+      setValue(0);
+    }
+  };
+
+  const handleFocus = () => {
+    setIsFocused(true);
+    const parsedValue = parseValue(displayValue);
+    setDisplayValue(parsedValue.toString());
+
+    if (inputRef.current) {
+      inputRef.current.select();
+    }
+  };
+
+  return (
+    <FormField
+      control={form.control}
+      name="amount"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Amount</FormLabel>
+          <FormControl>
+            <div className="relative">
+              <div className="absolute left-3 top-1/2 -translate-y-1/2">
+                <CommunityLogo
+                  logoUrl={config.community.logo}
+                  tokenSymbol={primaryToken.symbol}
+                />
+              </div>
+              <Input
+                ref={inputRef}
+                type="text"
+                value={displayValue}
+                onChange={handleChange}
+                onFocus={handleFocus}
+                onBlur={handleBlur}
+                className="pl-14"
+                placeholder={primaryToken.decimals > 0 ? `0.00` : '0'}
+              />
+            </div>
+          </FormControl>
+          <FormDescription></FormDescription>
+          <FormMessage />
+        </FormItem>
+      )}
+    />
+  );
+}
+
+interface DescriptionFieldProps {
+  form: UseFormReturn<z.infer<typeof mintTokenFormSchema>>;
+  config: Config;
+}
+
+export function DescriptionField({ form, config }: DescriptionFieldProps) {
+  return (
+    <FormField
+      control={form.control}
+      name="description"
+      render={({ field }) => (
+        <FormItem>
+          <FormLabel>Description</FormLabel>
+          <FormControl>
+            <Textarea placeholder="" className="resize-none" {...field} />
+          </FormControl>
           <FormDescription></FormDescription>
           <FormMessage />
         </FormItem>

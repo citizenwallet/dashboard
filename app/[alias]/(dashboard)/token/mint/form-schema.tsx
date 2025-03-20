@@ -12,11 +12,22 @@ const memberSchema: z.ZodType<
 });
 
 export const mintTokenFormSchema = z.object({
-  member: memberSchema.nullable(),
-  amount: z.string().min(1, {
-    message: 'Amount must be greater than 0'
+  member: memberSchema.nullable().refine((val) => val !== null, {
+    message: 'Please select a member'
   }),
-  description: z.string().min(1, {
-    message: 'Description must be greater than 0'
-  })
+  amount: z
+    .string()
+    .min(1, { message: 'Please enter an amount' })
+    .refine((val) => !isNaN(Number(val)) && Number(val) > 0, {
+      message: 'Amount must be greater than 0'
+    }),
+  description: z
+    .string()
+    .min(1, {
+      message: 'Description must be greater than 0'
+    })
+    .max(160, {
+      message: 'Description must not be longer than 160 characters.'
+    })
+    .optional()
 });
