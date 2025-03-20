@@ -9,7 +9,10 @@ async function main() {
   const privateKey = Wallet.createRandom();
   const privateKeyAddress = privateKey.address;
 
-  const accountAddress = await getAccountAddress(communityConfig, privateKeyAddress);
+  const accountAddress = await getAccountAddress(
+    communityConfig,
+    privateKeyAddress
+  );
 
   console.log('private key', privateKey);
   console.log('private key key', privateKey.privateKey);

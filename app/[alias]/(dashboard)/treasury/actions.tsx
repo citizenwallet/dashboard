@@ -1,7 +1,10 @@
 'use server';
 
 import { getServiceRoleClient } from '@/services/db';
-import { getTransfersOfToken, getTreasuryTransfersOfToken } from '@/services/db/transfers';
+import {
+  getTransfersOfToken,
+  getTreasuryTransfersOfToken
+} from '@/services/db/transfers';
 
 export const getTransfersOfTokenAction = async (args: {
   chainId: number;
@@ -33,7 +36,6 @@ export const getTransfersOfTokenAction = async (args: {
     count
   };
 };
-
 
 export const getTreasuryTransfersOfTokenAction = async (args: {
   chainId: number;
@@ -67,5 +69,3 @@ export const getTreasuryTransfersOfTokenAction = async (args: {
     count
   };
 };
-
-

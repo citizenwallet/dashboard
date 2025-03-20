@@ -3,7 +3,8 @@ import { getTreasuryTransfersOfTokenAction } from '../actions';
 import UrlPagination from '@/components/custom/pagination-via-url';
 import { TransferClientTable } from './treasury-client-table';
 import { Separator } from '@/components/ui/separator';
-import { DatePickerWithPresets } from '@/components/custom/date-picker-with-presets';
+import MintToken from '../_components/mint-token';
+import BurnToken from '../_components/burn-token';
 
 const ROWS_PER_PAGE = 10;
 
@@ -25,8 +26,9 @@ export default async function TreasuryTable({
   const { community: config } = await fetchCommunityByAliasAction(alias);
   const { chain_id: chainId, address: tokenAddress } =
     config.community.primary_token;
-  
-  const {address: profileAddress} = config.community.profile
+  const theme = config.community.theme?.primary;
+
+  const { address: profileAddress } = config.community.profile;
 
   const { data, count: totalCount } = await getTreasuryTransfersOfTokenAction({
     chainId,
@@ -47,8 +49,9 @@ export default async function TreasuryTable({
           <h1 className="text-2xl font-bold">Treasury</h1>
           <p className="text-sm text-gray-500">{config.community.name}</p>
         </div>
-        <div className="flex justify-end">
-          {/* <DatePickerWithPresets /> */}
+        <div className="flex justify-end gap-2">
+          <MintToken alias={alias} theme={theme} />
+          <BurnToken alias={alias} />
         </div>
       </div>
 
