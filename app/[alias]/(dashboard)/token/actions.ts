@@ -19,8 +19,6 @@ export const searchMemberToMint = async (args: {
     query
   });
 
-  console.log('data', data?.length);
-
   if (error) {
     console.error(error);
   }
