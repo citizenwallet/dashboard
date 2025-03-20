@@ -20,6 +20,7 @@ export interface MemberT {
   updated_at: Date;
 }
 
+// used in paginated tables
 export const getMembers = async (args: {
   client: SupabaseClient;
   profile_contract: string;
@@ -46,4 +47,29 @@ export const getMembers = async (args: {
     .order('created_at', { ascending: false })
     .range(offset, offset + PAGE_SIZE - 1)
     .limit(PAGE_SIZE);
+};
+
+
+
+export const searchMembers = async (args: {
+  client: SupabaseClient;
+  profileContract: string;
+  query: string;
+}): Promise<PostgrestResponse<MemberT>> => {
+  const { client, profileContract, query } = args;
+
+  const searchQuery = query.trim().toLowerCase();
+
+  let queryBuilder = client
+    .from(TABLE_NAME)
+    .select(`*`, { count: 'exact' })
+    .ilike('profile_contract', profileContract);
+
+  if (searchQuery) {
+    queryBuilder = queryBuilder.or(
+      `account.ilike.*${searchQuery}*,username.ilike.*${searchQuery}*,name.ilike.*${searchQuery}*,description.ilike.*${searchQuery}*`
+    );
+  }
+
+  return queryBuilder
 };
