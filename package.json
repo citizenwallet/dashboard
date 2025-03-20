@@ -6,7 +6,8 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "format": "prettier --write ."
+    "format": "prettier --write .",
+    "private-key": "tsx private-key.ts"
   },
   "dependencies": {
     "@citizenwallet/sdk": "^2.0.72",
@@ -56,6 +57,7 @@
   },
   "devDependencies": {
     "eslint": "9.22.0",
-    "eslint-config-next": "15.2.1"
+    "eslint-config-next": "15.2.1",
+    "tsx": "^4.19.3"
   }
 }
