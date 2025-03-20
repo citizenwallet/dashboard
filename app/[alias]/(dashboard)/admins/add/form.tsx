@@ -23,7 +23,6 @@ import {
   SelectTrigger,
   SelectValue
 } from '@/components/ui/select';
-import { getAdminByEmailAction } from '@/app/_actions/admin-actions';
 import { Config } from '@citizenwallet/sdk';
 import {
   sendAdminSignInInvitationAction,
@@ -61,16 +60,6 @@ async function onSubmit(values: z.infer<typeof inviteAdminFormSchema>) {
     const { chain_id: chainId } = config.community.primary_token;
 
     try {
-      // const admin = await getAdminByEmailAction({ email, chainId });
-      // const isAdmin = admin?.admin_community_access.some(
-      //   (access) => access.alias === alias
-      // );
-      // if (isAdmin) {
-      //   throw new Error(
-      //     `Admin ${email} already exists in ${config.community.name}`
-      //   );
-      // }
-
       const [invitationResult, signInResult] = await Promise.allSettled([
         submitAdminInvitation({ formData: values, chainId }),
         sendAdminSignInInvitationAction({ email, config })
