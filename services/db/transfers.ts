@@ -109,7 +109,7 @@ export const getTreasuryTransfersOfToken = async (args: {
     to_member:a_members!to_member_id(*)
   `,
       { count: 'exact' }
-  )
+    )
     .eq('token_contract', token)
     .or(`from_member_id.eq.${member?.id},to_member_id.eq.${member?.id}`)
     .order('created_at', { ascending: false })
