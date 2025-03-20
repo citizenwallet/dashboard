@@ -68,12 +68,17 @@ export const addAdminToCommunity = async (args: {
 
   const { data: access, error: accessError } = await client
     .from(ADMIN_COMMUNITY_ACCESS_TABLE_NAME)
-    .insert({
-      admin_id: admin.id,
-      chain_id,
-      alias,
-      role
-    })
+    .upsert(
+      {
+        admin_id: admin.id,
+        chain_id,
+        alias,
+        role
+      },
+      {
+        onConflict: 'admin_id,chain_id,alias'
+      }
+    )
     .select()
     .single();
 
