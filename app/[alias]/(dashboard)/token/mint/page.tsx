@@ -1,0 +1,21 @@
+import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
+import MintTokenForm from './form';
+
+export default async function Page(props: {
+  params: Promise<{ alias: string }>;
+}) {
+  const { alias } = await props.params;
+  const { community: config } = await fetchCommunityByAliasAction(alias);
+
+  return (
+    <div className="flex flex-1 w-full flex-col h-full">
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="flex flex-col">
+          <h1 className="text-2xl font-bold">Mint Token</h1>
+          <p className="text-sm text-gray-500">{config.community.name}</p>
+        </div>
+      </div>
+      <MintTokenForm alias={alias} config={config} />
+    </div>
+  );
+}
