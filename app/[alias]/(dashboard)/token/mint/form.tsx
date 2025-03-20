@@ -40,6 +40,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { CommunityLogo } from '@/components/icons';
 import { Textarea } from '@/components/ui/textarea';
+import { isAddress } from 'ethers';
 
 interface MintTokenFormProps {
   alias: string;
@@ -60,6 +61,8 @@ export default function MintTokenForm({ alias, config }: MintTokenFormProps) {
   });
 
   async function onSubmit(values: z.infer<typeof mintTokenFormSchema>) {
+    console.log(values);
+
     startTransition(async () => {
       try {
         toast.success(`Token minted`);
@@ -76,11 +79,16 @@ export default function MintTokenForm({ alias, config }: MintTokenFormProps) {
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
-        <MemberField form={form} config={config} />
-        <AmountField form={form} config={config} />
-        <DescriptionField form={form} config={config} />
-        <Button type="submit" className="w-full " disabled={isPending}>
+      <form
+        onSubmit={form.handleSubmit(onSubmit)}
+        className="space-y-4 bg-card p-6 rounded-lg border shadow-sm max-w-md w-full mx-auto mb-6" // Added mb-6
+      >
+        <div className="space-y-6">
+          <MemberField form={form} config={config} />
+          <AmountField form={form} config={config} />
+          <DescriptionField form={form} config={config} />
+        </div>
+        <Button type="submit" className="w-full" disabled={isPending}>
           {isPending ? 'Minting...' : 'Mint token'}
         </Button>
       </form>
@@ -101,6 +109,10 @@ export function MemberField({ form, config }: MemberFieldProps) {
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [members, setMembers] = useState<MemberT[]>([]);
+  const [member, setMember] = useState<Pick<
+    MemberT,
+    'id' | 'account' | 'profile_contract' | 'username' | 'name' | 'image'
+  > | null>(null);
   const [isSearching, setIsSearching] = useState(false);
 
   const debouncedSearch = useDebouncedCallback(async (query: string) => {
@@ -143,16 +155,35 @@ export function MemberField({ form, config }: MemberFieldProps) {
                   variant="outline"
                   role="combobox"
                   className={cn(
-                    'w-full justify-between',
+                    'w-full justify-between h-[4.5rem]',
                     !field.value && 'text-muted-foreground'
                   )}
                 >
-                  {field.value ? field.value.name : 'Select member'}
+                  {field.value && member ? (
+                    <div className="flex items-center gap-2">
+                      <Avatar className="h-10 w-10 flex-shrink-0">
+                        <AvatarImage src={member.image} alt={member.username} />
+                        <AvatarFallback>
+                          {member.username.slice(0, 2)}
+                        </AvatarFallback>
+                      </Avatar>
+                      <div className="flex flex-col min-w-0">
+                        <span className="font-medium truncate">
+                          {`@${member.username}`}
+                        </span>
+                        <span className="text-xs font-mono truncate">
+                          {member.name}
+                        </span>
+                      </div>
+                    </div>
+                  ) : (
+                    'Select member'
+                  )}
                   <ChevronsUpDown className="opacity-50" />
                 </Button>
               </FormControl>
             </PopoverTrigger>
-            <PopoverContent className="w-[200px] p-0">
+            <PopoverContent className="p-0">
               <Command>
                 <div className="relative">
                   <CommandInput
@@ -161,7 +192,7 @@ export function MemberField({ form, config }: MemberFieldProps) {
                     value={searchQuery}
                     onValueChange={(value) => {
                       setSearchQuery(value);
-                      setIsSearching(true); // Show loading immediately
+                      setIsSearching(true);
                       debouncedSearch(value);
                     }}
                   />
@@ -171,7 +202,54 @@ export function MemberField({ form, config }: MemberFieldProps) {
                 </div>
                 <CommandList>
                   {searchQuery.length > 0 && members.length === 0 && (
-                    <CommandEmpty>No members found.</CommandEmpty>
+                    <CommandEmpty>
+                      {isAddress(searchQuery) ? (
+                        <div
+                          className="flex items-center gap-2 px-2 py-2 cursor-pointer hover:bg-accent hover:text-accent-foreground"
+                          onClick={() => {
+                            form.setValue('member', {
+                              id: searchQuery,
+                              account: searchQuery,
+                              profile_contract:
+                                config.community.profile.address,
+                              username: 'anonymous',
+                              name: 'Anonymous member'
+                            });
+                            setMember({
+                              id: searchQuery,
+                              account: searchQuery,
+                              profile_contract:
+                                config.community.profile.address,
+                              username: 'anonymous',
+                              name: 'Anonymous member',
+                              image:
+                                'https://ipfs.internal.citizenwallet.xyz/QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh'
+                            });
+                            setOpen(false);
+                          }}
+                        >
+                          <Avatar className="h-10 w-10 flex-shrink-0">
+                            <AvatarImage
+                              src="https://ipfs.internal.citizenwallet.xyz/QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh"
+                              alt={'@anonymous'}
+                            />
+                            <AvatarFallback>
+                              {'anonymous'.slice(0, 2)}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex flex-col min-w-0">
+                            <span className="font-medium truncate">
+                              {`@anonymous`}
+                            </span>
+                            <span className="text-xs font-mono truncate">
+                              {'Anonymous member'}
+                            </span>
+                          </div>
+                        </div>
+                      ) : (
+                        'No members found.'
+                      )}
+                    </CommandEmpty>
                   )}
 
                   <CommandGroup>
@@ -183,6 +261,7 @@ export function MemberField({ form, config }: MemberFieldProps) {
                         }
                         onSelect={() => {
                           form.setValue('member', member);
+                          setMember(member);
                           setOpen(false);
                         }}
                       >
@@ -236,8 +315,6 @@ export function AmountField({ form, config }: AmountFieldProps) {
 
   const inputRef = useRef<HTMLInputElement>(null);
   const [displayValue, setDisplayValue] = useState('');
-  const [value, setValue] = useState(0);
-  const [isFocused, setIsFocused] = useState(false);
 
   // Format number to currency string
   const formatValue = (val: number): string => {
@@ -268,29 +345,26 @@ export function AmountField({ form, config }: AmountFieldProps) {
 
       if (inputValue !== '' && inputValue !== '-' && inputValue !== '.') {
         const newValue = parseValue(inputValue);
-        setValue(newValue);
+        form.setValue('amount', newValue.toString());
       } else if (inputValue === '') {
-        setValue(0);
+        form.setValue('amount', '0');
       }
     }
   };
 
   // Handle blur event
   const handleBlur = () => {
-    setIsFocused(false);
-
     if (displayValue) {
       const parsedValue = parseValue(displayValue);
       setDisplayValue(formatValue(parsedValue));
-      setValue(parsedValue);
+      form.setValue('amount', parsedValue.toString());
     } else {
       setDisplayValue(formatValue(0));
-      setValue(0);
+      form.setValue('amount', '0');
     }
   };
 
   const handleFocus = () => {
-    setIsFocused(true);
     const parsedValue = parseValue(displayValue);
     setDisplayValue(parsedValue.toString());
 
