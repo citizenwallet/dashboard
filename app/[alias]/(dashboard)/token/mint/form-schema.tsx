@@ -23,9 +23,6 @@ export const mintTokenFormSchema = z.object({
     }),
   description: z
     .string()
-    .min(1, {
-      message: 'Description must be greater than 0'
-    })
     .max(160, {
       message: 'Description must not be longer than 160 characters.'
     })
