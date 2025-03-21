@@ -19,12 +19,9 @@ export default async function MembersTable({
   alias
 }: MembersTableProps) {
   const { community: config } = await fetchCommunityByAliasAction(alias);
-  const { chain_id: chainId, address: profileContract } =
-    config.community.profile;
 
   const { data, count: totalCount } = await getMembersAction({
-    chainId,
-    profile_contract: profileContract,
+    config,
     query,
     page
   });
