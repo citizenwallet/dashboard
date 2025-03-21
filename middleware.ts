@@ -1,17 +1,20 @@
-// Don't invoke Middleware on some paths
-export const config = {
-  matcher: [
-    /*
-     * Match all request paths except for the ones starting with:
-     * - api (API routes)
-     * - _next/static (static files)
-     * - _next/image (image optimization files)
-     * - favicon.ico (metadata files)
-     */
-    '/((?!api|_next/static|_next/image|favicon.ico).*)'
-  ]
-};
+import { NextResponse } from 'next/server';
+import type { NextRequest } from 'next/server';
+import { auth } from '@/auth';
 
-export function middleware() {
-  // Do nothing, just pass through
+export async function middleware(request: NextRequest) {
+  const session = await auth();
+  const pathname = request.nextUrl.pathname;
+
+  // Redirect authenticated users from /login to /
+  if (session && pathname === '/login') {
+    return NextResponse.redirect(new URL('/', request.url));
+  }
+
+  // Continue with the request if no cookie is found or not on the home page
+  return NextResponse.next();
 }
+
+export const config = {
+  matcher: ['/((?!api|_next/static|_next/image|favicon.ico).*)']
+};

@@ -18,7 +18,10 @@
     "paths": {
       "@/components/*": ["components/*"],
       "@/lib/*": ["lib/*"],
-      "@/helpers/*": ["helpers/*"]
+      "@/helpers/*": ["helpers/*"],
+      "@/app/*": ["app/*"],
+      "@/services/*": ["services/*"],
+      "@/auth": ["auth.ts"]
     },
     "plugins": [
       {

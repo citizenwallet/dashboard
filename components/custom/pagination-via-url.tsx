@@ -6,7 +6,7 @@ import {
   PaginationContent,
   PaginationItem,
   PaginationLink,
-  PaginationEllipsis,
+  PaginationEllipsis
 } from '@/components/ui/pagination';
 import { Button } from '@/components/ui/button';
 
