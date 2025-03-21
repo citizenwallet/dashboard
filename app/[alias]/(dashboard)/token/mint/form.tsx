@@ -32,7 +32,10 @@ import {
   CommandItem
 } from '@/components/ui/command';
 import { Check, ChevronsUpDown } from 'lucide-react';
-import { searchMemberToMint } from '@/app/[alias]/(dashboard)/token/actions';
+import {
+  searchMember as searchMemberToMint,
+  mintTokenToMemberAction
+} from '@/app/[alias]/(dashboard)/token/actions';
 import { MemberT } from '@/services/db/members';
 import { useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
@@ -42,7 +45,6 @@ import { CommunityLogo } from '@/components/icons';
 import { Textarea } from '@/components/ui/textarea';
 import { isAddress } from 'ethers';
 import { formatAddress } from '@/lib/utils';
-import { mintTokenToMemberAction } from '@/app/[alias]/(dashboard)/token/actions';
 import MemberListItem from '../_components/member-list-item';
 
 interface MintTokenFormProps {
