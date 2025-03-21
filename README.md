@@ -4,6 +4,7 @@
 ## Overview
 
 ## Getting Started
+
 First, copy the `.env.example` file to `.env` and update the environment variables:
 
 ```bash
@@ -21,8 +22,3 @@ Then, run the development server:
 ```bash
 npm run dev
 ```
-
-
-
-
-
