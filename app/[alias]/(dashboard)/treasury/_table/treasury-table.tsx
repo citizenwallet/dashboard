@@ -75,7 +75,8 @@ export default async function TreasuryTable({
           {authRole === 'owner' && hasMinterRole && (
             <MintToken alias={alias} theme={theme} />
           )}
-          {/* <BurnToken alias={alias} /> */}
+
+          {authRole === 'owner' && hasMinterRole && <BurnToken alias={alias} />}
         </div>
       </div>
 

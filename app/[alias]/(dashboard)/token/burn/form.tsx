@@ -1,8 +1,8 @@
 'use client';
-import { Config, CommunityConfig } from '@citizenwallet/sdk';
+import { Config, CommunityConfig, getAccountBalance } from '@citizenwallet/sdk';
 import { useRouter } from 'next/navigation';
 import { ChangeEvent, useRef, useTransition } from 'react';
-import { mintTokenFormSchema } from './form-schema';
+import { burnTokenFormSchema } from './form-schema';
 import { useForm, UseFormReturn } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -33,8 +33,8 @@ import {
 } from '@/components/ui/command';
 import { Check, ChevronsUpDown } from 'lucide-react';
 import {
-  searchMember as searchMemberToMint,
-  mintTokenToMemberAction
+  searchMember as searchMemberToBurn,
+  burnTokenFromMemberAction
 } from '@/app/[alias]/(dashboard)/token/actions';
 import { MemberT } from '@/services/db/members';
 import { useState } from 'react';
@@ -46,18 +46,20 @@ import { Textarea } from '@/components/ui/textarea';
 import { isAddress } from 'ethers';
 import { formatAddress } from '@/lib/utils';
 import MemberListItem from '../_components/member-list-item';
+import { formatUnits } from 'ethers';
 
-interface MintTokenFormProps {
+interface BurnTokenFormProps {
   alias: string;
   config: Config;
 }
 
-export default function MintTokenForm({ alias, config }: MintTokenFormProps) {
+export default function BurnTokenForm({ alias, config }: BurnTokenFormProps) {
   const [isPending, startTransition] = useTransition();
+  const [memberBalance, setMemberBalance] = useState<string>('0');
   const router = useRouter();
 
-  const form = useForm<z.infer<typeof mintTokenFormSchema>>({
-    resolver: zodResolver(mintTokenFormSchema),
+  const form = useForm<z.infer<typeof burnTokenFormSchema>>({
+    resolver: zodResolver(burnTokenFormSchema),
     defaultValues: {
       member: undefined,
       amount: '0',
@@ -65,15 +67,16 @@ export default function MintTokenForm({ alias, config }: MintTokenFormProps) {
     }
   });
 
-  async function onSubmit(values: z.infer<typeof mintTokenFormSchema>) {
+  async function onSubmit(values: z.infer<typeof burnTokenFormSchema>) {
     startTransition(async () => {
       try {
-        await mintTokenToMemberAction({
-          config: config,
+        
+        await burnTokenFromMemberAction({
+          config,
           formData: values
         });
-
-        toast.success(`Success 🔨`);
+        
+        toast.success(`Success 🔥`);
         //    router.back();
       } catch (error) {
         if (error instanceof Error) {
@@ -92,12 +95,16 @@ export default function MintTokenForm({ alias, config }: MintTokenFormProps) {
         className="space-y-4 bg-card p-6 rounded-lg border shadow-sm max-w-md w-full mx-auto mb-6" // Added mb-6
       >
         <div className="space-y-6">
-          <MemberField form={form} config={config} />
-          <AmountField form={form} config={config} />
+          <MemberField
+            form={form}
+            config={config}
+            setMemberBalance={setMemberBalance}
+          />
+          <AmountField form={form} config={config} memberBalance={memberBalance} />
           <DescriptionField form={form} config={config} />
         </div>
         <Button type="submit" className="w-full" disabled={isPending}>
-          {isPending ? 'Minting...' : 'Mint token'}
+          {isPending ? 'Burning...' : 'Burn token'}
         </Button>
       </form>
     </Form>
@@ -105,14 +112,21 @@ export default function MintTokenForm({ alias, config }: MintTokenFormProps) {
 }
 
 interface MemberFieldProps {
-  form: UseFormReturn<z.infer<typeof mintTokenFormSchema>>;
+  form: UseFormReturn<z.infer<typeof burnTokenFormSchema>>;
   config: Config;
+  setMemberBalance: (balance: string) => void;
 }
 
 // TODO: mobile responsive design https://ui.shadcn.com/docs/components/combobox#responsive
-export function MemberField({ form, config }: MemberFieldProps) {
+export function MemberField({
+  form,
+  config,
+  setMemberBalance
+}: MemberFieldProps) {
   const { chain_id: chainId, address: profileContract } =
     config.community.profile;
+  const communityConfig = new CommunityConfig(config);
+  const primaryToken = communityConfig.primaryToken;
 
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
@@ -122,6 +136,7 @@ export function MemberField({ form, config }: MemberFieldProps) {
     'id' | 'account' | 'profile_contract' | 'username' | 'name' | 'image'
   > | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [fetchingBalance, startFetchingBalance] = useTransition();
 
   const debouncedSearch = useDebouncedCallback(async (query: string) => {
     if (query.length === 0) {
@@ -131,7 +146,7 @@ export function MemberField({ form, config }: MemberFieldProps) {
 
     try {
       setIsSearching(true);
-      const results = await searchMemberToMint({
+      const results = await searchMemberToBurn({
         query,
         chainId,
         profileContract
@@ -148,6 +163,25 @@ export function MemberField({ form, config }: MemberFieldProps) {
       setIsSearching(false);
     }
   }, 300); // 300ms delay
+
+  const handleSelectMember = (member: MemberT) => {
+    form.setValue('member', member);
+    setMember(member);
+    setOpen(false);
+
+    startFetchingBalance(async () => {
+      const balance = await getAccountBalance(
+        new CommunityConfig(config),
+        member.account
+      );
+      let formattedBalance = formatUnits(
+        balance || BigInt(0),
+        primaryToken.decimals
+      );
+
+      setMemberBalance(formattedBalance);
+    });
+  };
 
   return (
     <FormField
@@ -252,11 +286,7 @@ export function MemberField({ form, config }: MemberFieldProps) {
                         value={
                           member.id + ' ' + member.username + ' ' + member.name
                         }
-                        onSelect={() => {
-                          form.setValue('member', member);
-                          setMember(member);
-                          setOpen(false);
-                        }}
+                        onSelect={() => handleSelectMember(member)}
                       >
                         <MemberListItem member={member} />
                         {field.value?.id === member.id && (
@@ -278,15 +308,16 @@ export function MemberField({ form, config }: MemberFieldProps) {
 }
 
 interface AmountFieldProps {
-  form: UseFormReturn<z.infer<typeof mintTokenFormSchema>>;
+  form: UseFormReturn<z.infer<typeof burnTokenFormSchema>>;
   config: Config;
+  memberBalance: string;
 }
 
-export function AmountField({ form, config }: AmountFieldProps) {
+export function AmountField({ form, config, memberBalance }: AmountFieldProps) {
   const communityConfig = new CommunityConfig(config);
   const primaryToken = communityConfig.primaryToken;
   const min = 0;
-  const max = undefined;
+  const max = Number(memberBalance);
 
   const inputRef = useRef<HTMLInputElement>(null);
   const [displayValue, setDisplayValue] = useState('');
@@ -373,6 +404,11 @@ export function AmountField({ form, config }: AmountFieldProps) {
                 className="pl-14"
                 placeholder={primaryToken.decimals > 0 ? `0.00` : '0'}
               />
+              <div className="absolute right-3">
+                <span className="text-xs font-mono truncate">
+                  Balance: {memberBalance}
+                </span>
+              </div>
             </div>
           </FormControl>
           <FormDescription></FormDescription>
@@ -384,7 +420,7 @@ export function AmountField({ form, config }: AmountFieldProps) {
 }
 
 interface DescriptionFieldProps {
-  form: UseFormReturn<z.infer<typeof mintTokenFormSchema>>;
+  form: UseFormReturn<z.infer<typeof burnTokenFormSchema>>;
   config: Config;
 }
 
