@@ -1,10 +1,17 @@
 import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
+import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
 import { getTreasuryTransfersOfTokenAction } from '../actions';
 import UrlPagination from '@/components/custom/pagination-via-url';
 import { TransferClientTable } from './treasury-client-table';
 import { Separator } from '@/components/ui/separator';
 import MintToken from '../_components/mint-token';
 import BurnToken from '../_components/burn-token';
+import {
+  MINTER_ROLE,
+  hasRole as CWCheckRoleAccess,
+  CommunityConfig
+} from '@citizenwallet/sdk';
+import { JsonRpcProvider } from 'ethers';
 
 const ROWS_PER_PAGE = 10;
 
@@ -24,21 +31,36 @@ export default async function TreasuryTable({
   to
 }: TreasuryTableProps) {
   const { community: config } = await fetchCommunityByAliasAction(alias);
+  const communityConfig = new CommunityConfig(config);
+  const primaryRpcUrl = communityConfig.primaryRPCUrl;
   const { chain_id: chainId, address: tokenAddress } =
     config.community.primary_token;
   const theme = config.community.theme?.primary;
-
   const { address: profileAddress } = config.community.profile;
 
-  const { data, count: totalCount } = await getTreasuryTransfersOfTokenAction({
-    chainId,
-    tokenAddress,
-    profileAddress,
-    query,
-    page,
-    from,
-    to
-  });
+  const [authRole, hasMinterRole, treasuryData] = await Promise.all([
+    getAuthUserRoleInCommunityAction({
+      alias,
+      chainId
+    }),
+    CWCheckRoleAccess(
+      tokenAddress,
+      MINTER_ROLE,
+      process.env[`SERVER_${chainId}_ACCOUNT_ADDRESS`] ?? '',
+      new JsonRpcProvider(primaryRpcUrl)
+    ),
+    getTreasuryTransfersOfTokenAction({
+      chainId,
+      tokenAddress,
+      profileAddress,
+      query,
+      page,
+      from,
+      to
+    })
+  ]);
+
+  const { data, count: totalCount } = treasuryData;
 
   const totalPages = Math.ceil(Number(totalCount) / ROWS_PER_PAGE);
 
@@ -50,8 +72,10 @@ export default async function TreasuryTable({
           <p className="text-sm text-gray-500">{config.community.name}</p>
         </div>
         <div className="flex justify-end gap-2">
-          <MintToken alias={alias} theme={theme} />
-          <BurnToken alias={alias} />
+          {authRole === 'owner' && hasMinterRole && (
+            <MintToken alias={alias} theme={theme} />
+          )}
+          {/* <BurnToken alias={alias} /> */}
         </div>
       </div>
 
