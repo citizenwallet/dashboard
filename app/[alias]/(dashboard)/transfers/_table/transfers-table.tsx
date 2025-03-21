@@ -4,8 +4,8 @@ import UrlPagination from '@/components/custom/pagination-via-url';
 import { TransferClientTable } from './transfers-client-table';
 import { Separator } from '@/components/ui/separator';
 import { DatePickerWithPresets } from '@/components/custom/date-picker-with-presets';
+import { PAGE_SIZE } from '@/services/db/transfers';
 
-const ROWS_PER_PAGE = 10;
 
 interface TransferTableProps {
   query: string;
@@ -32,7 +32,7 @@ export default async function TransferTable({
     to
   });
 
-  const totalPages = Math.ceil(Number(totalCount) / ROWS_PER_PAGE);
+  const totalPages = Math.ceil(Number(totalCount) / PAGE_SIZE);
 
   return (
     <div className="flex flex-1 w-full flex-col h-full">
