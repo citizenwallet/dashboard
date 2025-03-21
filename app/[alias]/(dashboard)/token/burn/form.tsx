@@ -1,6 +1,5 @@
 'use client';
 import { Config, CommunityConfig, getAccountBalance } from '@citizenwallet/sdk';
-import { useRouter } from 'next/navigation';
 import { ChangeEvent, useRef, useTransition } from 'react';
 import { burnTokenFormSchema } from './form-schema';
 import { useForm, UseFormReturn } from 'react-hook-form';
@@ -53,10 +52,10 @@ interface BurnTokenFormProps {
   config: Config;
 }
 
-export default function BurnTokenForm({ alias, config }: BurnTokenFormProps) {
+export default function BurnTokenForm({ config }: BurnTokenFormProps) {
   const [isPending, startTransition] = useTransition();
   const [memberBalance, setMemberBalance] = useState<string>('0');
-  const router = useRouter();
+  // const router = useRouter();
 
   const form = useForm<z.infer<typeof burnTokenFormSchema>>({
     resolver: zodResolver(burnTokenFormSchema),
@@ -70,12 +69,11 @@ export default function BurnTokenForm({ alias, config }: BurnTokenFormProps) {
   async function onSubmit(values: z.infer<typeof burnTokenFormSchema>) {
     startTransition(async () => {
       try {
-        
         await burnTokenFromMemberAction({
           config,
           formData: values
         });
-        
+
         toast.success(`Success 🔥`);
         //    router.back();
       } catch (error) {
@@ -100,7 +98,11 @@ export default function BurnTokenForm({ alias, config }: BurnTokenFormProps) {
             config={config}
             setMemberBalance={setMemberBalance}
           />
-          <AmountField form={form} config={config} memberBalance={memberBalance} />
+          <AmountField
+            form={form}
+            config={config}
+            memberBalance={memberBalance}
+          />
           <DescriptionField form={form} config={config} />
         </div>
         <Button type="submit" className="w-full" disabled={isPending}>
@@ -123,8 +125,6 @@ export function MemberField({
   config,
   setMemberBalance
 }: MemberFieldProps) {
-  const { chain_id: chainId, address: profileContract } =
-    config.community.profile;
   const communityConfig = new CommunityConfig(config);
   const primaryToken = communityConfig.primaryToken;
 
@@ -136,7 +136,7 @@ export function MemberField({
     'id' | 'account' | 'profile_contract' | 'username' | 'name' | 'image'
   > | null>(null);
   const [isSearching, setIsSearching] = useState(false);
-  const [fetchingBalance, startFetchingBalance] = useTransition();
+  const [, startFetchingBalance] = useTransition();
 
   const debouncedSearch = useDebouncedCallback(async (query: string) => {
     if (query.length === 0) {
@@ -147,9 +147,8 @@ export function MemberField({
     try {
       setIsSearching(true);
       const results = await searchMemberToBurn({
-        query,
-        chainId,
-        profileContract
+        config,
+        query
       });
       setMembers(results);
     } catch (error) {
@@ -174,7 +173,7 @@ export function MemberField({
         new CommunityConfig(config),
         member.account
       );
-      let formattedBalance = formatUnits(
+      const formattedBalance = formatUnits(
         balance || BigInt(0),
         primaryToken.decimals
       );
@@ -383,7 +382,7 @@ export function AmountField({ form, config, memberBalance }: AmountFieldProps) {
     <FormField
       control={form.control}
       name="amount"
-      render={({ field }) => (
+      render={({}) => (
         <FormItem>
           <FormLabel>Amount</FormLabel>
           <FormControl>
@@ -424,7 +423,7 @@ interface DescriptionFieldProps {
   config: Config;
 }
 
-export function DescriptionField({ form, config }: DescriptionFieldProps) {
+export function DescriptionField({ form }: DescriptionFieldProps) {
   return (
     <FormField
       control={form.control}

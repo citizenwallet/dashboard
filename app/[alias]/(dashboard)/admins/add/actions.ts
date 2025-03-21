@@ -61,7 +61,7 @@ export async function sendAdminSignInInvitationAction(args: {
   const { email, config } = args;
 
   const { alias: communityAlias, name: communityName } = config.community;
-  const {chain_id: chainId} = config.community.profile
+  const { chain_id: chainId } = config.community.profile;
 
   const userRole = await getAuthUserRoleInCommunityAction({
     chainId,
@@ -91,8 +91,6 @@ export async function sendAdminSignInInvitationAction(args: {
     }
     throw new Error('Failed to send invitation email');
   }
-
-
 
   // db
   const { error: saveOTPError } = await saveOTP({

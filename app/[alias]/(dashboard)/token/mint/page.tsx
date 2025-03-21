@@ -8,7 +8,7 @@ export default async function Page(props: {
 }) {
   const { alias } = await props.params;
   const { community: config } = await fetchCommunityByAliasAction(alias);
-  const  authRole  = await getAuthUserRoleInCommunityAction({
+  const authRole = await getAuthUserRoleInCommunityAction({
     alias,
     chainId: config.community.primary_token.chain_id
   });

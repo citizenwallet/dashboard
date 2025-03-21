@@ -9,16 +9,23 @@ import { mintTokenFormSchema } from './mint/form-schema';
 import { burnTokenFormSchema } from './burn/form-schema';
 import { z } from 'zod';
 
-// TODO: pass config as argument
-export const searchMember = async (args: {
-  chainId: number;
-  profileContract: string;
-  query: string;
-}) => {
-  const { chainId, profileContract, query } = args;
+export const searchMember = async (args: { config: Config; query: string }) => {
+  const { config, query } = args;
+  const { chain_id: chainId, address: profileContract } =
+    config.community.profile;
+  const { alias } = config.community;
+
+  const authRole = await getAuthUserRoleInCommunityAction({
+    alias,
+    chainId
+  });
+
+  if (authRole !== 'owner') {
+    throw new Error('Unauthorized');
+  }
+
   const supabase = getServiceRoleClient(chainId);
 
-  console.log('searching', query);
   const { data, error } = await searchMembers({
     client: supabase,
     profileContract,
@@ -91,7 +98,6 @@ export const mintTokenToMemberAction = async (args: {
     throw new Error('Failed to mint tokens'); // Fallback error message for non-Error objects
   }
 };
-
 
 export const burnTokenFromMemberAction = async (args: {
   config: Config;
