@@ -41,6 +41,8 @@ import { Input } from '@/components/ui/input';
 import { CommunityLogo } from '@/components/icons';
 import { Textarea } from '@/components/ui/textarea';
 import { isAddress } from 'ethers';
+import { formatAddress } from '@/lib/utils';
+import { mintTokenToMemberAction } from '@/app/[alias]/(dashboard)/token/actions';
 
 interface MintTokenFormProps {
   alias: string;
@@ -61,17 +63,20 @@ export default function MintTokenForm({ alias, config }: MintTokenFormProps) {
   });
 
   async function onSubmit(values: z.infer<typeof mintTokenFormSchema>) {
-    console.log(values);
-
     startTransition(async () => {
       try {
-        toast.success(`Token minted`);
+        await mintTokenToMemberAction({
+          config: config,
+          formData: values
+        });
+
+        toast.success(`Success 🔨`);
         //    router.back();
       } catch (error) {
         if (error instanceof Error) {
           toast.error(error.message);
         } else {
-          toast.error('Could not send invitation');
+          toast.error('Could not mint token');
         }
       }
     });
@@ -242,7 +247,7 @@ export function MemberField({ form, config }: MemberFieldProps) {
                               {`@anonymous`}
                             </span>
                             <span className="text-xs font-mono truncate">
-                              {'Anonymous member'}
+                              {formatAddress(searchQuery)}
                             </span>
                           </div>
                         </div>
