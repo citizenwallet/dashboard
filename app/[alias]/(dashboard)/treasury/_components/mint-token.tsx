@@ -13,12 +13,11 @@ export default function MintToken({
   alias,
   theme = '#6B5CA4'
 }: MintTokenProps) {
-
-   const style = {
-     backgroundColor: `${theme}1A`, // 10% opacity
-     borderColor: `${theme}33`, // 20% opacity
-     color: theme
-   };
+  const style = {
+    backgroundColor: `${theme}1A`, // 10% opacity
+    borderColor: `${theme}33`, // 20% opacity
+    color: theme
+  };
 
   return (
     <Link
