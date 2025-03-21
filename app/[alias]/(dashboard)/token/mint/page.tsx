@@ -1,11 +1,21 @@
 import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 import MintTokenForm from './form';
+import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
+import { redirect } from 'next/navigation';
 
 export default async function Page(props: {
   params: Promise<{ alias: string }>;
 }) {
   const { alias } = await props.params;
   const { community: config } = await fetchCommunityByAliasAction(alias);
+  const  authRole  = await getAuthUserRoleInCommunityAction({
+    alias,
+    chainId: config.community.primary_token.chain_id
+  });
+
+  if (authRole !== 'owner') {
+    redirect(`/${alias}/treasury`);
+  }
 
   return (
     <div className="flex flex-1 w-full flex-col h-full overflow-hidden">
