@@ -75,7 +75,13 @@ export default async function TreasuryTable({
           {authRole === 'owner' && hasMinterRole && (
             <MintToken alias={alias} theme={theme} />
           )}
-          {/* <BurnToken alias={alias} /> */}
+
+          {
+            // TODO: check burner role of server account
+            authRole === 'owner' && (
+              <BurnToken alias={alias} />
+            )
+          }
         </div>
       </div>
 

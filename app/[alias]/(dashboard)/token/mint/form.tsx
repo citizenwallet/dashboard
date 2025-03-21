@@ -43,6 +43,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { isAddress } from 'ethers';
 import { formatAddress } from '@/lib/utils';
 import { mintTokenToMemberAction } from '@/app/[alias]/(dashboard)/token/actions';
+import MemberListItem from '../_components/member-list-item';
 
 interface MintTokenFormProps {
   alias: string;
@@ -165,22 +166,7 @@ export function MemberField({ form, config }: MemberFieldProps) {
                   )}
                 >
                   {field.value && member ? (
-                    <div className="flex items-center gap-2">
-                      <Avatar className="h-10 w-10 flex-shrink-0">
-                        <AvatarImage src={member.image} alt={member.username} />
-                        <AvatarFallback>
-                          {member.username.slice(0, 2)}
-                        </AvatarFallback>
-                      </Avatar>
-                      <div className="flex flex-col min-w-0">
-                        <span className="font-medium truncate">
-                          {`@${member.username}`}
-                        </span>
-                        <span className="text-xs font-mono truncate">
-                          {member.name}
-                        </span>
-                      </div>
-                    </div>
+                    <MemberListItem member={member} />
                   ) : (
                     'Select member'
                   )}
@@ -270,25 +256,7 @@ export function MemberField({ form, config }: MemberFieldProps) {
                           setOpen(false);
                         }}
                       >
-                        <div className="flex items-center gap-2">
-                          <Avatar className="h-10 w-10 flex-shrink-0">
-                            <AvatarImage
-                              src={member.image}
-                              alt={member.username}
-                            />
-                            <AvatarFallback>
-                              {member.username.slice(0, 2)}
-                            </AvatarFallback>
-                          </Avatar>
-                          <div className="flex flex-col min-w-0">
-                            <span className="font-medium truncate">
-                              {`@${member.username}`}
-                            </span>
-                            <span className="text-xs font-mono truncate">
-                              {member.name}
-                            </span>
-                          </div>
-                        </div>
+                        <MemberListItem member={member} />
                         {field.value?.id === member.id && (
                           <Check className="ml-auto h-4 w-4" />
                         )}
