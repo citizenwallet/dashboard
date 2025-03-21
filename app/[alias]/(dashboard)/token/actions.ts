@@ -2,7 +2,12 @@
 
 import { getServiceRoleClient } from '@/services/db';
 import { searchMembers } from '@/services/db/members';
-import { BundlerService, CommunityConfig, Config } from '@citizenwallet/sdk';
+import {
+  BundlerService,
+  CommunityConfig,
+  Config,
+  getAccountAddress
+} from '@citizenwallet/sdk';
 import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
 import { Wallet } from 'ethers';
 import { mintTokenFormSchema } from './mint/form-schema';
@@ -72,20 +77,27 @@ export const mintTokenToMemberAction = async (args: {
     throw new Error('Signer cannot be found');
   }
 
-  const wallet = new Wallet(serverWalletPrivateKey);
+  const signer = new Wallet(serverWalletPrivateKey);
+  const signerAccountAddress = await getAccountAddress(
+    new CommunityConfig(config),
+    signer.address
+  );
+
+  if (!signerAccountAddress) {
+    throw new Error('Signer account address cannot be found');
+  }
 
   const {
     member: { account: to },
     amount,
     description
   } = formData;
-  const from = process.env[`SERVER_${chainId}_ACCOUNT_ADDRESS`] ?? '';
 
   try {
     await bundlerService.mintERC20Token(
-      wallet,
+      signer,
       tokenAddress,
-      from,
+      signerAccountAddress,
       to,
       amount,
       description
@@ -132,20 +144,27 @@ export const burnTokenFromMemberAction = async (args: {
     throw new Error('Signer cannot be found');
   }
 
-  const wallet = new Wallet(serverWalletPrivateKey);
+  const signer = new Wallet(serverWalletPrivateKey);
+  const signerAccountAddress = await getAccountAddress(
+    new CommunityConfig(config),
+    signer.address
+  );
+
+  if (!signerAccountAddress) {
+    throw new Error('Signer account address cannot be found');
+  }
 
   const {
     member: { account: to },
     amount,
     description
   } = formData;
-  const from = process.env[`SERVER_${chainId}_ACCOUNT_ADDRESS`] ?? '';
 
   try {
     await bundlerService.burnFromERC20Token(
-      wallet,
+      signer,
       tokenAddress,
-      from,
+      signerAccountAddress,
       to,
       amount,
       description
