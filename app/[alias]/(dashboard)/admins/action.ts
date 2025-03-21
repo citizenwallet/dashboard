@@ -14,8 +14,16 @@ export const getAdminsOfCommunityAction = async (args: {
 }) => {
   const { chainId, alias } = args;
 
-  const supabase = getServiceRoleClient(chainId);
+  const authRole = await getAuthUserRoleInCommunityAction({
+    alias: alias,
+    chainId: chainId
+  });
 
+  if (!authRole) {
+    throw new Error('Unauthorized');
+  }
+
+  const supabase = getServiceRoleClient(chainId);
   const { data, count, error } = await getAdminsOfCommunity({
     alias: alias,
     client: supabase

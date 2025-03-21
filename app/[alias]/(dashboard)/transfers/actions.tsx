@@ -2,7 +2,9 @@
 
 import { getServiceRoleClient } from '@/services/db';
 import { getTransfersOfToken } from '@/services/db/transfers';
+import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
 
+// TODO: pass config as argument
 export const getTransfersOfTokenAction = async (args: {
   chainId: number;
   tokenAddress: string;

@@ -1,8 +1,10 @@
 'use server';
 
 import { getServiceRoleClient } from '@/services/db';
+import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
 import { getMembers } from '@/services/db/members';
 
+// TODO: pass config as argument
 export const getMembersAction = async (args: {
   chainId: number;
   profile_contract: string;
