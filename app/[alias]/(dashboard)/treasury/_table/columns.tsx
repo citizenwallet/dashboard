@@ -7,6 +7,7 @@ import { TransferWithMembersT } from '@/services/db/transfers';
 import { formatAddress } from '@/lib/utils';
 import { CommunityLogo } from '@/components/icons';
 import { Skeleton } from '@/components/ui/skeleton';
+import { ZeroAddress } from 'ethers';
 
 export const createColumns = (
   communityConfig: CommunityConfig
@@ -29,8 +30,7 @@ export const createColumns = (
       const { image, username, name, account } = row.original.from_member;
 
       const isAnonymous = username?.includes('anonymous');
-      const isZeroAddress =
-        account === '0x0000000000000000000000000000000000000000';
+      const isZeroAddress = account === ZeroAddress;
 
       return (
         <div className="flex items-center gap-2 min-w-[200px]">
@@ -65,8 +65,7 @@ export const createColumns = (
       const { image, username, name, account } = row.original.to_member;
 
       const isAnonymous = username?.includes('anonymous');
-      const isZeroAddress =
-        account === '0x0000000000000000000000000000000000000000';
+      const isZeroAddress = account === ZeroAddress;
 
       return (
         <div className="flex items-center gap-2 min-w-[200px]">
@@ -98,10 +97,15 @@ export const createColumns = (
     header: 'Value',
     accessorKey: 'value',
     cell: ({ row }) => {
-      const value = row.original.value;
+      const { value, from_member, to_member } = row.original;
+
+      const showMint = from_member.account === ZeroAddress;
+      const showBurn = to_member.account === ZeroAddress;
 
       return (
         <div className="flex items-center gap-1 min-w-[100px]">
+          {showMint && <span className="font-medium">🔨</span>}
+          {showBurn && <span className="font-medium">🔥</span>}
           <span className="font-medium">{value}</span>
           <CommunityLogo
             logoUrl={communityConfig.community.logo}
