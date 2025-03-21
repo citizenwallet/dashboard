@@ -45,12 +45,8 @@ export default async function ProductsPage(props: {
 async function getMembersOverview({ alias }: { alias: string }) {
   const { community: config } = await fetchCommunityByAliasAction(alias);
 
-  const { chain_id: chainId, address: profileContract } =
-    config.community.profile;
-
   const { count } = await getMembersAction({
-    chainId,
-    profile_contract: profileContract,
+    config,
     query: '',
     page: 1
   });
@@ -71,12 +67,8 @@ async function getMembersOverview({ alias }: { alias: string }) {
 async function getTransactionsOverview({ alias }: { alias: string }) {
   const { community: config } = await fetchCommunityByAliasAction(alias);
 
-  const { chain_id: chainId, address: tokenAddress } =
-    config.community.primary_token;
-
   const { count } = await getTransfersOfTokenAction({
-    chainId,
-    tokenAddress,
+    config,
     query: '',
     page: 1
   });

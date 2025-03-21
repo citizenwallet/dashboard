@@ -1,6 +1,5 @@
 'use client';
 import { Config, CommunityConfig } from '@citizenwallet/sdk';
-import { useRouter } from 'next/navigation';
 import { ChangeEvent, useRef, useTransition } from 'react';
 import { mintTokenFormSchema } from './form-schema';
 import { useForm, UseFormReturn } from 'react-hook-form';
@@ -52,9 +51,9 @@ interface MintTokenFormProps {
   config: Config;
 }
 
-export default function MintTokenForm({ alias, config }: MintTokenFormProps) {
+export default function MintTokenForm({ config }: MintTokenFormProps) {
   const [isPending, startTransition] = useTransition();
-  const router = useRouter();
+  // const router = useRouter();
 
   const form = useForm<z.infer<typeof mintTokenFormSchema>>({
     resolver: zodResolver(mintTokenFormSchema),
@@ -111,9 +110,6 @@ interface MemberFieldProps {
 
 // TODO: mobile responsive design https://ui.shadcn.com/docs/components/combobox#responsive
 export function MemberField({ form, config }: MemberFieldProps) {
-  const { chain_id: chainId, address: profileContract } =
-    config.community.profile;
-
   const [open, setOpen] = useState(false);
   const [searchQuery, setSearchQuery] = useState('');
   const [members, setMembers] = useState<MemberT[]>([]);
@@ -132,9 +128,8 @@ export function MemberField({ form, config }: MemberFieldProps) {
     try {
       setIsSearching(true);
       const results = await searchMemberToMint({
-        query,
-        chainId,
-        profileContract
+        config,
+        query
       });
       setMembers(results);
     } catch (error) {
@@ -352,7 +347,7 @@ export function AmountField({ form, config }: AmountFieldProps) {
     <FormField
       control={form.control}
       name="amount"
-      render={({ field }) => (
+      render={({}) => (
         <FormItem>
           <FormLabel>Amount</FormLabel>
           <FormControl>
@@ -388,7 +383,7 @@ interface DescriptionFieldProps {
   config: Config;
 }
 
-export function DescriptionField({ form, config }: DescriptionFieldProps) {
+export function DescriptionField({ form }: DescriptionFieldProps) {
   return (
     <FormField
       control={form.control}

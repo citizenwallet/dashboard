@@ -1,23 +1,31 @@
 'use server';
 
 import { getServiceRoleClient } from '@/services/db';
-import {
-  getTransfersOfToken,
-  getTreasuryTransfersOfToken
-} from '@/services/db/transfers';
-import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';  
+import { getTreasuryTransfersOfToken } from '@/services/db/transfers';
+import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
+import { Config } from '@citizenwallet/sdk';
 
-// TODO: pass config as argument
 export const getTreasuryTransfersOfTokenAction = async (args: {
-  chainId: number;
-  tokenAddress: string;
-  profileAddress: string;
+  config: Config;
   query: string;
   page: number;
   from?: string;
   to?: string;
 }) => {
-  const { chainId, tokenAddress, profileAddress, query, page, from, to } = args;
+  const { config, query, page, from, to } = args;
+  const { alias } = config.community;
+  const { chain_id: chainId, address: tokenAddress } =
+    config.community.primary_token;
+  const { address: profileAddress } = config.community.profile;
+
+  const authRole = await getAuthUserRoleInCommunityAction({
+    alias,
+    chainId
+  });
+
+  if (!authRole) {
+    throw new Error('Unauthorized');
+  }
 
   const supabase = getServiceRoleClient(chainId);
 

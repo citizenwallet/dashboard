@@ -37,7 +37,6 @@ export function AppSidebar({
       email: admin?.email ?? '',
       avatar: admin?.avatar ?? ''
     },
-    // TODO: add treasury
     projects: [
       {
         name: 'Home',
