@@ -147,9 +147,8 @@ export function MemberField({
     try {
       setIsSearching(true);
       const results = await searchMemberToBurn({
-        query,
-        chainId,
-        profileContract
+        config,
+        query
       });
       setMembers(results);
     } catch (error) {

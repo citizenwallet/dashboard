@@ -132,9 +132,8 @@ export function MemberField({ form, config }: MemberFieldProps) {
     try {
       setIsSearching(true);
       const results = await searchMemberToMint({
-        query,
-        chainId,
-        profileContract
+        config,
+        query
       });
       setMembers(results);
     } catch (error) {
