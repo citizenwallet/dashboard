@@ -32,11 +32,11 @@ export default async function TreasuryTable({
 }: TreasuryTableProps) {
   const { community: config } = await fetchCommunityByAliasAction(alias);
   const communityConfig = new CommunityConfig(config);
+
   const primaryRpcUrl = communityConfig.primaryRPCUrl;
   const { chain_id: chainId, address: tokenAddress } =
     config.community.primary_token;
   const theme = config.community.theme?.primary;
-  const { address: profileAddress } = config.community.profile;
 
   const [authRole, hasMinterRole, treasuryData] = await Promise.all([
     getAuthUserRoleInCommunityAction({
@@ -50,9 +50,7 @@ export default async function TreasuryTable({
       new JsonRpcProvider(primaryRpcUrl)
     ),
     getTreasuryTransfersOfTokenAction({
-      chainId,
-      tokenAddress,
-      profileAddress,
+      config,
       query,
       page,
       from,
