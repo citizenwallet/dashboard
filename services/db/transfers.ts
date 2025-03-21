@@ -5,7 +5,7 @@ import { MemberT } from './members';
 import { ethers } from 'ethers';
 
 const TABLE_NAME = 'a_transfers';
-const PAGE_SIZE = 10;
+export const PAGE_SIZE = 25;
 
 export interface TransferT {
   id: string;
