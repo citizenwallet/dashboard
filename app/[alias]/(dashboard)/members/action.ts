@@ -3,21 +3,33 @@
 import { getServiceRoleClient } from '@/services/db';
 import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
 import { getMembers } from '@/services/db/members';
+import { Config } from '@citizenwallet/sdk';
 
-// TODO: pass config as argument
 export const getMembersAction = async (args: {
-  chainId: number;
-  profile_contract: string;
+  config: Config;
   query: string;
   page: number;
 }) => {
-  const { chainId, profile_contract, query, page } = args;
+  const { config, query, page } = args;
+
+  const { chain_id: chainId, address: profileContract } =
+    config.community.profile;
+  const { alias } = config.community;
+
+  const authRole = await getAuthUserRoleInCommunityAction({
+    alias,
+    chainId
+  });
+
+  if (!authRole) {
+    throw new Error('Unauthorized');
+  }
 
   const supabase = getServiceRoleClient(chainId);
 
   const { data, count, error } = await getMembers({
     client: supabase,
-    profile_contract,
+    profileContract,
     query,
     page
   });
