@@ -4,8 +4,7 @@ import { getMembersAction } from '../action';
 import { MembersClientTable } from './members-client-table';
 import UrlSearch from '@/components/custom/url-search';
 import { Separator } from '@/components/ui/separator';
-
-const ROWS_PER_PAGE = 10;
+import { PAGE_SIZE } from '@/services/db/members';
 
 interface MembersTableProps {
   query: string;
@@ -26,7 +25,7 @@ export default async function MembersTable({
     page
   });
 
-  const totalPages = Math.ceil(Number(totalCount) / ROWS_PER_PAGE);
+  const totalPages = Math.ceil(Number(totalCount) / PAGE_SIZE);
 
   return (
     <div className="flex flex-1 w-full flex-col h-full">
