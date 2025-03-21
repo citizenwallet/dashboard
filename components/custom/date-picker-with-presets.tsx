@@ -66,26 +66,37 @@ const formatDateRange = (date: DateRange | undefined) => {
 export function DatePickerWithPresets() {
   const searchParams = useSearchParams();
   const pathname = usePathname();
+  const dataPresetParam = (searchParams.get('datePreset') || 'all') as Preset;
+  const fromParam = searchParams.get('from');
+  const toParam = searchParams.get('to');
+
   const router = useRouter();
-  const [date, setDate] = React.useState<DateRange | undefined>({
-    from: searchParams.get('from')
-      ? new Date(searchParams.get('from') || '')
-      : undefined,
-    to: searchParams.get('to')
-      ? new Date(searchParams.get('to') || '')
-      : undefined
-  });
-  const [preset, setPreset] = React.useState<Preset>('all');
-  const [isCustomRange, setIsCustomRange] = React.useState(false);
+
+  const [date, setDate] = React.useState<DateRange | undefined>(
+    dataPresetParam !== 'custom'
+      ? getPresetDates(dataPresetParam)
+      : {
+          from: fromParam ? new Date(fromParam) : undefined,
+          to: toParam ? new Date(toParam) : undefined
+        }
+  );
+
+  const [preset, setPreset] = React.useState<Preset>(dataPresetParam);
+  const [isCustomRange, setIsCustomRange] = React.useState(
+    dataPresetParam === 'custom'
+  );
 
   const updateURLParams = (date: DateRange | undefined, newPreset: Preset) => {
     const params = new URLSearchParams(searchParams);
 
-    if (date?.from) params.set('from', date.from.toISOString().split('T')[0]);
-    if (date?.to) params.set('to', date.to.toISOString().split('T')[0]);
+    params.set('datePreset', newPreset);
+
     if (newPreset === 'all') {
       params.delete('from');
       params.delete('to');
+    } else {
+      if (date?.from) params.set('from', date.from.toISOString().split('T')[0]);
+      if (date?.to) params.set('to', date.to.toISOString().split('T')[0]);
     }
 
     params.set('page', '1');
