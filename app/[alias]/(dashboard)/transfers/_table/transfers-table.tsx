@@ -23,12 +23,9 @@ export default async function TransferTable({
   to
 }: TransferTableProps) {
   const { community: config } = await fetchCommunityByAliasAction(alias);
-  const { chain_id: chainId, address: tokenAddress } =
-    config.community.primary_token;
 
   const { data, count: totalCount } = await getTransfersOfTokenAction({
-    chainId,
-    tokenAddress,
+    config,
     query,
     page,
     from,

@@ -67,12 +67,8 @@ async function getMembersOverview({ alias }: { alias: string }) {
 async function getTransactionsOverview({ alias }: { alias: string }) {
   const { community: config } = await fetchCommunityByAliasAction(alias);
 
-  const { chain_id: chainId, address: tokenAddress } =
-    config.community.primary_token;
-
   const { count } = await getTransfersOfTokenAction({
-    chainId,
-    tokenAddress,
+    config,
     query: '',
     page: 1
   });
