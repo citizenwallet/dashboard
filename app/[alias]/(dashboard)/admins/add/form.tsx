@@ -53,49 +53,51 @@ export default function InviteAdminForm({
     }
   });
 
-async function onSubmit(values: z.infer<typeof inviteAdminFormSchema>) {
-  const { email } = values;
+  async function onSubmit(values: z.infer<typeof inviteAdminFormSchema>) {
+    const { email } = values;
 
-  startTransition(async () => {
-    const { chain_id: chainId } = config.community.primary_token;
+    startTransition(async () => {
+      const { chain_id: chainId } = config.community.primary_token;
 
-    try {
-      const [invitationResult, signInResult] = await Promise.allSettled([
-        submitAdminInvitation({ formData: values, chainId }),
-        sendAdminSignInInvitationAction({ email, config })
-      ]);
+      try {
+        const [invitationResult, signInResult] = await Promise.allSettled([
+          submitAdminInvitation({ formData: values, chainId }),
+          sendAdminSignInInvitationAction({ email, config })
+        ]);
 
-      // Check if either promise rejected
-      if (invitationResult.status === 'rejected') {
-        throw invitationResult.reason;
-      }
-      if (signInResult.status === 'rejected') {
-        const errorMessage = signInResult.reason?.message;
-        switch (errorMessage) {
-          case 'Cannot send email':
-            throw new Error(
-              'Email service is not properly configured. Please contact support.'
-            );
-          case 'Failed to save OTP':
-            throw new Error('Failed to generate login code. Please try again.');
-          case 'You are not authorized to add admins to this community':
-            throw new Error('You do not have permission to add admins.');
-          default:
-            throw signInResult.reason;
+        // Check if either promise rejected
+        if (invitationResult.status === 'rejected') {
+          throw invitationResult.reason;
+        }
+        if (signInResult.status === 'rejected') {
+          const errorMessage = signInResult.reason?.message;
+          switch (errorMessage) {
+            case 'Cannot send email':
+              throw new Error(
+                'Email service is not properly configured. Please contact support.'
+              );
+            case 'Failed to save OTP':
+              throw new Error(
+                'Failed to generate login code. Please try again.'
+              );
+            case 'You are not authorized to add admins to this community':
+              throw new Error('You do not have permission to add admins.');
+            default:
+              throw signInResult.reason;
+          }
+        }
+
+        toast.success(`Invitation sent to ${values.email}`);
+        router.back();
+      } catch (error) {
+        if (error instanceof Error) {
+          toast.error(error.message);
+        } else {
+          toast.error('Could not send invitation');
         }
       }
-
-      toast.success(`Invitation sent to ${values.email}`);
-      router.back();
-    } catch (error) {
-      if (error instanceof Error) {
-        toast.error(error.message);
-      } else {
-        toast.error('Could not send invitation');
-      }
-    }
-  });
-}
+    });
+  }
 
   return (
     <Form {...form}>

@@ -49,8 +49,6 @@ export const getMembers = async (args: {
     .limit(PAGE_SIZE);
 };
 
-
-
 export const searchMembers = async (args: {
   client: SupabaseClient;
   profileContract: string;
@@ -71,5 +69,5 @@ export const searchMembers = async (args: {
     );
   }
 
-  return queryBuilder
+  return queryBuilder;
 };

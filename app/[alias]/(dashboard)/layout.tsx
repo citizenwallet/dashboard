@@ -20,19 +20,17 @@ export default async function DashboardLayout({
   const session = await auth();
   const { alias } = await params;
 
-
   if (!session?.user) {
     redirect('/login');
   }
 
-  const {community: config} = await fetchCommunityByAliasAction(alias);
-  const {chain_id: chainId} = config.community.primary_token;
+  const { community: config } = await fetchCommunityByAliasAction(alias);
+  const { chain_id: chainId } = config.community.primary_token;
 
   const admin = await getAdminByEmailAction({
     email: session.user.email ?? '',
     chainId: chainId
   });
-
 
   const accessList =
     admin?.admin_community_access.map((access) => access.alias) ?? [];
