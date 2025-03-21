@@ -23,11 +23,11 @@ export interface MemberT {
 // used in paginated tables
 export const getMembers = async (args: {
   client: SupabaseClient;
-  profile_contract: string;
+  profileContract: string;
   query: string;
   page: number;
 }): Promise<PostgrestResponse<MemberT>> => {
-  const { client, profile_contract, query, page } = args;
+  const { client, profileContract, query, page } = args;
 
   const offset = (page - 1) * PAGE_SIZE;
   const searchQuery = query.trim().toLowerCase();
@@ -35,7 +35,7 @@ export const getMembers = async (args: {
   let queryBuilder = client
     .from(TABLE_NAME)
     .select(`*`, { count: 'exact' })
-    .ilike('profile_contract', profile_contract);
+    .ilike('profile_contract', profileContract);
 
   if (searchQuery) {
     queryBuilder = queryBuilder.or(
