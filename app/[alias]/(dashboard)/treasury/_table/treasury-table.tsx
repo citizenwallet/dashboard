@@ -12,8 +12,7 @@ import {
   CommunityConfig
 } from '@citizenwallet/sdk';
 import { JsonRpcProvider } from 'ethers';
-
-const ROWS_PER_PAGE = 10;
+import { PAGE_SIZE } from '@/services/db/transfers';
 
 interface TreasuryTableProps {
   query: string;
@@ -60,7 +59,7 @@ export default async function TreasuryTable({
 
   const { data, count: totalCount } = treasuryData;
 
-  const totalPages = Math.ceil(Number(totalCount) / ROWS_PER_PAGE);
+  const totalPages = Math.ceil(Number(totalCount) / PAGE_SIZE);
 
   return (
     <div className="flex flex-1 w-full flex-col h-full">

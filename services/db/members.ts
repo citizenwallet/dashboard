@@ -3,7 +3,7 @@ import 'server-only';
 import { SupabaseClient, PostgrestResponse } from '@supabase/supabase-js';
 
 const TABLE_NAME = 'a_members';
-const PAGE_SIZE = 10;
+export const PAGE_SIZE = 25;
 
 export interface MemberT {
   id: string;
