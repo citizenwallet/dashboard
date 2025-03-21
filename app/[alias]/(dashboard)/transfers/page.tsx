@@ -8,6 +8,7 @@ export default async function Page(props: {
   searchParams: Promise<{
     query?: string;
     page?: string;
+    datePreset?: string;
     from?: string; // date
     to?: string; // date
   }>;
@@ -18,15 +19,19 @@ export default async function Page(props: {
     query: queryParam,
     page: pageParam,
     from: fromParam,
-    to: toParam
+    to: toParam,
+    datePreset: datePresetParam
   } = await props.searchParams;
   const query = queryParam || '';
   const page = pageParam || '1';
   const from = fromParam;
   const to = toParam;
-
+  const datePreset = datePresetParam || 'all';
   return (
-    <Suspense key={alias + query + page + from + to} fallback={<Fallback />}>
+    <Suspense
+      key={alias + query + page + from + to + datePreset}
+      fallback={<Fallback />}
+    >
       <TransferTable
         query={query}
         page={parseInt(page)}
