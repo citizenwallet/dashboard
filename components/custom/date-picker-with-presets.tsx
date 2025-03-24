@@ -121,8 +121,8 @@ export function DatePickerWithPresets() {
   return (
     <div className="flex flex-col space-y-2">
       <Select onValueChange={handlePresetChange} value={preset}>
-        <SelectTrigger className="w-[300px]">
-          <SelectValue placeholder="Select range" />
+        <SelectTrigger className="w-[300px] focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none">
+          <SelectValue placeholder="Select a fruit" />
         </SelectTrigger>
         <SelectContent position="popper">
           {Object.entries(DATE_PRESETS).map(([key, value]) => (
@@ -148,61 +148,15 @@ export function DatePickerWithPresets() {
             </Button>
           </PopoverTrigger>
           <PopoverContent align="start" className="w-auto p-2">
-            <div className="rounded-md border">
-              <Calendar
-                mode="range"
-                selected={date}
-                onSelect={handleDateChange}
-                numberOfMonths={2}
-              />
-            </div>
+            <Calendar
+              mode="range"
+              selected={date}
+              onSelect={handleDateChange}
+              numberOfMonths={2}
+            />
           </PopoverContent>
         </Popover>
       )}
     </div>
   );
-
-  // return (
-  //   <Popover>
-  //     <PopoverTrigger asChild>
-  //       <Button
-  //         variant="outline"
-  //         className={cn(
-  //           'w-[300px] justify-start text-left font-normal',
-  //           !date && 'text-muted-foreground'
-  //         )}
-  //       >
-  //         <CalendarIcon className="mr-2 h-4 w-4" />
-  //         {formatDateRange(date)}
-  //       </Button>
-  //     </PopoverTrigger>
-  //     <PopoverContent
-  //       align="start"
-  //       className="flex w-auto flex-col space-y-2 p-2"
-  //     >
-  //       <Select onValueChange={handlePresetChange} value={preset}>
-  //         <SelectTrigger>
-  //           <SelectValue placeholder="Select range" />
-  //         </SelectTrigger>
-  //         <SelectContent position="popper">
-  //           {Object.entries(DATE_PRESETS).map(([key, value]) => (
-  //             <SelectItem key={key} value={key}>
-  //               {value}
-  //             </SelectItem>
-  //           ))}
-  //         </SelectContent>
-  //       </Select>
-  //       {isCustomRange && (
-  //         <div className="rounded-md border">
-  //           <Calendar
-  //             mode="range"
-  //             selected={date}
-  //             onSelect={handleDateChange}
-  //             numberOfMonths={2}
-  //           />
-  //         </div>
-  //       )}
-  //     </PopoverContent>
-  //   </Popover>
-  // );
 }
