@@ -1,8 +1,6 @@
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 import UrlPagination from '@/components/custom/pagination-via-url';
 import { getMembersAction } from '../action';
 import { MembersClientTable } from './members-client-table';
-import UrlSearch from '@/components/custom/url-search';
 import { Separator } from '@/components/ui/separator';
 import { PAGE_SIZE } from '@/services/db/members';
 import { Config } from '@citizenwallet/sdk';
@@ -10,14 +8,12 @@ import { Config } from '@citizenwallet/sdk';
 interface MembersTableProps {
   query: string;
   page: number;
-  alias: string;
   config: Config;
 }
 
 export default async function MembersTable({
   query,
   page,
-  alias,
   config
 }: MembersTableProps) {
 

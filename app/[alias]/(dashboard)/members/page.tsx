@@ -36,7 +36,6 @@ export default async function Page(props: {
         <MembersTable
           query={query}
           page={Number(page)}
-          alias={alias}
           config={config}
         />
       </Suspense>
