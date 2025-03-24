@@ -5,19 +5,21 @@ import { MembersClientTable } from './members-client-table';
 import UrlSearch from '@/components/custom/url-search';
 import { Separator } from '@/components/ui/separator';
 import { PAGE_SIZE } from '@/services/db/members';
+import { Config } from '@citizenwallet/sdk';
 
 interface MembersTableProps {
   query: string;
   page: number;
   alias: string;
+  config: Config;
 }
 
 export default async function MembersTable({
   query,
   page,
-  alias
+  alias,
+  config
 }: MembersTableProps) {
-  const { community: config } = await fetchCommunityByAliasAction(alias);
 
   const { data, count: totalCount } = await getMembersAction({
     config,
@@ -28,17 +30,7 @@ export default async function MembersTable({
   const totalPages = Math.ceil(Number(totalCount) / PAGE_SIZE);
 
   return (
-    <div className="flex flex-1 w-full flex-col h-full">
-      <div className="grid grid-cols-2 gap-4 mb-4">
-        <div className="flex flex-col">
-          <h1 className="text-2xl font-bold">Members</h1>
-          <p className="text-sm text-gray-500">{config.community.name}</p>
-        </div>
-        <div className="flex justify-end">
-          <UrlSearch />
-        </div>
-      </div>
-
+    <>
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto rounded-md border">
           <MembersClientTable data={data ?? []} config={config} />
@@ -53,6 +45,6 @@ export default async function MembersTable({
         </p>
         <UrlPagination totalPages={totalPages} />
       </div>
-    </div>
+    </>
   );
 }
