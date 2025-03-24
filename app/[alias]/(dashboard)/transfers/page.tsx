@@ -42,10 +42,7 @@ export default async function Page(props: {
         </div>
       </div>
 
-      <Suspense
-        key={alias + query + page + from + to}
-        fallback={<Fallback />}
-      >
+      <Suspense key={alias + query + page + from + to} fallback={<Fallback />}>
         <TransferTable
           query={query}
           page={parseInt(page)}
