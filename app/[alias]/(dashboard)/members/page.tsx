@@ -15,7 +15,6 @@ export default async function Page(props: {
   const { alias } = await props.params;
   const { community: config } = await fetchCommunityByAliasAction(alias);
 
-
   const { query: queryParam, page: pageParam } = await props.searchParams;
   const query = queryParam || '';
   const page = pageParam || '1';
@@ -33,11 +32,7 @@ export default async function Page(props: {
       </div>
 
       <Suspense key={alias + query + page} fallback={<Fallback />}>
-        <MembersTable
-          query={query}
-          page={Number(page)}
-          config={config}
-        />
+        <MembersTable query={query} page={Number(page)} config={config} />
       </Suspense>
     </div>
   );

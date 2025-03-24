@@ -16,7 +16,6 @@ export default async function MembersTable({
   page,
   config
 }: MembersTableProps) {
-
   const { data, count: totalCount } = await getMembersAction({
     config,
     query,
