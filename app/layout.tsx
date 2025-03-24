@@ -7,8 +7,7 @@ import { auth } from '@/auth';
 
 export const metadata = {
   title: 'Citizen Wallet',
-  description:
-    'An admin dashboard for you community'
+  description: 'An admin dashboard for you community'
 };
 
 export default async function RootLayout({

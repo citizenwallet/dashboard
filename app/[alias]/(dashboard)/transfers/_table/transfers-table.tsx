@@ -6,7 +6,6 @@ import { Separator } from '@/components/ui/separator';
 import { DatePickerWithPresets } from '@/components/custom/date-picker-with-presets';
 import { PAGE_SIZE } from '@/services/db/transfers';
 
-
 interface TransferTableProps {
   query: string;
   page: number;
