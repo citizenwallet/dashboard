@@ -43,7 +43,7 @@ export default function UrlSearch() {
         name="query"
         type="search"
         placeholder="Search..."
-        className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px]"
+        className="w-full rounded-lg bg-background pl-8 md:w-[200px] lg:w-[336px] focus:ring-0 focus:ring-offset-0 focus-visible:ring-0 focus-visible:ring-offset-0 focus-visible:outline-none"
         defaultValue={searchParams.get('query')?.toString()}
         onChange={handleInputChange}
       />
