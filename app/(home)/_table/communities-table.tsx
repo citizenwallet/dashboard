@@ -1,7 +1,7 @@
 import { columns } from './columns';
 import { DataTable } from '@/components/ui/data-table';
 import { Config } from '@citizenwallet/sdk';
-import { fetchCommunitiesOfAction } from '@/app/_actions/community-actions';
+import { fetchCommunitiesOfAction } from '@/app/(home)/_actions/community-actions';
 import UrlPagination from '@/components/custom/pagination-via-url';
 import { auth } from '@/auth';
 import { getUserByEmailAction } from '@/app/(home)/_actions/user-actions';
