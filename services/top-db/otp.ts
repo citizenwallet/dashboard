@@ -2,26 +2,25 @@ import 'server-only';
 
 import {
   SupabaseClient,
-  PostgrestSingleResponse,
   PostgrestMaybeSingleResponse
 } from '@supabase/supabase-js';
+
 const TABLE_NAME = 'otp';
 
 export interface OtpT {
-  soruce: string;
-  code: string;
-  created_at: Date;
-  expires_at: Date;
+  source: string;
   source_type: string;
+  code: string;
+  expires_at: Date;
+  created_at: Date;
 }
 
 export const saveOTP = async (args: {
   client: SupabaseClient;
-  source: string;
-  code: string;
-  source_type: string;
+  data: Pick<OtpT, 'source' | 'source_type' | 'code'>;
 }) => {
-  const { client, source, code, source_type } = args;
+  const { client, data } = args;
+  const { source, source_type, code } = data;
 
   return client.from(TABLE_NAME).upsert(
     {
@@ -32,7 +31,7 @@ export const saveOTP = async (args: {
       expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 minutes
     },
     {
-      onConflict: 'source'
+      onConflict: 'source',
     }
   );
 };

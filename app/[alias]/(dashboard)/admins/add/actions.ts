@@ -6,7 +6,7 @@ import { inviteAdminFormSchema } from './form-schema';
 import { addAdminToCommunity } from '@/services/chain-db/admin';
 import { sendCommunityInvitationEmail } from '@/services/brevo';
 import { generateOTP } from '@/lib/utils';
-import { saveOTP } from '@/services/chain-db/otp';
+import { saveOTP } from '@/services/top-db/otp';
 import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
 import { Config } from '@citizenwallet/sdk';
 
@@ -95,9 +95,11 @@ export async function sendAdminSignInInvitationAction(args: {
   // db
   const { error: saveOTPError } = await saveOTP({
     client,
-    source: email,
-    code: otp,
-    source_type: 'email'
+    data: {
+      source: email,
+      code: otp,
+      source_type: 'email'
+    }
   });
 
   if (saveOTPError) {

@@ -8,17 +8,17 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { signOutAction } from '@/app/_actions/admin-actions';
-import { AdminT } from '@/services/chain-db/admin';
+import { UserT } from '@/services/top-db/users';
 import { Avatar, AvatarImage, AvatarFallback } from '@radix-ui/react-avatar';
 import { Session } from 'next-auth';
 
 interface UserProps {
   session: Session;
-  admin: AdminT | null;
+  user: UserT | null;
 }
 
 export default function User(props: UserProps) {
-  const { admin } = props;
+  const { user } = props;
 
   return (
     <DropdownMenu>
@@ -29,8 +29,8 @@ export default function User(props: UserProps) {
           className="overflow-hidden rounded-full"
         >
           <Avatar className="h-10 w-10">
-            <AvatarImage src={admin?.avatar ?? ''} alt="admin avatar" />
-            <AvatarFallback>{admin?.name?.slice(0, 2) ?? ''}</AvatarFallback>
+            <AvatarImage src={user?.avatar ?? ''} alt="user avatar" />
+            <AvatarFallback>{user?.name?.slice(0, 2) ?? ''}</AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>

@@ -4,9 +4,8 @@ import { useState, useEffect, useCallback } from 'react';
 import { useSearchParams } from 'next/navigation';
 import EmailForm from './email-form';
 import OtpForm from './otp-form';
-import { sendOTPAction } from './actions';
+import { sendOTPAction, signInWithOTP } from './actions';
 import { toast } from 'sonner';
-import { signInWithOTP } from './actions';
 import { useRouter } from 'next/navigation';
 
 export default function Page() {
@@ -20,7 +19,7 @@ export default function Page() {
   const verifyOTP = useCallback(
     async (email: string, code: string, alias: string) => {
       try {
-        const result = await signInWithOTP({ email, code, chainId: 42220 });
+        const result = await signInWithOTP({ email, code });
         if (result?.success) {
           toast.success('Login successful!');
           setTimeout(() => {
@@ -109,7 +108,7 @@ export default function Page() {
   async function resendLoginCode(email: string) {
     try {
       startTimer();
-      await sendOTPAction({ email, chainId: 42220 });
+      await sendOTPAction({ email });
       toast.success(`New login code sent to ${email}`);
     } catch {
       toast.error('Could not send login code');
