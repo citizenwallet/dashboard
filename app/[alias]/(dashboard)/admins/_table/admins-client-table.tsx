@@ -1,7 +1,11 @@
 'use client';
 
 import { DataTable } from '@/components/ui/data-table';
-import { AdminT, AdminCommunityAccessT, AdminRoleT } from '@/services/db/admin';
+import {
+  AdminT,
+  AdminCommunityAccessT,
+  AdminRoleT
+} from '@/services/chain-db/admin';
 import { createColumns } from './columns';
 import { useOptimistic, useTransition } from 'react';
 import { removeAdminFromCommunityAction } from '@/app/[alias]/(dashboard)/admins/action';

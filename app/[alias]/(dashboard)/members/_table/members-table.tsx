@@ -2,7 +2,7 @@ import UrlPagination from '@/components/custom/pagination-via-url';
 import { getMembersAction } from '../action';
 import { MembersClientTable } from './members-client-table';
 import { Separator } from '@/components/ui/separator';
-import { PAGE_SIZE } from '@/services/db/members';
+import { PAGE_SIZE } from '@/services/chain-db/members';
 import { Config } from '@citizenwallet/sdk';
 
 interface MembersTableProps {

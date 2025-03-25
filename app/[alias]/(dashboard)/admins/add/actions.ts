@@ -1,12 +1,12 @@
 'use server';
 
-import { getServiceRoleClient } from '@/services/db';
+import { getServiceRoleClient } from '@/services/chain-db';
 import { z } from 'zod';
 import { inviteAdminFormSchema } from './form-schema';
-import { addAdminToCommunity } from '@/services/db/admin';
+import { addAdminToCommunity } from '@/services/chain-db/admin';
 import { sendCommunityInvitationEmail } from '@/services/brevo';
 import { generateOTP } from '@/lib/utils';
-import { saveOTP } from '@/services/db/otp';
+import { saveOTP } from '@/services/chain-db/otp';
 import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
 import { Config } from '@citizenwallet/sdk';
 

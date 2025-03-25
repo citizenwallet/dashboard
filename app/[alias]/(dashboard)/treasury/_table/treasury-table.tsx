@@ -12,7 +12,7 @@ import {
   CommunityConfig
 } from '@citizenwallet/sdk';
 import { JsonRpcProvider } from 'ethers';
-import { PAGE_SIZE } from '@/services/db/transfers';
+import { PAGE_SIZE } from '@/services/chain-db/transfers';
 
 interface TreasuryTableProps {
   query: string;

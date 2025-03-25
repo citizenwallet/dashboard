@@ -2,7 +2,7 @@
 
 import { DataTable } from '@/components/ui/data-table';
 import { Config, CommunityConfig } from '@citizenwallet/sdk';
-import { MemberT } from '@/services/db/members';
+import { MemberT } from '@/services/chain-db/members';
 import { createColumns } from './columns';
 
 interface MembersClientTableProps {

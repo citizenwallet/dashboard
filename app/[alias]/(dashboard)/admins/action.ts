@@ -1,11 +1,11 @@
 'use server';
 
 import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
-import { getServiceRoleClient } from '@/services/db';
+import { getServiceRoleClient } from '@/services/chain-db';
 import {
   getAdminsOfCommunity,
   removeAdminFromCommunity
-} from '@/services/db/admin';
+} from '@/services/chain-db/admin';
 import { revalidatePath } from 'next/cache';
 
 export const getAdminsOfCommunityAction = async (args: {
