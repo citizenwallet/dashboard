@@ -1,7 +1,7 @@
 'use server';
-import { getServiceRoleClient } from '@/services/db';
-import { getAdminByEmail } from '@/services/db/admin';
-import { saveOTP } from '@/services/db/otp';
+import { getServiceRoleClient } from '@/services/chain-db';
+import { getAdminByEmail } from '@/services/chain-db/admin';
+import { saveOTP } from '@/services/chain-db/otp';
 import { generateOTP } from '@/lib/utils';
 import { sendOtpEmail } from '@/services/brevo';
 import { signIn } from '@/auth';

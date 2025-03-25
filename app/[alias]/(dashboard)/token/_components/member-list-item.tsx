@@ -1,6 +1,6 @@
 'use client';
 
-import { MemberT } from '@/services/db/members';
+import { MemberT } from '@/services/chain-db/members';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface MemberListItemProps {

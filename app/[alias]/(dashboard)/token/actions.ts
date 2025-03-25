@@ -1,7 +1,7 @@
 'use server';
 
-import { getServiceRoleClient } from '@/services/db';
-import { searchMembers } from '@/services/db/members';
+import { getServiceRoleClient } from '@/services/chain-db';
+import { searchMembers } from '@/services/chain-db/members';
 import {
   BundlerService,
   CommunityConfig,

@@ -1,7 +1,7 @@
 'use server';
 
-import { getServiceRoleClient } from '@/services/db';
-import { getAdminByEmail } from '@/services/db/admin';
+import { getServiceRoleClient } from '@/services/chain-db';
+import { getAdminByEmail } from '@/services/chain-db/admin';
 import { signOut } from '@/auth';
 import { auth } from '@/auth';
 

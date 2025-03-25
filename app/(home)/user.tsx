@@ -8,7 +8,7 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { signOutAction } from '@/app/_actions/admin-actions';
-import { AdminT } from '@/services/db/admin';
+import { AdminT } from '@/services/chain-db/admin';
 import { Avatar, AvatarImage, AvatarFallback } from '@radix-ui/react-avatar';
 import { Session } from 'next-auth';
 

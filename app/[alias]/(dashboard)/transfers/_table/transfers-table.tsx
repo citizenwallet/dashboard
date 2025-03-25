@@ -3,7 +3,7 @@ import { getTransfersOfTokenAction } from '../actions';
 import UrlPagination from '@/components/custom/pagination-via-url';
 import { TransferClientTable } from './transfers-client-table';
 import { Separator } from '@/components/ui/separator';
-import { PAGE_SIZE } from '@/services/db/transfers';
+import { PAGE_SIZE } from '@/services/chain-db/transfers';
 import { Config } from '@citizenwallet/sdk';
 
 interface TransferTableProps {

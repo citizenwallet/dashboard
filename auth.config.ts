@@ -1,8 +1,8 @@
 import { NextAuthConfig, CredentialsSignin } from 'next-auth';
 import CredentialProvider from 'next-auth/providers/credentials';
-import { getServiceRoleClient } from '@/services/db';
-import { getOTPOfSource, deleteOTPOfSource } from '@/services/db/otp';
-import { getAdminByEmail } from '@/services/db/admin';
+import { getServiceRoleClient } from '@/services/chain-db';
+import { getOTPOfSource, deleteOTPOfSource } from '@/services/chain-db/otp';
+import { getAdminByEmail } from '@/services/chain-db/admin';
 
 const authConfig = {
   providers: [

@@ -1,6 +1,10 @@
 'use client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { AdminT, AdminCommunityAccessT, AdminRoleT } from '@/services/db/admin';
+import {
+  AdminT,
+  AdminCommunityAccessT,
+  AdminRoleT
+} from '@/services/chain-db/admin';
 import { ColumnDef } from '@tanstack/react-table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';

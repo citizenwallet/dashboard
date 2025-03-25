@@ -13,7 +13,7 @@ import {
   SidebarRail
 } from '@/components/ui/sidebar';
 import { Config } from '@citizenwallet/sdk';
-import { AdminT } from '@/services/db/admin';
+import { AdminT } from '@/services/chain-db/admin';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   communities: Config[];
