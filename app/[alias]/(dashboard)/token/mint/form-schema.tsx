@@ -1,4 +1,4 @@
-import { type MemberT } from '@/services/db/members';
+import { type MemberT } from '@/services/chain-db/members';
 import * as z from 'zod';
 
 const memberSchema: z.ZodType<

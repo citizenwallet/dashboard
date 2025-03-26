@@ -1,9 +1,17 @@
 'use client';
 
 import type * as React from 'react';
-import { Home, Users, LucideLineChart, Shield, Landmark } from 'lucide-react';
+import {
+  Home,
+  Users,
+  LucideLineChart,
+  Shield,
+  Landmark,
+  Flag
+} from 'lucide-react';
 import { NavProjects } from './nav-projects';
 import { NavUser } from './nav-user';
+import { NavSecondary } from './nav-secondary';
 import { CommunitySwitcher } from './community-switcher';
 import {
   Sidebar,
@@ -13,7 +21,7 @@ import {
   SidebarRail
 } from '@/components/ui/sidebar';
 import { Config } from '@citizenwallet/sdk';
-import { AdminT } from '@/services/db/admin';
+import { AdminT } from '@/services/chain-db/admin';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   communities: Config[];
@@ -68,6 +76,13 @@ export function AppSidebar({
         url: `/${selectedCommunity?.community.alias}/admins`,
         icon: Shield
       }
+    ],
+    navSecondary: [
+      {
+        title: 'All communities',
+        url: '/',
+        icon: Flag
+      }
     ]
   };
 
@@ -81,6 +96,7 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavProjects projects={data.projects} />
+        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />

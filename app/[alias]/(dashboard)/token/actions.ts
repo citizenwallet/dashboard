@@ -1,14 +1,14 @@
 'use server';
 
-import { getServiceRoleClient } from '@/services/db';
-import { searchMembers } from '@/services/db/members';
+import { getServiceRoleClient } from '@/services/chain-db';
+import { searchMembers } from '@/services/chain-db/members';
 import {
   BundlerService,
   CommunityConfig,
   Config,
   getAccountAddress
 } from '@citizenwallet/sdk';
-import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
+import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
 import { Wallet } from 'ethers';
 import { mintTokenFormSchema } from './mint/form-schema';
 import { burnTokenFormSchema } from './burn/form-schema';

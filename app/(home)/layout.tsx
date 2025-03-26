@@ -2,7 +2,7 @@ import User from './user';
 import UrlSearch from '@/components/custom/url-search';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { getAdminByEmailAction } from '@/app/_actions/admin-actions';
+import { getUserByEmailAction } from '@/app/(home)/_actions/user-actions';
 import { cookies } from 'next/headers';
 
 export default async function Layout({
@@ -17,21 +17,15 @@ export default async function Layout({
     redirect('/login');
   }
 
-  const admin = await getAdminByEmailAction({
-    email: session.user.email ?? '',
-    chainId: 42220
+  const user = await getUserByEmailAction({
+    email: session.user.email ?? ''
   });
 
   const accessList =
-    admin?.admin_community_access.map((access) => access.alias) ?? [];
+    user?.users_community_access.map((access) => access.alias) ?? [];
 
   if (lastViewedAlias && accessList.includes(lastViewedAlias)) {
     redirect(`/${lastViewedAlias}`);
-  }
-
-  if (accessList.length !== 0) {
-    const firstCommunity = accessList[0];
-    redirect(`/${firstCommunity}`);
   }
 
   return (
@@ -39,7 +33,7 @@ export default async function Layout({
       <div className="flex flex-col sm:gap-4 sm:py-4">
         <header className="sticky top-0 z-30 flex h-14 items-center gap-4 border-b bg-background px-4 sm:static sm:h-auto sm:border-0 sm:bg-transparent sm:px-6">
           <UrlSearch />
-          <User session={session} admin={admin} />
+          <User session={session} user={user} />
         </header>
         <main className="flex flex-col items-start gap-2 p-4 sm:px-6 sm:py-0 md:gap-4 overflow-hidden">
           {children}

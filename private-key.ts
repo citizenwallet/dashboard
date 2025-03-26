@@ -1,6 +1,6 @@
 import { Wallet } from 'ethers';
 import { CommunityConfig, getAccountAddress } from '@citizenwallet/sdk';
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
+import { fetchCommunityByAliasAction } from '@/app/[alias]/(dashboard)/_actions/community-actions';
 
 async function main() {
   const { community: config } = await fetchCommunityByAliasAction('seldesalm');

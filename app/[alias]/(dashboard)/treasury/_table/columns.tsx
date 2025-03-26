@@ -3,7 +3,7 @@
 import { ColumnDef } from '@tanstack/react-table';
 import { CommunityConfig } from '@citizenwallet/sdk';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { TransferWithMembersT } from '@/services/db/transfers';
+import { TransferWithMembersT } from '@/services/chain-db/transfers';
 import { formatAddress } from '@/lib/utils';
 import { CommunityLogo } from '@/components/icons';
 import { Skeleton } from '@/components/ui/skeleton';

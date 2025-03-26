@@ -1,8 +1,8 @@
 'use server';
 
-import { getServiceRoleClient } from '@/services/db';
-import { getTreasuryTransfersOfToken } from '@/services/db/transfers';
-import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
+import { getServiceRoleClient } from '@/services/chain-db';
+import { getTreasuryTransfersOfToken } from '@/services/chain-db/transfers';
+import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
 import { Config } from '@citizenwallet/sdk';
 
 export const getTreasuryTransfersOfTokenAction = async (args: {

@@ -35,7 +35,7 @@ import {
   searchMember as searchMemberToBurn,
   burnTokenFromMemberAction
 } from '@/app/[alias]/(dashboard)/token/actions';
-import { MemberT } from '@/services/db/members';
+import { MemberT } from '@/services/chain-db/members';
 import { useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
