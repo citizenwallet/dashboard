@@ -8,7 +8,7 @@ import {
 const USERS_TABLE_NAME = 'users';
 const USERS_COMMUNITY_ACCESS_TABLE_NAME = 'users_community_access';
 
-export type UserRoleT = 'admin' | 'member';
+export type UserRoleT = 'owner' | 'member';
 
 export interface UserT {
   id: string;
@@ -52,7 +52,7 @@ export const getUserByEmail = async (args: {
 };
 
 
-export const addAdminToCommunity = async (args: {
+export const addUserToCommunity = async (args: {
   client: SupabaseClient;
   data: Pick<UserT, 'email' | 'name' | 'avatar'> &
     Pick<UserCommunityAccessT, 'chain_id' | 'alias' | 'role'>;
