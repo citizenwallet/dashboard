@@ -2,12 +2,9 @@ import { columns } from './columns';
 import { DataTable } from '@/components/ui/data-table';
 import { Config } from '@citizenwallet/sdk';
 import { fetchCommunitiesAction } from '@/app/(home)/_actions/community-actions';
-import UrlPagination from '@/components/custom/pagination-via-url';
 import { auth } from '@/auth';
 import { getUserByEmailAction } from '@/app/(home)/_actions/user-actions';
 import { Separator } from '@/components/ui/separator';
-
-const ROWS_PER_PAGE = 10;
 
 interface CommunitiesTableProps {
   query: string;
@@ -39,8 +36,6 @@ export async function CommunitiesTable({
     console.error(error);
   }
 
-  const totalPages = Math.ceil(total / ROWS_PER_PAGE);
-
   return (
     <div className="flex flex-1 w-full flex-col h-full bg-background">
       <h1 className="text-2xl font-bold">Communities</h1>
@@ -60,7 +55,6 @@ export async function CommunitiesTable({
         <p className="text-sm text-gray-500 whitespace-nowrap">
           Total: {total}
         </p>
-        <UrlPagination totalPages={totalPages} />
       </div>
     </div>
   );
