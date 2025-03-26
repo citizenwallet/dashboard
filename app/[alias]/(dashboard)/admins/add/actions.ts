@@ -7,7 +7,7 @@ import { addAdminToCommunity } from '@/services/chain-db/admin';
 import { sendCommunityInvitationEmail } from '@/services/brevo';
 import { generateOTP } from '@/lib/utils';
 import { saveOTP } from '@/services/top-db/otp';
-import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
+import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
 import { Config } from '@citizenwallet/sdk';
 
 export async function submitAdminInvitation(args: {

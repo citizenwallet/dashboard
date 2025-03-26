@@ -6,7 +6,7 @@ import {
   CardTitle
 } from '@/components/ui/card';
 import InviteAdminForm from './form';
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
+import { fetchCommunityByAliasAction } from '@/app/[alias]/(dashboard)/_actions/community-actions';
 export default async function Page(props: {
   params: Promise<{ alias: string }>;
 }) {

@@ -3,7 +3,7 @@ import TransferTable from './_table/transfers-table';
 import { skeletonColumns, placeholderData } from './_table/columns';
 import { DataTable } from '@/components/ui/data-table';
 import { DatePickerWithPresets } from '@/components/custom/date-picker-with-presets';
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
+import { fetchCommunityByAliasAction } from '@/app/[alias]/(dashboard)/_actions/community-actions';
 
 export default async function Page(props: {
   params: Promise<{ alias: string }>;
