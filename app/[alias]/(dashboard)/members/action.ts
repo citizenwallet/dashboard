@@ -2,6 +2,7 @@
 
 import { getServiceRoleClient } from '@/services/chain-db';
 import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
+import { getAuthUserRoleInAppAction } from '@/app/(home)/_actions/user-actions';
 import { getMembers } from '@/services/chain-db/members';
 import { Config } from '@citizenwallet/sdk';
 
@@ -16,12 +17,14 @@ export const getMembersAction = async (args: {
     config.community.profile;
   const { alias } = config.community;
 
-  const authRole = await getAuthUserRoleInCommunityAction({
+  const roleInCommunity = await getAuthUserRoleInCommunityAction({
     alias,
     chainId
   });
 
-  if (!authRole) {
+  const roleInApp = await getAuthUserRoleInAppAction();
+
+  if (roleInApp === 'user' && !roleInCommunity) {
     throw new Error('Unauthorized');
   }
 
