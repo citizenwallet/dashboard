@@ -28,7 +28,7 @@ export default async function Layout({
     redirect(`/${lastViewedAlias}`);
   }
 
-  if (role === 'user' && !lastViewedAlias && accessList.length > 0) {
+  if (role === 'user' && accessList.length > 0) {
     redirect(`/${accessList[0]}`);
   }
 
