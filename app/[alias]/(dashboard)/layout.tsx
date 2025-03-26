@@ -5,9 +5,8 @@ import {
 } from '@/components/ui/sidebar';
 import { AppSidebar } from './_components/app-sidebar';
 import { fetchCommunitiesOfChainAction } from '@/app/[alias]/(dashboard)/_actions/community-actions';
-import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { getAdminByEmailAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
+import { getAdminByAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
 import { fetchCommunityByAliasAction } from '@/app/[alias]/(dashboard)/_actions/community-actions';
 
 export default async function DashboardLayout({
@@ -17,20 +16,18 @@ export default async function DashboardLayout({
   children: React.ReactNode;
   params: Promise<{ alias: string }>;
 }) {
-  const session = await auth();
+
   const { alias } = await params;
-
-  if (!session?.user) {
-    redirect('/login');
-  }
-
   const { community: config } = await fetchCommunityByAliasAction(alias);
   const { chain_id: chainId } = config.community.primary_token;
 
-  const admin = await getAdminByEmailAction({
-    email: session.user.email ?? '',
+  const admin = await getAdminByAction({
     chainId: chainId
   });
+
+  if (!admin) {
+    redirect('/login');
+  }
 
   const accessList =
     admin?.admin_community_access.map((access) => access.alias) ?? [];
