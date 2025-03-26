@@ -31,7 +31,7 @@ export const saveOTP = async (args: {
       expires_at: new Date(Date.now() + 30 * 60 * 1000).toISOString() // 30 minutes
     },
     {
-      onConflict: 'source',
+      onConflict: 'source'
     }
   );
 };

@@ -1,7 +1,14 @@
 'use client';
 
 import type * as React from 'react';
-import { Home, Users, LucideLineChart, Shield, Landmark, Flag } from 'lucide-react';
+import {
+  Home,
+  Users,
+  LucideLineChart,
+  Shield,
+  Landmark,
+  Flag
+} from 'lucide-react';
 import { NavProjects } from './nav-projects';
 import { NavUser } from './nav-user';
 import { NavSecondary } from './nav-secondary';
@@ -75,7 +82,7 @@ export function AppSidebar({
         title: 'All communities',
         url: '/',
         icon: Flag
-      },
+      }
     ]
   };
 
