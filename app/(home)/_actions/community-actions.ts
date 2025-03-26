@@ -40,7 +40,7 @@ export const fetchCommunitiesAction = async (args: {
   };
 };
 
-export const fetchCommunitiesForUserAction = async (args: {
+const fetchCommunitiesForUserAction = async (args: {
   accessList: string[];
   query?: string;
 }): Promise<{ communities: Config[]; total: number }> => {
@@ -86,7 +86,7 @@ export const fetchCommunitiesForUserAction = async (args: {
   return { communities, total: communities.length };
 };
 
-export const fetchCommunitiesForAdminAction = async (args: {
+const fetchCommunitiesForAdminAction = async (args: {
   query?: string;
 }): Promise<{ communities: Config[]; total: number }> => {
   const userRole = await getAuthUserRoleInAppAction();
