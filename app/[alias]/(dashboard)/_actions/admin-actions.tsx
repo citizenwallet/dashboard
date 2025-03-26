@@ -5,7 +5,7 @@ import { getAdminByEmail } from '@/services/chain-db/admin';
 import { signOut } from '@/auth';
 import { auth } from '@/auth';
 
-export async function getAdminAction(args: { chainId: number }) {
+export async function getAuthUserAction(args: { chainId: number }) {
   const session = await auth();
 
   if (!session?.user) {
