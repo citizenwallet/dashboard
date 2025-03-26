@@ -6,7 +6,7 @@ import {
 import { AppSidebar } from './_components/app-sidebar';
 import { fetchCommunitiesOfChainAction } from '@/app/[alias]/(dashboard)/_actions/community-actions';
 import { redirect } from 'next/navigation';
-import { getAdminByAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
+import { getAdminAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
 import { fetchCommunityByAliasAction } from '@/app/[alias]/(dashboard)/_actions/community-actions';
 
 export default async function DashboardLayout({
@@ -21,7 +21,7 @@ export default async function DashboardLayout({
   const { community: config } = await fetchCommunityByAliasAction(alias);
   const { chain_id: chainId } = config.community.primary_token;
 
-  const admin = await getAdminByAction({
+  const admin = await getAdminAction({
     chainId: chainId
   });
 
