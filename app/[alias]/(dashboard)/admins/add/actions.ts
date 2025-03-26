@@ -1,9 +1,11 @@
 'use server';
 
-import { getServiceRoleClient } from '@/services/chain-db';
+import { getServiceRoleClient as getChainDbClient } from '@/services/chain-db';
+import { getServiceRoleClient as getTopDbClient } from '@/services/top-db';
 import { z } from 'zod';
 import { inviteAdminFormSchema } from './form-schema';
-import { addAdminToCommunity } from '@/services/chain-db/admin';
+import { addAdminToCommunity as addAdminToCommunityChainDb } from '@/services/chain-db/admin';
+import { addUserToCommunity as addUserToCommunityTopDb } from '@/services/top-db/users';
 import { sendCommunityInvitationEmail } from '@/services/brevo';
 import { generateOTP } from '@/lib/utils';
 import { saveOTP } from '@/services/top-db/otp';
@@ -34,11 +36,12 @@ export async function submitAdminInvitation(args: {
 
   const { email, name, avatar, alias, role } = result.data;
 
-  const client = getServiceRoleClient(chainId);
+  const chainDbClient = getChainDbClient(chainId);
+  const topDbClient = getTopDbClient();
 
   try {
-    await addAdminToCommunity({
-      client,
+    await addAdminToCommunityChainDb({
+      client: chainDbClient,
       data: {
         email,
         name,
@@ -46,6 +49,18 @@ export async function submitAdminInvitation(args: {
         alias,
         role,
         chain_id: chainId
+      }
+    });
+
+    await addUserToCommunityTopDb({
+      client: topDbClient,
+      data: {
+        email,
+        name,
+        avatar: avatar ?? '',
+        chain_id: chainId,
+        alias,
+        role
       }
     });
   } catch (error) {
@@ -72,7 +87,7 @@ export async function sendAdminSignInInvitationAction(args: {
     throw new Error('You are not authorized to add admins to this community');
   }
 
-  const client = getServiceRoleClient(chainId);
+  const topDbClient = getTopDbClient();
   const otp = generateOTP();
 
   // brevo
@@ -94,7 +109,7 @@ export async function sendAdminSignInInvitationAction(args: {
 
   // db
   const { error: saveOTPError } = await saveOTP({
-    client,
+    client: topDbClient,
     data: {
       source: email,
       code: otp,
