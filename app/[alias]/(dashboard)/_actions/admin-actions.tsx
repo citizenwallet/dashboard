@@ -5,14 +5,19 @@ import { getAdminByEmail } from '@/services/chain-db/admin';
 import { signOut } from '@/auth';
 import { auth } from '@/auth';
 
-export async function getAdminByEmailAction(args: {
-  email: string;
-  chainId: number;
-}) {
-  const { email, chainId } = args;
+export async function getAdminByAction(args: { chainId: number }) {
+  const session = await auth();
+
+  if (!session?.user) {
+    throw new Error('Unauthorized');
+  }
+
+  const { email } = session.user;
+
+  const { chainId } = args;
 
   const client = getServiceRoleClient(chainId);
-  const { data, error } = await getAdminByEmail({ client, email });
+  const { data, error } = await getAdminByEmail({ client, email: email ?? '' });
 
   if (error) {
     console.error(error);
