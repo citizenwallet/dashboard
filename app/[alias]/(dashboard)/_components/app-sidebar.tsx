@@ -20,14 +20,14 @@ import {
   SidebarRail
 } from '@/components/ui/sidebar';
 import { Config } from '@citizenwallet/sdk';
-import { AdminT } from '@/services/chain-db/admin';
+import { UserT } from '@/services/top-db/users';
 import Link from 'next/link';
 import { SidebarMenuButton } from '@/components/ui/sidebar';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   communities: Config[];
   selectedAlias: string;
-  admin: AdminT | null;
+  admin: UserT | null;
 }
 
 export function AppSidebar({
