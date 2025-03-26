@@ -67,7 +67,7 @@ export function CommunitySwitcher({
             </SidebarMenuButton>
           </DropdownMenuTrigger>
           <DropdownMenuContent
-            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg"
+            className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg max-h-[300px] overflow-y-auto"
             align="start"
             side={isMobile ? 'bottom' : 'right'}
             sideOffset={4}
@@ -91,7 +91,7 @@ export function CommunitySwitcher({
                 <DropdownMenuItem
                   key={community.community.alias}
                   onClick={onSelectCommunity}
-                  className="gap-2 p-2"
+                  className="gap-4 p-2"
                 >
                   <div className="flex size-6 items-center justify-center rounded-sm border">
                     <CommunityLogo
@@ -100,7 +100,6 @@ export function CommunitySwitcher({
                     />
                   </div>
                   {community.community.name}
-                  {/* <DropdownMenuShortcut>⌘{index + 1}</DropdownMenuShortcut> */}
                 </DropdownMenuItem>
               );
             })}
