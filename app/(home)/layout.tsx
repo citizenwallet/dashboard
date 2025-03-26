@@ -2,7 +2,7 @@ import User from './user';
 import UrlSearch from '@/components/custom/url-search';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { getUserByEmailAction } from '@/app/(home)/_actions/user-actions';
+import { getAuthUserAction } from '@/app/(home)/_actions/user-actions';
 import { cookies } from 'next/headers';
 
 export default async function Layout({
@@ -17,9 +17,7 @@ export default async function Layout({
     redirect('/login');
   }
 
-  const user = await getUserByEmailAction({
-    email: session.user.email ?? ''
-  });
+  const user = await getAuthUserAction();
 
   const accessList =
     user?.users_community_access.map((access) => access.alias) ?? [];
