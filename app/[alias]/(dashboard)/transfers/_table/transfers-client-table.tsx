@@ -2,7 +2,7 @@
 
 import { DataTable } from '@/components/ui/data-table';
 import { Config, CommunityConfig } from '@citizenwallet/sdk';
-import { TransferWithMembersT } from '@/services/db/transfers';
+import { TransferWithMembersT } from '@/services/chain-db/transfers';
 import { createColumns } from './columns';
 
 interface TransferClientTableProps {

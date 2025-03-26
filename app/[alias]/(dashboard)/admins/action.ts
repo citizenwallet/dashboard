@@ -1,11 +1,13 @@
 'use server';
 
-import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
-import { getServiceRoleClient } from '@/services/db';
+import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
+import { getServiceRoleClient as getChainDbClient } from '@/services/chain-db';
+import { getServiceRoleClient as getTopDbClient } from '@/services/top-db';
 import {
   getAdminsOfCommunity,
-  removeAdminFromCommunity
-} from '@/services/db/admin';
+  removeAdminFromCommunity as removeAdminFromCommunityChainDb
+} from '@/services/chain-db/admin';
+import { removeUserFromCommunity as removeUserFromCommunityTopDb } from '@/services/top-db/users';
 import { revalidatePath } from 'next/cache';
 
 export const getAdminsOfCommunityAction = async (args: {
@@ -23,7 +25,7 @@ export const getAdminsOfCommunityAction = async (args: {
     throw new Error('Unauthorized');
   }
 
-  const supabase = getServiceRoleClient(chainId);
+  const supabase = getChainDbClient(chainId);
   const { data, count, error } = await getAdminsOfCommunity({
     alias: alias,
     client: supabase
@@ -41,10 +43,11 @@ export const getAdminsOfCommunityAction = async (args: {
 
 export async function removeAdminFromCommunityAction(args: {
   adminIdToRemove: number;
+  adminEmail: string;
   alias: string;
   chainId: number;
 }) {
-  const { adminIdToRemove, alias, chainId } = args;
+  const { adminIdToRemove, alias, chainId, adminEmail } = args;
 
   const authRole = await getAuthUserRoleInCommunityAction({
     alias: args.alias,
@@ -55,18 +58,28 @@ export async function removeAdminFromCommunityAction(args: {
     throw new Error('Unauthorized');
   }
 
-  const client = getServiceRoleClient(chainId);
+  const chainDbClient = getChainDbClient(chainId);
+  const topDbClient = getTopDbClient();
 
-  const { error } = await removeAdminFromCommunity({
-    client,
+  const { error } = await removeAdminFromCommunityChainDb({
+    client: chainDbClient,
     data: {
       admin_id: adminIdToRemove,
       alias
     }
   });
 
-  if (error) {
+  const { error: removeUserError } = await removeUserFromCommunityTopDb({
+    client: topDbClient,
+    data: {
+      alias,
+      email: adminEmail
+    }
+  });
+
+  if (error || removeUserError) {
     console.error(error);
+    console.error(removeUserError);
     throw new Error('Could not remove admin from community');
   }
 

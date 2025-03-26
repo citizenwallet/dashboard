@@ -13,7 +13,7 @@ export default async function Page(props: {
 
   return (
     <Suspense key={query + page} fallback={<Fallback />}>
-      <CommunitiesTable query={query} page={parseInt(page)} chainId={42220} />
+      <CommunitiesTable query={query} page={parseInt(page)} />
     </Suspense>
   );
 }

@@ -4,11 +4,11 @@ import {
   SidebarTrigger
 } from '@/components/ui/sidebar';
 import { AppSidebar } from './_components/app-sidebar';
-import { fetchCommunitiesOfChainAction } from '@/app/_actions/community-actions';
+import { fetchCommunitiesOfChainAction } from '@/app/[alias]/(dashboard)/_actions/community-actions';
 import { auth } from '@/auth';
 import { redirect } from 'next/navigation';
-import { getAdminByEmailAction } from '@/app/_actions/admin-actions';
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
+import { getAdminByEmailAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
+import { fetchCommunityByAliasAction } from '@/app/[alias]/(dashboard)/_actions/community-actions';
 
 export default async function DashboardLayout({
   children,

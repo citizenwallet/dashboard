@@ -1,8 +1,8 @@
 import { NextAuthConfig, CredentialsSignin } from 'next-auth';
 import CredentialProvider from 'next-auth/providers/credentials';
-import { getServiceRoleClient } from '@/services/db';
-import { getOTPOfSource, deleteOTPOfSource } from '@/services/db/otp';
-import { getAdminByEmail } from '@/services/db/admin';
+import { getServiceRoleClient } from '@/services/top-db';
+import { getOTPOfSource, deleteOTPOfSource } from '@/services/top-db/otp';
+import { getUserByEmail } from '@/services/top-db/users';
 
 const authConfig = {
   providers: [
@@ -10,21 +10,19 @@ const authConfig = {
       name: 'OTP Login',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        code: { label: 'Verification Code', type: 'text' },
-        chainId: { label: 'Chain ID', type: 'number' }
+        code: { label: 'Verification Code', type: 'text' }
       },
       authorize: async (credentials, request) => {
         let user = null;
 
         const email = credentials?.email as string;
         const code = credentials?.code as string;
-        const chainId = credentials?.chainId as number;
 
-        if (!email || !code || !chainId) {
+        if (!email || !code) {
           return null;
         }
 
-        const client = getServiceRoleClient(chainId);
+        const client = getServiceRoleClient();
         const { data, error } = await getOTPOfSource({ client, source: email });
 
         if (error) {
@@ -45,25 +43,26 @@ const authConfig = {
           throw new CredentialsSignin(`Invalid login code for email ${email}`);
         }
 
-        const { data: adminData, error: adminError } = await getAdminByEmail({
+        const { data: userData, error: userError } = await getUserByEmail({
           client,
           email
         });
 
-        if (adminError) {
-          throw new CredentialsSignin(`Failed to get admin by email ${email}`);
+        if (userError) {
+          throw new CredentialsSignin(`Failed to get user by email ${email}`);
         }
 
-        if (!adminData) {
-          throw new CredentialsSignin(`Admin not found for email ${email}`);
+        if (!userData) {
+          throw new CredentialsSignin(`User not found for email ${email}`);
         }
 
         deleteOTPOfSource({ client, source: email });
 
         user = {
-          id: adminData.id.toString(),
-          email: adminData.email,
-          name: adminData.name
+          id: userData.id.toString(),
+          email: userData.email,
+          name: userData.name,
+          avatar: userData.avatar
         };
 
         return user;

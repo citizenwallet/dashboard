@@ -1,8 +1,8 @@
 'use server';
 
-import { getServiceRoleClient } from '@/services/db';
-import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
-import { getMembers } from '@/services/db/members';
+import { getServiceRoleClient } from '@/services/chain-db';
+import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
+import { getMembers } from '@/services/chain-db/members';
 import { Config } from '@citizenwallet/sdk';
 
 export const getMembersAction = async (args: {

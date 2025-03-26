@@ -3,7 +3,7 @@ import MembersTable from './_table/members-table';
 import { DataTable } from '@/components/ui/data-table';
 import { placeholderData, skeletonColumns } from './_table/columns';
 import UrlSearch from '@/components/custom/url-search';
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
+import { fetchCommunityByAliasAction } from '@/app/[alias]/(dashboard)/_actions/community-actions';
 
 export default async function Page(props: {
   params: Promise<{ alias: string }>;

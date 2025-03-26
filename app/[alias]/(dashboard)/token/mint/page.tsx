@@ -1,6 +1,6 @@
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
+import { fetchCommunityByAliasAction } from '@/app/[alias]/(dashboard)/_actions/community-actions';
 import MintTokenForm from './form';
-import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
+import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
 import { redirect } from 'next/navigation';
 
 export default async function Page(props: {

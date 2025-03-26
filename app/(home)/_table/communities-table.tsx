@@ -1,39 +1,30 @@
 import { columns } from './columns';
 import { DataTable } from '@/components/ui/data-table';
 import { Config } from '@citizenwallet/sdk';
-import { fetchCommunitiesOfChainAction } from '@/app/_actions/community-actions';
-import UrlPagination from '@/components/custom/pagination-via-url';
+import { fetchCommunitiesAction } from '@/app/(home)/_actions/community-actions';
 import { auth } from '@/auth';
-import { getAdminByEmailAction } from '@/app/_actions/admin-actions';
+import { getUserByEmailAction } from '@/app/(home)/_actions/user-actions';
 import { Separator } from '@/components/ui/separator';
-
-const ROWS_PER_PAGE = 10;
 
 interface CommunitiesTableProps {
   query: string;
   page: number;
-  chainId: number;
 }
 
-export async function CommunitiesTable({
-  query,
-  chainId
-}: CommunitiesTableProps) {
+export async function CommunitiesTable({ query }: CommunitiesTableProps) {
   const session = await auth();
 
-  const admin = await getAdminByEmailAction({
-    email: session?.user?.email ?? '',
-    chainId
+  const user = await getUserByEmailAction({
+    email: session?.user?.email ?? ''
   });
 
   let communities: Config[] = [];
   let total: number = 0;
   try {
-    const accessList = admin?.admin_community_access.map(
+    const accessList = user?.users_community_access.map(
       (access) => access.alias
     );
-    const result = await fetchCommunitiesOfChainAction({
-      chainId,
+    const result = await fetchCommunitiesAction({
       accessList: accessList ?? [],
       query: query
     });
@@ -42,8 +33,6 @@ export async function CommunitiesTable({
   } catch (error) {
     console.error(error);
   }
-
-  const totalPages = Math.ceil(total / ROWS_PER_PAGE);
 
   return (
     <div className="flex flex-1 w-full flex-col h-full bg-background">
@@ -64,7 +53,6 @@ export async function CommunitiesTable({
         <p className="text-sm text-gray-500 whitespace-nowrap">
           Total: {total}
         </p>
-        <UrlPagination totalPages={totalPages} />
       </div>
     </div>
   );

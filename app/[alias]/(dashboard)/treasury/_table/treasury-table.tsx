@@ -1,5 +1,5 @@
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
-import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
+import { fetchCommunityByAliasAction } from '@/app/[alias]/(dashboard)/_actions/community-actions';
+import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
 import { getTreasuryTransfersOfTokenAction } from '../actions';
 import UrlPagination from '@/components/custom/pagination-via-url';
 import { TransferClientTable } from './treasury-client-table';
@@ -12,7 +12,7 @@ import {
   CommunityConfig
 } from '@citizenwallet/sdk';
 import { JsonRpcProvider } from 'ethers';
-import { PAGE_SIZE } from '@/services/db/transfers';
+import { PAGE_SIZE } from '@/services/chain-db/transfers';
 
 interface TreasuryTableProps {
   query: string;

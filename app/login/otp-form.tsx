@@ -51,7 +51,7 @@ export default function OtpForm({
     const { code } = values;
     startTransition(async () => {
       try {
-        const result = await signInWithOTP({ email, code, chainId: 42220 });
+        const result = await signInWithOTP({ email, code });
         if (result?.success) {
           toast.success('Login successful!');
           router.push('/');

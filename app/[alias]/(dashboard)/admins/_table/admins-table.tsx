@@ -1,8 +1,8 @@
 import UrlPagination from '@/components/custom/pagination-via-url';
 import { getAdminsOfCommunityAction } from '@/app/[alias]/(dashboard)/admins/action';
 import { AdminsClientTable } from './admins-client-table';
-import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
+import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
+import { fetchCommunityByAliasAction } from '@/app/[alias]/(dashboard)/_actions/community-actions';
 import { Separator } from '@/components/ui/separator';
 import AddAdmin from '@/app/[alias]/(dashboard)/admins/_components/add-admin';
 

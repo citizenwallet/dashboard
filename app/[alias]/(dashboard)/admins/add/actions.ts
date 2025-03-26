@@ -1,14 +1,17 @@
 'use server';
 
-import { getServiceRoleClient } from '@/services/db';
+import { getServiceRoleClient as getChainDbClient } from '@/services/chain-db';
+import { getServiceRoleClient as getTopDbClient } from '@/services/top-db';
 import { z } from 'zod';
 import { inviteAdminFormSchema } from './form-schema';
-import { addAdminToCommunity } from '@/services/db/admin';
+import { addAdminToCommunity as addAdminToCommunityChainDb } from '@/services/chain-db/admin';
+import { addUserToCommunity as addUserToCommunityTopDb } from '@/services/top-db/users';
 import { sendCommunityInvitationEmail } from '@/services/brevo';
 import { generateOTP } from '@/lib/utils';
-import { saveOTP } from '@/services/db/otp';
-import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
+import { saveOTP } from '@/services/top-db/otp';
+import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
 import { Config } from '@citizenwallet/sdk';
+import { revalidatePath } from 'next/cache';
 
 export async function submitAdminInvitation(args: {
   formData: z.infer<typeof inviteAdminFormSchema>;
@@ -34,11 +37,12 @@ export async function submitAdminInvitation(args: {
 
   const { email, name, avatar, alias, role } = result.data;
 
-  const client = getServiceRoleClient(chainId);
+  const chainDbClient = getChainDbClient(chainId);
+  const topDbClient = getTopDbClient();
 
   try {
-    await addAdminToCommunity({
-      client,
+    await addAdminToCommunityChainDb({
+      client: chainDbClient,
       data: {
         email,
         name,
@@ -48,10 +52,24 @@ export async function submitAdminInvitation(args: {
         chain_id: chainId
       }
     });
+
+    await addUserToCommunityTopDb({
+      client: topDbClient,
+      data: {
+        email,
+        name,
+        avatar: avatar ?? '',
+        chain_id: chainId,
+        alias,
+        role
+      }
+    });
   } catch (error) {
     console.error(error);
     throw new Error('Could not add admin to community');
   }
+
+  revalidatePath(`/${alias}/admins`);
 }
 
 export async function sendAdminSignInInvitationAction(args: {
@@ -72,12 +90,12 @@ export async function sendAdminSignInInvitationAction(args: {
     throw new Error('You are not authorized to add admins to this community');
   }
 
-  const client = getServiceRoleClient(chainId);
+  const topDbClient = getTopDbClient();
   const otp = generateOTP();
 
   // brevo
   try {
-    await sendCommunityInvitationEmail({
+    sendCommunityInvitationEmail({
       email,
       otp,
       communityAlias,
@@ -94,10 +112,12 @@ export async function sendAdminSignInInvitationAction(args: {
 
   // db
   const { error: saveOTPError } = await saveOTP({
-    client,
-    source: email,
-    code: otp,
-    source_type: 'email'
+    client: topDbClient,
+    data: {
+      source: email,
+      code: otp,
+      source_type: 'email'
+    }
   });
 
   if (saveOTPError) {

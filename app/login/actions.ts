@@ -1,32 +1,29 @@
 'use server';
-import { getServiceRoleClient } from '@/services/db';
-import { getAdminByEmail } from '@/services/db/admin';
-import { saveOTP } from '@/services/db/otp';
+import { getServiceRoleClient } from '@/services/top-db';
+import { getUserByEmail } from '@/services/top-db/users';
+import { saveOTP } from '@/services/top-db/otp';
 import { generateOTP } from '@/lib/utils';
 import { sendOtpEmail } from '@/services/brevo';
 import { signIn } from '@/auth';
 import { CredentialsSignin } from 'next-auth';
 
-export async function getAdminByEmailAction(args: {
-  email: string;
-  chainId: number;
-}) {
-  const { email, chainId } = args;
+export async function getUserByEmailAction(args: { email: string }) {
+  const { email } = args;
 
-  const client = getServiceRoleClient(chainId);
-  const { data, error } = await getAdminByEmail({ client, email });
+  const client = getServiceRoleClient();
+  const { data, error } = await getUserByEmail({ client, email });
 
   if (error) {
     console.error(error);
-    throw new Error('Could not find admin by email');
+    throw new Error('Could not find user by email');
   }
 
   return data;
 }
 
-export async function sendOTPAction(args: { email: string; chainId: number }) {
-  const { email, chainId } = args;
-  const client = getServiceRoleClient(chainId);
+export async function sendOTPAction(args: { email: string }) {
+  const { email } = args;
+  const client = getServiceRoleClient();
   const otp = generateOTP();
 
   // brevo
@@ -35,9 +32,11 @@ export async function sendOTPAction(args: { email: string; chainId: number }) {
   // db
   const { error: saveOTPError } = await saveOTP({
     client,
-    source: email,
-    code: otp,
-    source_type: 'email'
+    data: {
+      source: email,
+      code: otp,
+      source_type: 'email'
+    }
   });
 
   if (saveOTPError) {
@@ -46,18 +45,13 @@ export async function sendOTPAction(args: { email: string; chainId: number }) {
   }
 }
 
-export async function signInWithOTP(args: {
-  email: string;
-  code: string;
-  chainId: number;
-}) {
-  const { email, code, chainId } = args;
+export async function signInWithOTP(args: { email: string; code: string }) {
+  const { email, code } = args;
 
   try {
     await signIn('credentials', {
       email,
       code,
-      chainId,
       redirect: false
     });
 

@@ -1,7 +1,11 @@
 'use client';
 
 import { DataTable } from '@/components/ui/data-table';
-import { AdminT, AdminCommunityAccessT, AdminRoleT } from '@/services/db/admin';
+import {
+  AdminT,
+  AdminCommunityAccessT,
+  AdminRoleT
+} from '@/services/chain-db/admin';
 import { createColumns } from './columns';
 import { useOptimistic, useTransition } from 'react';
 import { removeAdminFromCommunityAction } from '@/app/[alias]/(dashboard)/admins/action';
@@ -26,7 +30,12 @@ export function AdminsClientTable({
       state.filter((admin) => admin.admin_id !== adminIdToRemove)
   );
 
-  const handleRemoveAdmin = async (adminId: number) => {
+  const handleRemoveAdmin = async (args: {
+    adminId: number;
+    adminEmail: string;
+  }) => {
+    const { adminId, adminEmail } = args;
+
     startTransition(async () => {
       // Optimistically remove the admin from the UI
       addOptimisticRemoval(adminId);
@@ -34,6 +43,7 @@ export function AdminsClientTable({
       try {
         await removeAdminFromCommunityAction({
           adminIdToRemove: adminId,
+          adminEmail: adminEmail,
           alias: alias,
           chainId: chainId
         });
