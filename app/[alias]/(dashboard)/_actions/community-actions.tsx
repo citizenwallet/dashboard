@@ -59,9 +59,8 @@ export const fetchCommunityByAliasAction = async (
   const community = data.filter((community) => {
     const { alias: aliasFromConfig } = community.community;
 
-    const isMatchAlias = aliasFromConfig
-      .toLowerCase()
-      .includes(alias?.toLowerCase().trim() || '');
+    const isMatchAlias =
+      aliasFromConfig.trim() === alias.trim();
 
     return isMatchAlias;
   });
