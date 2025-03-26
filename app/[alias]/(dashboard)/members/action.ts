@@ -1,7 +1,7 @@
 'use server';
 
 import { getServiceRoleClient } from '@/services/chain-db';
-import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
+import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
 import { getMembers } from '@/services/chain-db/members';
 import { Config } from '@citizenwallet/sdk';
 

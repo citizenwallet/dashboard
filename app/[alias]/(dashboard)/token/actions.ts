@@ -8,7 +8,7 @@ import {
   Config,
   getAccountAddress
 } from '@citizenwallet/sdk';
-import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
+import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
 import { Wallet } from 'ethers';
 import { mintTokenFormSchema } from './mint/form-schema';
 import { burnTokenFormSchema } from './burn/form-schema';

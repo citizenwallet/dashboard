@@ -2,7 +2,7 @@
 
 import { Config } from '@citizenwallet/sdk';
 
-export const fetchCommunitiesOfAction = async (args: {
+export const fetchCommunitiesAction = async (args: {
   accessList: string[];
   query?: string;
 }): Promise<{ communities: Config[]; total: number }> => {

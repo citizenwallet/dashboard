@@ -1,7 +1,7 @@
 import { columns } from './columns';
 import { DataTable } from '@/components/ui/data-table';
 import { Config } from '@citizenwallet/sdk';
-import { fetchCommunitiesOfAction } from '@/app/(home)/_actions/community-actions';
+import { fetchCommunitiesAction } from '@/app/(home)/_actions/community-actions';
 import UrlPagination from '@/components/custom/pagination-via-url';
 import { auth } from '@/auth';
 import { getUserByEmailAction } from '@/app/(home)/_actions/user-actions';
@@ -29,7 +29,7 @@ export async function CommunitiesTable({
     const accessList = user?.users_community_access.map(
       (access) => access.alias
     );
-    const result = await fetchCommunitiesOfAction({
+    const result = await fetchCommunitiesAction({
       accessList: accessList ?? [],
       query: query
     });

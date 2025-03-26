@@ -3,7 +3,6 @@
 import { getServiceRoleClient } from '@/services/top-db';
 import { getUserByEmail } from '@/services/top-db/users';
 import { signOut } from '@/auth';
-import { auth } from '@/auth';
 
 export async function getUserByEmailAction(args: { email: string }) {
   const { email } = args;

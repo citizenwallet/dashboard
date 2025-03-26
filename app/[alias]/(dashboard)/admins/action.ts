@@ -1,6 +1,6 @@
 'use server';
 
-import { getAuthUserRoleInCommunityAction } from '@/app/_actions/admin-actions';
+import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
 import { getServiceRoleClient } from '@/services/chain-db';
 import {
   getAdminsOfCommunity,
