@@ -3,7 +3,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   AdminT,
   AdminCommunityAccessT,
-  AdminRoleT
+  CommunityAccessRoleT
 } from '@/services/chain-db/admin';
 import { ColumnDef } from '@tanstack/react-table';
 import { Skeleton } from '@/components/ui/skeleton';
@@ -23,7 +23,7 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 interface CreateColumnsProps {
-  adminRole?: AdminRoleT;
+  adminRole?: CommunityAccessRoleT;
   alias: string;
   onRemoveAdmin: (args: {
     adminId: number;

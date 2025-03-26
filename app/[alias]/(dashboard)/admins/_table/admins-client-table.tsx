@@ -4,7 +4,7 @@ import { DataTable } from '@/components/ui/data-table';
 import {
   AdminT,
   AdminCommunityAccessT,
-  AdminRoleT
+  CommunityAccessRoleT
 } from '@/services/chain-db/admin';
 import { createColumns } from './columns';
 import { useOptimistic, useTransition } from 'react';
@@ -12,7 +12,7 @@ import { removeAdminFromCommunityAction } from '@/app/[alias]/(dashboard)/admins
 
 interface AdminsClientTableProps {
   data: (AdminCommunityAccessT & { admin: AdminT })[];
-  adminRole?: AdminRoleT;
+  adminRole?: CommunityAccessRoleT;
   alias: string;
   chainId: number;
 }
