@@ -30,7 +30,12 @@ export function AdminsClientTable({
       state.filter((admin) => admin.admin_id !== adminIdToRemove)
   );
 
-  const handleRemoveAdmin = async (adminId: number) => {
+  const handleRemoveAdmin = async (args: {
+    adminId: number;
+    adminEmail: string;
+  }) => {
+    const { adminId, adminEmail } = args;
+
     startTransition(async () => {
       // Optimistically remove the admin from the UI
       addOptimisticRemoval(adminId);
@@ -38,6 +43,7 @@ export function AdminsClientTable({
       try {
         await removeAdminFromCommunityAction({
           adminIdToRemove: adminId,
+          adminEmail: adminEmail,
           alias: alias,
           chainId: chainId
         });

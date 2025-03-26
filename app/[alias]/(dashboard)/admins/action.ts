@@ -43,10 +43,11 @@ export const getAdminsOfCommunityAction = async (args: {
 
 export async function removeAdminFromCommunityAction(args: {
   adminIdToRemove: number;
+  adminEmail: string;
   alias: string;
   chainId: number;
 }) {
-  const { adminIdToRemove, alias, chainId } = args;
+  const { adminIdToRemove, alias, chainId, adminEmail } = args;
 
   const authRole = await getAuthUserRoleInCommunityAction({
     alias: args.alias,
@@ -71,13 +72,14 @@ export async function removeAdminFromCommunityAction(args: {
   const { error: removeUserError } = await removeUserFromCommunityTopDb({
     client: topDbClient,
     data: {
-      user_id: adminIdToRemove,
-      alias
+      alias,
+      email: adminEmail
     }
   });
 
   if (error || removeUserError) {
     console.error(error);
+    console.error(removeUserError);
     throw new Error('Could not remove admin from community');
   }
 

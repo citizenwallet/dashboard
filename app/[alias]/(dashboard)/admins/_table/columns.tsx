@@ -25,7 +25,7 @@ import { toast } from 'sonner';
 interface CreateColumnsProps {
   adminRole?: AdminRoleT;
   alias: string;
-  onRemoveAdmin: (adminId: number) => Promise<void>;
+  onRemoveAdmin: (args: { adminId: number; adminEmail: string }) => Promise<void>;
   isPending: boolean;
 }
 
@@ -100,7 +100,7 @@ export const createColumns = (
 
         const {
           admin_id,
-          admin: { name }
+          admin: { name, email }
         } = row.original;
 
         const handleOpenDialog = () => {
@@ -113,7 +113,7 @@ export const createColumns = (
 
         const onRemoveAdmin = async () => {
           try {
-            await props.onRemoveAdmin(admin_id);
+            await props.onRemoveAdmin({ adminId: admin_id, adminEmail: email });
             handleCloseDialog();
             toast.success('Admin removed successfully');
           } catch (error) {
