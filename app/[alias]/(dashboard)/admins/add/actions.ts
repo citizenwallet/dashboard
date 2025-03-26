@@ -11,6 +11,7 @@ import { generateOTP } from '@/lib/utils';
 import { saveOTP } from '@/services/top-db/otp';
 import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
 import { Config } from '@citizenwallet/sdk';
+import { revalidatePath } from 'next/cache';
 
 export async function submitAdminInvitation(args: {
   formData: z.infer<typeof inviteAdminFormSchema>;
@@ -67,6 +68,8 @@ export async function submitAdminInvitation(args: {
     console.error(error);
     throw new Error('Could not add admin to community');
   }
+
+  revalidatePath(`/${alias}/admins`);
 }
 
 export async function sendAdminSignInInvitationAction(args: {
@@ -92,7 +95,7 @@ export async function sendAdminSignInInvitationAction(args: {
 
   // brevo
   try {
-    await sendCommunityInvitationEmail({
+    sendCommunityInvitationEmail({
       email,
       otp,
       communityAlias,

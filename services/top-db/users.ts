@@ -2,7 +2,7 @@ import 'server-only';
 
 import {
   SupabaseClient,
-  PostgrestMaybeSingleResponse,
+  PostgrestMaybeSingleResponse
 } from '@supabase/supabase-js';
 
 const USERS_TABLE_NAME = 'users';
@@ -51,7 +51,6 @@ export const getUserByEmail = async (args: {
     .maybeSingle();
 };
 
-
 export const addUserToCommunity = async (args: {
   client: SupabaseClient;
   data: Pick<UserT, 'email' | 'name' | 'avatar'> &
@@ -92,10 +91,20 @@ export const addUserToCommunity = async (args: {
 
 export const removeUserFromCommunity = async (args: {
   client: SupabaseClient;
-  data: Pick<UserCommunityAccessT, 'user_id' | 'alias'>;
+  data: Pick<UserCommunityAccessT, 'alias'> & Pick<UserT, 'email'>;
 }) => {
   const { client, data } = args;
-  const { user_id, alias } = data;
+  const { alias, email } = data;
+
+  const { data: user, error: userError } = await client
+    .from(USERS_TABLE_NAME)
+    .select('id')
+    .eq('email', email)
+    .single();
+
+  if (userError) throw userError;
+
+  const { id: user_id } = user;
 
   return client
     .from(USERS_COMMUNITY_ACCESS_TABLE_NAME)
@@ -103,6 +112,3 @@ export const removeUserFromCommunity = async (args: {
     .eq('user_id', user_id)
     .eq('alias', alias);
 };
-
-
-
