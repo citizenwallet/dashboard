@@ -28,9 +28,11 @@ export default function User(props: UserProps) {
           size="icon"
           className="overflow-hidden rounded-full"
         >
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={user?.avatar ?? ''} alt="user avatar" />
-            <AvatarFallback>{user?.name?.slice(0, 2) ?? ''}</AvatarFallback>
+          <Avatar className="h-8 w-8 rounded-lg">
+            <AvatarImage src={user?.avatar ?? ''} alt={user?.name ?? ''} />
+            <AvatarFallback className="rounded-lg">
+              {user?.name?.slice(0, 2) ?? ''}
+            </AvatarFallback>
           </Avatar>
         </Button>
       </DropdownMenuTrigger>
