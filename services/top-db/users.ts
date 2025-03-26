@@ -4,17 +4,20 @@ import {
   SupabaseClient,
   PostgrestMaybeSingleResponse
 } from '@supabase/supabase-js';
+import {CommunityAccessRoleT} from '@/services/chain-db/admin'
 
 const USERS_TABLE_NAME = 'users';
 const USERS_COMMUNITY_ACCESS_TABLE_NAME = 'users_community_access';
 
-export type UserRoleT = 'owner' | 'member';
+type UserRoleT = 'admin' | 'user'; // app level
+
 
 export interface UserT {
   id: string;
   email: string;
   name: string;
   avatar: string;
+  role: UserRoleT;
   created_at: Date;
   last_active_at: Date;
 }
@@ -24,7 +27,7 @@ export interface UserCommunityAccessT {
   user_id: number;
   alias: string;
   chain_id: number;
-  role: UserRoleT;
+  role: CommunityAccessRoleT;
   created_at: Date;
   updated_at: Date;
 }
