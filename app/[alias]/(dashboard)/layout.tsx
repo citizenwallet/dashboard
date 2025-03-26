@@ -4,9 +4,10 @@ import {
   SidebarTrigger
 } from '@/components/ui/sidebar';
 import { AppSidebar } from './_components/app-sidebar';
-import { fetchCommunitiesOfChainAction } from '@/app/[alias]/(dashboard)/_actions/community-actions';
+import { fetchCommunitiesAction } from '@/app/(home)/_actions/community-actions';
 import { redirect } from 'next/navigation';
-import { getAdminAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
+import { getAuthUserAction as getAuthUserInChainAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
+import { getAuthUserAction as getAuthUserInAppAction } from '@/app/(home)/_actions/user-actions';
 import { fetchCommunityByAliasAction } from '@/app/[alias]/(dashboard)/_actions/community-actions';
 
 export default async function DashboardLayout({
@@ -16,35 +17,34 @@ export default async function DashboardLayout({
   children: React.ReactNode;
   params: Promise<{ alias: string }>;
 }) {
-
   const { alias } = await params;
   const { community: config } = await fetchCommunityByAliasAction(alias);
   const { chain_id: chainId } = config.community.primary_token;
 
-  const admin = await getAdminAction({
+  const userInChain = await getAuthUserInChainAction({
     chainId: chainId
   });
 
-  if (!admin) {
+  const userInApp = await getAuthUserInAppAction();
+
+  if (!userInChain || !userInApp) {
     redirect('/login');
   }
 
+  const { role: userRoleInApp } = userInApp;
   const accessList =
-    admin?.admin_community_access.map((access) => access.alias) ?? [];
+    userInChain?.admin_community_access.map((access) => access.alias) ?? [];
 
-  if (!accessList.includes(alias)) {
-    redirect('/');
+  if (userRoleInApp === 'user' && !accessList.includes(alias)) {
+    redirect(`/${accessList[0]}`);
   }
 
-  const { communities } = await fetchCommunitiesOfChainAction({
-    chainId: chainId,
-    accessList: accessList
-  });
+  const { communities } = await fetchCommunitiesAction({});
 
   return (
     <SidebarProvider>
       <AppSidebar
-        admin={admin}
+        admin={userInApp}
         communities={communities}
         selectedAlias={alias}
       />
