@@ -35,7 +35,7 @@ export const getMembers = async (args: {
   let queryBuilder = client
     .from(TABLE_NAME)
     .select(`*`, { count: 'exact' })
-    .ilike('profile_contract', profileContract);
+    .eq('profile_contract', profileContract);
 
   if (searchQuery) {
     queryBuilder = queryBuilder.or(
@@ -61,7 +61,7 @@ export const searchMembers = async (args: {
   let queryBuilder = client
     .from(TABLE_NAME)
     .select(`*`, { count: 'exact' })
-    .ilike('profile_contract', profileContract);
+    .eq('profile_contract', profileContract);
 
   if (searchQuery) {
     queryBuilder = queryBuilder.or(

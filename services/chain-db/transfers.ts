@@ -47,7 +47,7 @@ export const getTransfersOfToken = async (args: {
     `,
       { count: 'exact' }
     )
-    .ilike('token_contract', token);
+    .eq('token_contract', token);
 
   if (from) {
     // Convert to start of day in ISO format with UTC timezone
@@ -91,8 +91,8 @@ export const getTreasuryTransfersOfToken = async (args: {
   const { data: member, error: memberError } = await client
     .from('a_members')
     .select('*')
-    .ilike('profile_contract', profile)
-    .ilike('account', ethers.ZeroAddress)
+    .eq('profile_contract', profile)
+    .eq('account', ethers.ZeroAddress)
     .maybeSingle();
 
   if (memberError) {
@@ -109,8 +109,8 @@ export const getTreasuryTransfersOfToken = async (args: {
   `,
       { count: 'exact' }
     )
-    .ilike('token_contract', token)
-    .or(`from_member_id.ilike.${member?.id},to_member_id.ilike.${member?.id}`)
+    .eq('token_contract', token)
+    .or(`from_member_id.eq.${member?.id},to_member_id.eq.${member?.id}`)
     .order('created_at', { ascending: false })
     .range(offset, offset + PAGE_SIZE - 1)
     .limit(PAGE_SIZE);
