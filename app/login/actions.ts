@@ -7,9 +7,7 @@ import { sendOtpEmail } from '@/services/brevo';
 import { signIn } from '@/auth';
 import { CredentialsSignin } from 'next-auth';
 
-export async function getUserByEmailAction(args: {
-  email: string;
-}) {
+export async function getUserByEmailAction(args: { email: string }) {
   const { email } = args;
 
   const client = getServiceRoleClient();
@@ -47,10 +45,7 @@ export async function sendOTPAction(args: { email: string }) {
   }
 }
 
-export async function signInWithOTP(args: {
-  email: string;
-  code: string;
-}) {
+export async function signInWithOTP(args: { email: string; code: string }) {
   const { email, code } = args;
 
   try {

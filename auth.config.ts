@@ -10,7 +10,7 @@ const authConfig = {
       name: 'OTP Login',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        code: { label: 'Verification Code', type: 'text' },
+        code: { label: 'Verification Code', type: 'text' }
       },
       authorize: async (credentials, request) => {
         let user = null;

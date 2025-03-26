@@ -11,9 +11,7 @@ interface CommunitiesTableProps {
   page: number;
 }
 
-export async function CommunitiesTable({
-  query
-}: CommunitiesTableProps) {
+export async function CommunitiesTable({ query }: CommunitiesTableProps) {
   const session = await auth();
 
   const user = await getUserByEmailAction({

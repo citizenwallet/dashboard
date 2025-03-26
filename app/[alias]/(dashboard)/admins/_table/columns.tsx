@@ -25,7 +25,10 @@ import { toast } from 'sonner';
 interface CreateColumnsProps {
   adminRole?: AdminRoleT;
   alias: string;
-  onRemoveAdmin: (args: { adminId: number; adminEmail: string }) => Promise<void>;
+  onRemoveAdmin: (args: {
+    adminId: number;
+    adminEmail: string;
+  }) => Promise<void>;
   isPending: boolean;
 }
 
