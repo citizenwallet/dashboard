@@ -9,7 +9,8 @@ import {
 const ADMIN_TABLE_NAME = 'admin';
 const ADMIN_COMMUNITY_ACCESS_TABLE_NAME = 'admin_community_access';
 
-export type AdminRoleT = 'owner' | 'member';
+export type CommunityAccessRoleT = 'owner' | 'member';
+
 export interface AdminT {
   id: number;
   email: string;
@@ -20,7 +21,7 @@ export interface AdminT {
 }
 export interface AdminCommunityAccessT {
   id: number;
-  role: AdminRoleT;
+  role: CommunityAccessRoleT;
   alias: string;
   admin_id: number;
   chain_id: number;
@@ -43,7 +44,7 @@ export const getAdminByEmail = async (args: {
     .select(
       `
       *,
-      admin_community_access!admin_id(*)
+      ${ADMIN_COMMUNITY_ACCESS_TABLE_NAME}!admin_id(*)
     `
     )
     .eq('email', email)
