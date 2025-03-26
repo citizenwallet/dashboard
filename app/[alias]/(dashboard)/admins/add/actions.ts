@@ -41,32 +41,46 @@ export async function submitAdminInvitation(args: {
   const topDbClient = getTopDbClient();
 
   try {
-    await addAdminToCommunityChainDb({
-      client: chainDbClient,
-      data: {
-        email,
-        name,
-        avatar: avatar ?? null,
-        alias,
-        role,
-        chain_id: chainId
-      }
-    });
+    const [chainDbResult, topDbResult] = await Promise.allSettled([
+      addAdminToCommunityChainDb({
+        client: chainDbClient,
+        data: {
+          email,
+          name,
+          avatar: avatar ?? null,
+          alias,
+          role,
+          chain_id: chainId
+        }
+      }),
+      addUserToCommunityTopDb({
+        client: topDbClient,
+        data: {
+          email,
+          name,
+          avatar: avatar ?? '',
+          chain_id: chainId,
+          alias,
+          role
+        }
+      })
+    ]);
 
-    await addUserToCommunityTopDb({
-      client: topDbClient,
-      data: {
-        email,
-        name,
-        avatar: avatar ?? '',
-        chain_id: chainId,
-        alias,
-        role
-      }
-    });
+    // Check results
+    if (chainDbResult.status === 'rejected') {
+      throw chainDbResult.reason;
+    }
+
+    if (topDbResult.status === 'rejected') {
+      throw topDbResult.reason;
+    }
   } catch (error) {
     console.error(error);
-    throw new Error('Could not add admin to community');
+    // Preserve the original error message
+    if (error instanceof Error) {
+      throw error;
+    }
+    throw new Error('Failed to add admin to community');
   }
 
   revalidatePath(`/${alias}/admins`);

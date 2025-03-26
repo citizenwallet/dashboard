@@ -1,16 +1,60 @@
 'use server';
 
 import { Config } from '@citizenwallet/sdk';
+import { getAuthUserAction, getAuthUserRoleInAppAction } from './user-actions';
 
 export const fetchCommunitiesAction = async (args: {
+  query?: string;
+}): Promise<{ communities: Config[]; total: number }> => {
+  const user = await getAuthUserAction();
+
+  if (!user) {
+    return {
+      communities: [],
+      total: 0
+    };
+  }
+
+  const { role } = user;
+
+  if (role === 'admin') {
+    return await fetchCommunitiesForAdminAction({
+      query: args.query
+    });
+  }
+
+  if (role === 'user') {
+    const accessList = user.users_community_access.map(
+      (access) => access.alias
+    );
+
+    return await fetchCommunitiesForUserAction({
+      accessList,
+      query: args.query
+    });
+  }
+
+  return {
+    communities: [],
+    total: 0
+  };
+};
+
+export const fetchCommunitiesForUserAction = async (args: {
   accessList: string[];
   query?: string;
 }): Promise<{ communities: Config[]; total: number }> => {
-  const { accessList, query } = args;
+  const userRole = await getAuthUserRoleInAppAction();
+
+  if (userRole !== 'user') {
+    throw new Error('Unauthorized');
+  }
 
   if (!process.env.COMMUNITIES_CONFIG_URL) {
     throw new Error('COMMUNITIES_CONFIG_URL is not set');
   }
+
+  const { accessList, query } = args;
 
   const response = await fetch(process.env.COMMUNITIES_CONFIG_URL);
   const data = (await response.json()) as Config[];
@@ -37,6 +81,45 @@ export const fetchCommunitiesAction = async (args: {
       (isMatchName || isMatchAlias || isMatchDescription) &&
       isMatchAccessList
     );
+  });
+
+  return { communities, total: communities.length };
+};
+
+export const fetchCommunitiesForAdminAction = async (args: {
+  query?: string;
+}): Promise<{ communities: Config[]; total: number }> => {
+  const userRole = await getAuthUserRoleInAppAction();
+
+  if (userRole !== 'admin') {
+    throw new Error('Unauthorized');
+  }
+
+  if (!process.env.COMMUNITIES_CONFIG_URL) {
+    throw new Error('COMMUNITIES_CONFIG_URL is not set');
+  }
+
+  const { query } = args;
+
+  const response = await fetch(process.env.COMMUNITIES_CONFIG_URL);
+  const data = (await response.json()) as Config[];
+
+  const communities = data.filter((community) => {
+    const { hidden, name, alias, description } = community.community;
+
+    const isHidden = hidden || false;
+
+    const isMatchName = name
+      .toLowerCase()
+      .includes(query?.toLowerCase().trim() || '');
+    const isMatchAlias = alias
+      .toLowerCase()
+      .includes(query?.toLowerCase().trim() || '');
+    const isMatchDescription = description
+      .toLowerCase()
+      .includes(query?.toLowerCase().trim() || '');
+
+    return !isHidden && (isMatchName || isMatchAlias || isMatchDescription);
   });
 
   return { communities, total: communities.length };
