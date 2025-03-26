@@ -7,11 +7,10 @@ import {
   LucideLineChart,
   Shield,
   Landmark,
-  Flag
+  ArrowLeft
 } from 'lucide-react';
 import { NavProjects } from './nav-projects';
 import { NavUser } from './nav-user';
-import { NavSecondary } from './nav-secondary';
 import { CommunitySwitcher } from './community-switcher';
 import {
   Sidebar,
@@ -22,6 +21,8 @@ import {
 } from '@/components/ui/sidebar';
 import { Config } from '@citizenwallet/sdk';
 import { AdminT } from '@/services/chain-db/admin';
+import Link from 'next/link';
+import { SidebarMenuButton } from '@/components/ui/sidebar';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   communities: Config[];
@@ -47,7 +48,7 @@ export function AppSidebar({
     },
     projects: [
       {
-        name: 'Home',
+        name: 'Overview',
         url: `/${selectedCommunity?.community.alias}`,
         icon: Home
       },
@@ -76,19 +77,13 @@ export function AppSidebar({
         url: `/${selectedCommunity?.community.alias}/admins`,
         icon: Shield
       }
-    ],
-    navSecondary: [
-      {
-        title: 'All communities',
-        url: '/',
-        icon: Flag
-      }
     ]
   };
 
   return (
     <Sidebar collapsible="icon" {...props}>
       <SidebarHeader>
+        <BackToAllCommunities />
         <CommunitySwitcher
           communities={communities}
           selectedCommunity={selectedCommunity}
@@ -96,12 +91,26 @@ export function AppSidebar({
       </SidebarHeader>
       <SidebarContent>
         <NavProjects projects={data.projects} />
-        <NavSecondary items={data.navSecondary} className="mt-auto" />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
+  );
+}
+
+function BackToAllCommunities() {
+  const handleClick = () => {
+    document.cookie = `lastViewedAlias=; path=/; max-age=0`;
+  };
+
+  return (
+    <SidebarMenuButton asChild>
+      <Link href="/" onClick={handleClick}>
+        <ArrowLeft />
+        <span>Home</span>
+      </Link>
+    </SidebarMenuButton>
   );
 }
