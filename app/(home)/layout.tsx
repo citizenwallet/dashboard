@@ -29,7 +29,9 @@ export default async function Layout({
   }
 
   if (role === 'user' && accessList.length > 0) {
-    redirect(`/${accessList[0]}`);
+    const alias = accessList[0];
+    document.cookie = `lastViewedAlias=${alias}; path=/; max-age=31536000`;
+    redirect(`/${alias}`);
   }
 
   return (

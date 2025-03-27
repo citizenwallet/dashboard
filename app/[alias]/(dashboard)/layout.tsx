@@ -36,7 +36,9 @@ export default async function DashboardLayout({
     userInChain?.admin_community_access.map((access) => access.alias) ?? [];
 
   if (userRoleInApp === 'user' && !accessList.includes(alias)) {
-    redirect(`/${accessList[0]}`);
+    const alias = accessList[0];
+    document.cookie = `lastViewedAlias=${alias}; path=/; max-age=31536000`;
+    redirect(`/${alias}`);
   }
 
   const { communities } = await fetchCommunitiesAction({});
