@@ -51,7 +51,7 @@ export async function getAuthUserRoleInCommunityAction(args: {
   const session = await auth();
 
   if (!session?.user) {
-    return undefined
+    return undefined;
   }
 
   const { email } = session.user;

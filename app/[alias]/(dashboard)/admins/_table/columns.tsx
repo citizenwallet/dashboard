@@ -26,9 +26,7 @@ import { toast } from 'sonner';
 interface CreateColumnsProps {
   communityRole?: CommunityAccessRoleT;
   alias: string;
-  onRemoveAdmin: (args: {
-    userId: number;
-  }) => Promise<void>;
+  onRemoveAdmin: (args: { userId: number }) => Promise<void>;
   isPending: boolean;
 }
 
