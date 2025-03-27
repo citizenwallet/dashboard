@@ -2,7 +2,10 @@
 
 import { getServiceRoleClient } from '@/services/chain-db';
 import { getTreasuryTransfersOfToken } from '@/services/chain-db/transfers';
-import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
+import {
+  getAuthUserRoleInAppAction,
+  getAuthUserRoleInCommunityAction
+} from '@/app/_actions/user-actions';
 import { Config } from '@citizenwallet/sdk';
 
 export const getTreasuryTransfersOfTokenAction = async (args: {
@@ -18,13 +21,18 @@ export const getTreasuryTransfersOfTokenAction = async (args: {
     config.community.primary_token;
   const { address: profileAddress } = config.community.profile;
 
-  const authRole = await getAuthUserRoleInCommunityAction({
-    alias,
-    chainId
+  const roleInCommunity = await getAuthUserRoleInCommunityAction({
+    alias
   });
 
-  if (!authRole) {
-    throw new Error('Unauthorized');
+  const roleInApp = await getAuthUserRoleInAppAction();
+
+  if (!roleInApp) {
+    throw new Error('Unauthenticated user');
+  }
+
+  if (roleInApp === 'user' && !roleInCommunity) {
+    throw new Error('You are not a member of this community');
   }
 
   const supabase = getServiceRoleClient(chainId);

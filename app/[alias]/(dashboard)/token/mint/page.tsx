@@ -1,6 +1,6 @@
-import { fetchCommunityByAliasAction } from '@/app/[alias]/(dashboard)/_actions/community-actions';
+import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 import MintTokenForm from './form';
-import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
+import { getAuthUserRoleInCommunityAction } from '@/app/_actions/user-actions';
 import { redirect } from 'next/navigation';
 
 export default async function Page(props: {
@@ -9,8 +9,7 @@ export default async function Page(props: {
   const { alias } = await props.params;
   const { community: config } = await fetchCommunityByAliasAction(alias);
   const authRole = await getAuthUserRoleInCommunityAction({
-    alias,
-    chainId: config.community.primary_token.chain_id
+    alias
   });
 
   if (authRole !== 'owner') {

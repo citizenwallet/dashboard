@@ -6,9 +6,9 @@ import {
 import { Suspense } from 'react';
 import { getMembersAction } from '@/app/[alias]/(dashboard)/members/action';
 import { getTransfersOfTokenAction } from '@/app/[alias]/(dashboard)/transfers/actions';
-import { fetchCommunityByAliasAction } from '@/app/[alias]/(dashboard)/_actions/community-actions';
+import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 
-export default async function ProductsPage(props: {
+export default async function Page(props: {
   params: Promise<{ alias: string }>;
 }) {
   const { alias } = await props.params;
