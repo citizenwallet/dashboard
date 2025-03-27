@@ -1,10 +1,11 @@
 'use client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+
 import {
-  AdminT,
-  AdminCommunityAccessT,
-  AdminRoleT
-} from '@/services/chain-db/admin';
+  UserT,
+  UserCommunityAccessT,
+  CommunityAccessRoleT
+} from '@/services/top-db/users';
 import { ColumnDef } from '@tanstack/react-table';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn } from '@/lib/utils';
@@ -23,24 +24,21 @@ import { useState } from 'react';
 import { toast } from 'sonner';
 
 interface CreateColumnsProps {
-  adminRole?: AdminRoleT;
+  communityRole?: CommunityAccessRoleT;
   alias: string;
-  onRemoveAdmin: (args: {
-    adminId: number;
-    adminEmail: string;
-  }) => Promise<void>;
+  onRemoveAdmin: (args: { userId: number }) => Promise<void>;
   isPending: boolean;
 }
 
 export const createColumns = (
   props: CreateColumnsProps
-): ColumnDef<AdminCommunityAccessT & { admin: AdminT }>[] => {
-  const baseColumns: ColumnDef<AdminCommunityAccessT & { admin: AdminT }>[] = [
+): ColumnDef<UserCommunityAccessT & { user: UserT }>[] => {
+  const baseColumns: ColumnDef<UserCommunityAccessT & { user: UserT }>[] = [
     {
       header: 'Member',
       cell: ({ row }) => {
-        const { admin } = row.original;
-        const { avatar, name, email } = admin;
+        const { user } = row.original;
+        const { avatar, name, email } = user;
         return (
           <div className="flex items-center gap-2 w-[250px]">
             <Avatar className="h-10 w-10 flex-shrink-0">
@@ -95,15 +93,15 @@ export const createColumns = (
     }
   ];
 
-  const ownerColumns: ColumnDef<AdminCommunityAccessT & { admin: AdminT }>[] = [
+  const ownerColumns: ColumnDef<UserCommunityAccessT & { user: UserT }>[] = [
     {
       id: 'remove',
       cell: function RemoveCell({ row }) {
         const [isDialogOpen, setIsDialogOpen] = useState(false);
 
         const {
-          admin_id,
-          admin: { name, email }
+          user_id,
+          user: { name }
         } = row.original;
 
         const handleOpenDialog = () => {
@@ -116,7 +114,9 @@ export const createColumns = (
 
         const onRemoveAdmin = async () => {
           try {
-            await props.onRemoveAdmin({ adminId: admin_id, adminEmail: email });
+            await props.onRemoveAdmin({
+              userId: user_id
+            });
             handleCloseDialog();
             toast.success('Admin removed successfully');
           } catch (error) {
@@ -175,13 +175,13 @@ export const createColumns = (
     }
   ];
 
-  return props.adminRole === 'owner'
+  return props.communityRole === 'owner'
     ? [...baseColumns, ...ownerColumns]
     : baseColumns;
 };
 
 export const skeletonColumns: ColumnDef<
-  AdminCommunityAccessT & { admin: AdminT }
+  UserCommunityAccessT & { admin: UserT }
 >[] = [
   {
     header: 'Member',
@@ -205,5 +205,5 @@ export const skeletonColumns: ColumnDef<
   }
 ];
 
-export const placeholderData: (AdminCommunityAccessT & { admin: AdminT })[] =
+export const placeholderData: (UserCommunityAccessT & { admin: UserT })[] =
   Array(5);

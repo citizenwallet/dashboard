@@ -1,5 +1,5 @@
-import { fetchCommunityByAliasAction } from '@/app/[alias]/(dashboard)/_actions/community-actions';
-import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
+import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
+import { getAuthUserRoleInCommunityAction } from '@/app/_actions/user-actions';
 import { getTreasuryTransfersOfTokenAction } from '../actions';
 import UrlPagination from '@/components/custom/pagination-via-url';
 import { TransferClientTable } from './treasury-client-table';
@@ -39,8 +39,7 @@ export default async function TreasuryTable({
 
   const [authRole, hasMinterRole, treasuryData] = await Promise.all([
     getAuthUserRoleInCommunityAction({
-      alias,
-      chainId
+      alias
     }),
     CWCheckRoleAccess(
       tokenAddress,

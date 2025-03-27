@@ -1,9 +1,7 @@
 import { columns } from './columns';
 import { DataTable } from '@/components/ui/data-table';
 import { Config } from '@citizenwallet/sdk';
-import { fetchCommunitiesAction } from '@/app/(home)/_actions/community-actions';
-import { auth } from '@/auth';
-import { getUserByEmailAction } from '@/app/(home)/_actions/user-actions';
+import { fetchCommunitiesAction } from '@/app/_actions/community-actions';
 import { Separator } from '@/components/ui/separator';
 
 interface CommunitiesTableProps {
@@ -12,22 +10,14 @@ interface CommunitiesTableProps {
 }
 
 export async function CommunitiesTable({ query }: CommunitiesTableProps) {
-  const session = await auth();
-
-  const user = await getUserByEmailAction({
-    email: session?.user?.email ?? ''
-  });
-
   let communities: Config[] = [];
   let total: number = 0;
+
   try {
-    const accessList = user?.users_community_access.map(
-      (access) => access.alias
-    );
     const result = await fetchCommunitiesAction({
-      accessList: accessList ?? [],
       query: query
     });
+
     communities = result.communities;
     total = result.total;
   } catch (error) {
@@ -35,11 +25,13 @@ export async function CommunitiesTable({ query }: CommunitiesTableProps) {
   }
 
   return (
-    <div className="flex flex-1 w-full flex-col h-full bg-background">
-      <h1 className="text-2xl font-bold">Communities</h1>
-      <p className="text-sm text-gray-500">Browse communities</p>
-
-      <div className="my-4" />
+    <div className="flex flex-1 w-full flex-col h-full">
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="flex flex-col">
+          <h1 className="text-2xl font-bold">Communities</h1>
+          <p className="text-sm text-gray-500">Browse communities</p>
+        </div>
+      </div>
 
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto rounded-md border">
