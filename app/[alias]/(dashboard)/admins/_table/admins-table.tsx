@@ -1,12 +1,10 @@
 import UrlPagination from '@/components/custom/pagination-via-url';
-import { getAdminsOfCommunityAction } from '@/app/[alias]/(dashboard)/admins/action';
+import { getUsersOfCommunityAction } from '@/app/[alias]/(dashboard)/admins/action';
 import { AdminsClientTable } from './admins-client-table';
-import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
-import { fetchCommunityByAliasAction } from '@/app/[alias]/(dashboard)/_actions/community-actions';
+import { getAuthUserRoleInCommunityAction } from '@/app/_actions/user-actions';
+import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 import { Separator } from '@/components/ui/separator';
 import AddAdmin from '@/app/[alias]/(dashboard)/admins/_components/add-admin';
-
-const ROWS_PER_PAGE = 10;
 
 interface AdminsTableProps {
   alias: string;
@@ -15,27 +13,24 @@ interface AdminsTableProps {
 export default async function AdminsTable({ alias }: AdminsTableProps) {
   const { community: config } = await fetchCommunityByAliasAction(alias);
 
-  const { chain_id: chainId } = config.community.primary_token;
-
-  const [adminsResult, roleResult] = await Promise.allSettled([
-    getAdminsOfCommunityAction({
-      chainId,
+  const [usersResult, roleResult] = await Promise.allSettled([
+    getUsersOfCommunityAction({
       alias
     }),
     getAuthUserRoleInCommunityAction({
-      chainId,
       alias
     })
   ]);
 
-  const data =
-    adminsResult.status === 'fulfilled' ? adminsResult.value.data : [];
+  const data = usersResult.status === 'fulfilled' ? usersResult.value.data : [];
+
   const totalCount =
-    adminsResult.status === 'fulfilled' ? adminsResult.value.count : 0;
-  const adminRole =
+    usersResult.status === 'fulfilled' ? usersResult.value.count : 0;
+
+  const communityRole =
     roleResult.status === 'fulfilled' ? roleResult.value : undefined;
 
-  const totalPages = Math.ceil(Number(totalCount) / ROWS_PER_PAGE);
+  const totalPages = 1;
 
   return (
     <div className="flex flex-1 w-full flex-col h-full">
@@ -45,7 +40,7 @@ export default async function AdminsTable({ alias }: AdminsTableProps) {
           <p className="text-sm text-gray-500">{config.community.name}</p>
         </div>
 
-        {adminRole === 'owner' && (
+        {communityRole === 'owner' && (
           <div className="flex justify-end">
             <AddAdmin alias={alias} />
           </div>
@@ -56,9 +51,8 @@ export default async function AdminsTable({ alias }: AdminsTableProps) {
         <div className="h-full overflow-y-auto rounded-md border">
           <AdminsClientTable
             data={data ?? []}
-            adminRole={adminRole}
+            communityRole={communityRole}
             alias={alias}
-            chainId={chainId}
           />
         </div>
       </div>

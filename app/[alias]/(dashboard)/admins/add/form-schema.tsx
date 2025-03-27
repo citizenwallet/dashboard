@@ -1,5 +1,5 @@
 import * as z from 'zod';
-import { type CommunityAccessRoleT } from '@/services/chain-db/admin';
+import { type CommunityAccessRoleT } from '@/services/top-db/users';
 
 export const roleEnum = z.enum(['owner', 'member'] as [
   CommunityAccessRoleT,

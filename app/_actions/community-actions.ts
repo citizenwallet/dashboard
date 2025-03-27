@@ -124,3 +124,29 @@ const fetchCommunitiesForAdminAction = async (args: {
 
   return { communities, total: communities.length };
 };
+
+export const fetchCommunityByAliasAction = async (
+  alias: string
+): Promise<{ community: Config }> => {
+  if (!process.env.COMMUNITIES_CONFIG_URL) {
+    throw new Error('COMMUNITIES_CONFIG_URL is not set');
+  }
+
+  const response = await fetch(process.env.COMMUNITIES_CONFIG_URL);
+  const data = (await response.json()) as Config[];
+
+  const community = data.filter((community) => {
+    const { alias: aliasFromConfig } = community.community;
+
+    const isMatchAlias = aliasFromConfig.trim() === alias.trim();
+
+    return isMatchAlias;
+  });
+  
+
+  if (community.length === 0) {
+    throw new Error('Community not found');
+  }
+
+  return { community: community[0] };
+};

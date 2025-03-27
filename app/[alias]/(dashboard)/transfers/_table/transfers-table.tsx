@@ -1,4 +1,4 @@
-import { fetchCommunityByAliasAction } from '@/app/[alias]/(dashboard)/_actions/community-actions';
+import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 import { getTransfersOfTokenAction } from '../actions';
 import UrlPagination from '@/components/custom/pagination-via-url';
 import { TransferClientTable } from './transfers-client-table';

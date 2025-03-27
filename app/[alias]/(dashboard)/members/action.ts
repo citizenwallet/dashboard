@@ -1,8 +1,10 @@
 'use server';
 
 import { getServiceRoleClient } from '@/services/chain-db';
-import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
-import { getAuthUserRoleInAppAction } from '@/app/(home)/_actions/user-actions';
+import {
+  getAuthUserRoleInCommunityAction,
+  getAuthUserRoleInAppAction
+} from '@/app/_actions/user-actions';
 import { getMembers } from '@/services/chain-db/members';
 import { Config } from '@citizenwallet/sdk';
 
@@ -18,8 +20,7 @@ export const getMembersAction = async (args: {
   const { alias } = config.community;
 
   const roleInCommunity = await getAuthUserRoleInCommunityAction({
-    alias,
-    chainId
+    alias
   });
 
   const roleInApp = await getAuthUserRoleInAppAction();
