@@ -9,6 +9,7 @@ import {
 } from '@/services/chain-db/admin';
 import { removeUserFromCommunity as removeUserFromCommunityTopDb } from '@/services/top-db/users';
 import { revalidatePath } from 'next/cache';
+import { getAuthUserRoleInAppAction } from '@/app/(home)/_actions/user-actions';
 
 export const getAdminsOfCommunityAction = async (args: {
   chainId: number;
@@ -16,13 +17,19 @@ export const getAdminsOfCommunityAction = async (args: {
 }) => {
   const { chainId, alias } = args;
 
-  const authRole = await getAuthUserRoleInCommunityAction({
-    alias: alias,
-    chainId: chainId
+  const roleInCommunity = await getAuthUserRoleInCommunityAction({
+    alias,
+    chainId
   });
 
-  if (!authRole) {
-    throw new Error('Unauthorized');
+  const roleInApp = await getAuthUserRoleInAppAction();
+
+  if (!roleInApp) {
+    throw new Error('Unauthenticated user');
+  }
+
+  if (roleInApp === 'user' && !roleInCommunity) {
+    throw new Error('You are not a member of this community');
   }
 
   const supabase = getChainDbClient(chainId);
