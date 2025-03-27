@@ -24,8 +24,12 @@ export const getMembersAction = async (args: {
 
   const roleInApp = await getAuthUserRoleInAppAction();
 
+  if (!roleInApp) {
+    throw new Error('Unauthenticated user');
+  }
+
   if (roleInApp === 'user' && !roleInCommunity) {
-    throw new Error('Unauthorized');
+    throw new Error('You are not a member of this community');
   }
 
   const supabase = getServiceRoleClient(chainId);
