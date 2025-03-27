@@ -8,7 +8,7 @@ import {
   Config,
   getAccountAddress
 } from '@citizenwallet/sdk';
-import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
+import { getAuthUserRoleInCommunityAction } from '@/app/_actions/user-actions';
 import { Wallet } from 'ethers';
 import { mintTokenFormSchema } from './mint/form-schema';
 import { burnTokenFormSchema } from './burn/form-schema';
@@ -21,8 +21,7 @@ export const searchMember = async (args: { config: Config; query: string }) => {
   const { alias } = config.community;
 
   const authRole = await getAuthUserRoleInCommunityAction({
-    alias,
-    chainId
+    alias
   });
 
   if (authRole !== 'owner') {
@@ -62,8 +61,7 @@ export const mintTokenToMemberAction = async (args: {
   }
 
   const authRole = await getAuthUserRoleInCommunityAction({
-    alias: config.community.alias,
-    chainId: config.community.primary_token.chain_id
+    alias: config.community.alias
   });
 
   if (authRole !== 'owner') {
@@ -129,8 +127,7 @@ export const burnTokenFromMemberAction = async (args: {
   }
 
   const authRole = await getAuthUserRoleInCommunityAction({
-    alias: config.community.alias,
-    chainId: config.community.primary_token.chain_id
+    alias: config.community.alias
   });
 
   if (authRole !== 'owner') {

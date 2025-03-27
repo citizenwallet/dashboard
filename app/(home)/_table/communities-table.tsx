@@ -1,7 +1,7 @@
 import { columns } from './columns';
 import { DataTable } from '@/components/ui/data-table';
 import { Config } from '@citizenwallet/sdk';
-import { fetchCommunitiesAction } from '@/app/(home)/_actions/community-actions';
+import { fetchCommunitiesAction } from '@/app/_actions/community-actions';
 import { Separator } from '@/components/ui/separator';
 
 interface CommunitiesTableProps {

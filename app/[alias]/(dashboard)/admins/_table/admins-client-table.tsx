@@ -2,50 +2,46 @@
 
 import { DataTable } from '@/components/ui/data-table';
 import {
-  AdminT,
-  AdminCommunityAccessT,
+  UserT,
+  UserCommunityAccessT,
   CommunityAccessRoleT
-} from '@/services/chain-db/admin';
+} from '@/services/top-db/users';
+
 import { createColumns } from './columns';
 import { useOptimistic, useTransition } from 'react';
-import { removeAdminFromCommunityAction } from '@/app/[alias]/(dashboard)/admins/action';
+import { removeUserFromCommunityAction } from '@/app/[alias]/(dashboard)/admins/action';
 
 interface AdminsClientTableProps {
-  data: (AdminCommunityAccessT & { admin: AdminT })[];
-  adminRole?: CommunityAccessRoleT;
+  data: (UserCommunityAccessT & { user: UserT })[];
+  communityRole?: CommunityAccessRoleT;
   alias: string;
-  chainId: number;
 }
 
 export function AdminsClientTable({
   data,
   alias,
-  adminRole,
-  chainId
+  communityRole
 }: AdminsClientTableProps) {
   const [isPending, startTransition] = useTransition();
   const [optimisticAdmins, addOptimisticRemoval] = useOptimistic(
     data,
     (state, adminIdToRemove: number) =>
-      state.filter((admin) => admin.admin_id !== adminIdToRemove)
+      state.filter((admin) => admin.user_id !== adminIdToRemove)
   );
 
   const handleRemoveAdmin = async (args: {
-    adminId: number;
-    adminEmail: string;
+    userId: number;
   }) => {
-    const { adminId, adminEmail } = args;
+    const { userId } = args;
 
     startTransition(async () => {
       // Optimistically remove the admin from the UI
-      addOptimisticRemoval(adminId);
+      addOptimisticRemoval(userId);
 
       try {
-        await removeAdminFromCommunityAction({
-          adminIdToRemove: adminId,
-          adminEmail: adminEmail,
-          alias: alias,
-          chainId: chainId
+        await removeUserFromCommunityAction({
+          userIdToRemove: userId,
+          alias: alias
         });
       } catch (error) {
         // If the removal fails, the state will automatically revert
@@ -55,7 +51,7 @@ export function AdminsClientTable({
   };
 
   const columns = createColumns({
-    adminRole: adminRole,
+    communityRole: communityRole,
     alias: alias,
     onRemoveAdmin: handleRemoveAdmin,
     isPending: isPending

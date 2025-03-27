@@ -1,7 +1,7 @@
 import User from './user';
 import UrlSearch from '@/components/custom/url-search';
 import { redirect } from 'next/navigation';
-import { getAuthUserAction } from '@/app/(home)/_actions/user-actions';
+import { getAuthUserAction } from '@/app/_actions/user-actions';
 import { cookies } from 'next/headers';
 
 export default async function Layout({
@@ -30,7 +30,6 @@ export default async function Layout({
 
   if (role === 'user' && accessList.length > 0) {
     const alias = accessList[0];
-    document.cookie = `lastViewedAlias=${alias}; path=/; max-age=31536000`;
     redirect(`/${alias}`);
   }
 

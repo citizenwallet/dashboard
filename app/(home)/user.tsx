@@ -7,7 +7,7 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
-import { signOutAction } from '@/app/(home)/_actions/user-actions';
+import { signOutAction } from '@/app/_actions/user-actions';
 import { UserT } from '@/services/top-db/users';
 import { Avatar, AvatarImage, AvatarFallback } from '@radix-ui/react-avatar';
 

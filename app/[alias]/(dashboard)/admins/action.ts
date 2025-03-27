@@ -1,25 +1,19 @@
 'use server';
 
-import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
-import { getServiceRoleClient as getChainDbClient } from '@/services/chain-db';
+import { getAuthUserRoleInCommunityAction } from '@/app/_actions/user-actions';
 import { getServiceRoleClient as getTopDbClient } from '@/services/top-db';
 import {
-  getAdminsOfCommunity,
-  removeAdminFromCommunity as removeAdminFromCommunityChainDb
-} from '@/services/chain-db/admin';
-import { removeUserFromCommunity as removeUserFromCommunityTopDb } from '@/services/top-db/users';
+  getUsersOfCommunity,
+  removeUserFromCommunity
+} from '@/services/top-db/users';
 import { revalidatePath } from 'next/cache';
-import { getAuthUserRoleInAppAction } from '@/app/(home)/_actions/user-actions';
+import { getAuthUserRoleInAppAction } from '@/app/_actions/user-actions';
 
-export const getAdminsOfCommunityAction = async (args: {
-  chainId: number;
-  alias: string;
-}) => {
-  const { chainId, alias } = args;
+export const getUsersOfCommunityAction = async (args: { alias: string }) => {
+  const { alias } = args;
 
   const roleInCommunity = await getAuthUserRoleInCommunityAction({
-    alias,
-    chainId
+    alias
   });
 
   const roleInApp = await getAuthUserRoleInAppAction();
@@ -32,8 +26,9 @@ export const getAdminsOfCommunityAction = async (args: {
     throw new Error('You are not a member of this community');
   }
 
-  const supabase = getChainDbClient(chainId);
-  const { data, count, error } = await getAdminsOfCommunity({
+  const supabase = getTopDbClient();
+
+  const { data, count, error } = await getUsersOfCommunity({
     alias: alias,
     client: supabase
   });
@@ -48,46 +43,33 @@ export const getAdminsOfCommunityAction = async (args: {
   };
 };
 
-export async function removeAdminFromCommunityAction(args: {
-  adminIdToRemove: number;
-  adminEmail: string;
+export async function removeUserFromCommunityAction(args: {
+  userIdToRemove: number;
   alias: string;
-  chainId: number;
 }) {
-  const { adminIdToRemove, alias, chainId, adminEmail } = args;
+  const { userIdToRemove, alias } = args;
 
   const authRole = await getAuthUserRoleInCommunityAction({
-    alias: args.alias,
-    chainId: args.chainId
+    alias
   });
 
   if (authRole !== 'owner') {
     throw new Error('Unauthorized');
   }
 
-  const chainDbClient = getChainDbClient(chainId);
   const topDbClient = getTopDbClient();
 
-  const { error } = await removeAdminFromCommunityChainDb({
-    client: chainDbClient,
+  const { error } = await removeUserFromCommunity({
+    client: topDbClient,
     data: {
-      admin_id: adminIdToRemove,
+      user_id: userIdToRemove,
       alias
     }
   });
 
-  const { error: removeUserError } = await removeUserFromCommunityTopDb({
-    client: topDbClient,
-    data: {
-      alias,
-      email: adminEmail
-    }
-  });
-
-  if (error || removeUserError) {
+  if (error) {
     console.error(error);
-    console.error(removeUserError);
-    throw new Error('Could not remove admin from community');
+    throw new Error('Could not remove user from community');
   }
 
   revalidatePath(`/${alias}/admins`, 'page');

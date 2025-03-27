@@ -2,8 +2,10 @@
 
 import { getServiceRoleClient } from '@/services/chain-db';
 import { getTreasuryTransfersOfToken } from '@/services/chain-db/transfers';
-import { getAuthUserRoleInCommunityAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
-import { getAuthUserRoleInAppAction } from '@/app/(home)/_actions/user-actions';
+import {
+  getAuthUserRoleInAppAction,
+  getAuthUserRoleInCommunityAction
+} from '@/app/_actions/user-actions';
 import { Config } from '@citizenwallet/sdk';
 
 export const getTreasuryTransfersOfTokenAction = async (args: {
@@ -20,8 +22,7 @@ export const getTreasuryTransfersOfTokenAction = async (args: {
   const { address: profileAddress } = config.community.profile;
 
   const roleInCommunity = await getAuthUserRoleInCommunityAction({
-    alias,
-    chainId
+    alias
   });
 
   const roleInApp = await getAuthUserRoleInAppAction();

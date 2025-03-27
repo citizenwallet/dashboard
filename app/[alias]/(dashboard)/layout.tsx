@@ -4,11 +4,9 @@ import {
   SidebarTrigger
 } from '@/components/ui/sidebar';
 import { AppSidebar } from './_components/app-sidebar';
-import { fetchCommunitiesAction } from '@/app/(home)/_actions/community-actions';
+import { fetchCommunitiesAction } from '@/app/_actions/community-actions';
 import { redirect } from 'next/navigation';
-import { getAuthUserAction as getAuthUserInChainAction } from '@/app/[alias]/(dashboard)/_actions/admin-actions';
-import { getAuthUserAction as getAuthUserInAppAction } from '@/app/(home)/_actions/user-actions';
-import { fetchCommunityByAliasAction } from '@/app/[alias]/(dashboard)/_actions/community-actions';
+import { getAuthUserAction } from '@/app/_actions/user-actions';
 
 export default async function DashboardLayout({
   children,
@@ -18,26 +16,23 @@ export default async function DashboardLayout({
   params: Promise<{ alias: string }>;
 }) {
   const { alias } = await params;
-  const { community: config } = await fetchCommunityByAliasAction(alias);
-  const { chain_id: chainId } = config.community.primary_token;
 
-  const userInChain = await getAuthUserInChainAction({
-    chainId: chainId
-  });
+  const user = await getAuthUserAction();
 
-  const userInApp = await getAuthUserInAppAction();
-
-  if (!userInChain || !userInApp) {
+  if (!user) {
     redirect('/login');
   }
 
-  const { role: userRoleInApp } = userInApp;
+  const { role } = user;
   const accessList =
-    userInChain?.admin_community_access.map((access) => access.alias) ?? [];
+    user?.users_community_access.map((access) => access.alias) ?? [];
 
-  if (userRoleInApp === 'user' && !accessList.includes(alias)) {
+  if (role === 'user' && accessList.length < 1) {
+    redirect('/');
+  }
+
+  if (role === 'user' && accessList.length > 0 && !accessList.includes(alias)) {
     const alias = accessList[0];
-    document.cookie = `lastViewedAlias=${alias}; path=/; max-age=31536000`;
     redirect(`/${alias}`);
   }
 
@@ -45,11 +40,7 @@ export default async function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <AppSidebar
-        admin={userInApp}
-        communities={communities}
-        selectedAlias={alias}
-      />
+      <AppSidebar user={user} communities={communities} selectedAlias={alias} />
       <SidebarInset className="flex flex-col h-screen overflow-hidden">
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">

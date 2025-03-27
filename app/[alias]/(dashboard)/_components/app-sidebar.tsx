@@ -27,13 +27,13 @@ import { SidebarMenuButton } from '@/components/ui/sidebar';
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   communities: Config[];
   selectedAlias: string;
-  admin: UserT | null;
+  user: UserT | null;
 }
 
 export function AppSidebar({
   communities,
   selectedAlias,
-  admin,
+  user,
   ...props
 }: AppSidebarProps) {
   const selectedCommunity = communities.find(
@@ -42,9 +42,9 @@ export function AppSidebar({
 
   const data = {
     user: {
-      name: admin?.name ?? '',
-      email: admin?.email ?? '',
-      avatar: admin?.avatar ?? ''
+      name: user?.name ?? '',
+      email: user?.email ?? '',
+      avatar: user?.avatar ?? ''
     },
     projects: [
       {

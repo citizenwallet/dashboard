@@ -2,21 +2,21 @@ import 'server-only';
 
 import {
   SupabaseClient,
+  PostgrestResponse,
   PostgrestMaybeSingleResponse
 } from '@supabase/supabase-js';
-import {CommunityAccessRoleT} from '@/services/chain-db/admin'
 
 const USERS_TABLE_NAME = 'users';
 const USERS_COMMUNITY_ACCESS_TABLE_NAME = 'users_community_access';
 
 type UserRoleT = 'admin' | 'user'; // app level
-
+export type CommunityAccessRoleT = 'owner' | 'member';
 
 export interface UserT {
   id: string;
   email: string;
   name: string;
-  avatar: string;
+  avatar: string | null;
   role: UserRoleT;
   created_at: Date;
   last_active_at: Date;
@@ -54,27 +54,32 @@ export const getUserByEmail = async (args: {
     .maybeSingle();
 };
 
-export const addUserToCommunity = async (args: {
+export const addUserToApp = async (args: {
   client: SupabaseClient;
-  data: Pick<UserT, 'email' | 'name' | 'avatar'> &
-    Pick<UserCommunityAccessT, 'chain_id' | 'alias' | 'role'>;
+  data: Pick<UserT, 'email' | 'name' | 'avatar'>;
 }) => {
   const { client, data } = args;
-  const { email, name, avatar, chain_id, alias, role } = data;
+  const { email, name, avatar } = data;
 
-  const { data: user, error: userError } = await client
+  return client
     .from(USERS_TABLE_NAME)
-    .upsert({ email, name, avatar }, { onConflict: 'email' })
+    .upsert({ email, name, avatar, role: 'user' }, { onConflict: 'email' })
     .select()
     .single();
+};
 
-  if (userError) throw userError;
+export const addUserToCommunity = async (args: {
+  client: SupabaseClient;
+  data: Pick<UserCommunityAccessT, 'user_id' | 'chain_id' | 'alias' | 'role'>;
+}) => {
+  const { client, data } = args;
+  const { user_id, chain_id, alias, role } = data;
 
-  const { data: access, error: accessError } = await client
+  return client
     .from(USERS_COMMUNITY_ACCESS_TABLE_NAME)
     .upsert(
       {
-        user_id: user.id,
+        user_id,
         chain_id,
         alias,
         role,
@@ -86,32 +91,36 @@ export const addUserToCommunity = async (args: {
     )
     .select()
     .single();
-
-  if (accessError) throw accessError;
-
-  return { user, access };
 };
 
 export const removeUserFromCommunity = async (args: {
   client: SupabaseClient;
-  data: Pick<UserCommunityAccessT, 'alias'> & Pick<UserT, 'email'>;
+  data: Pick<UserCommunityAccessT, 'alias' | 'user_id'>;
 }) => {
   const { client, data } = args;
-  const { alias, email } = data;
-
-  const { data: user, error: userError } = await client
-    .from(USERS_TABLE_NAME)
-    .select('id')
-    .eq('email', email)
-    .single();
-
-  if (userError) throw userError;
-
-  const { id: user_id } = user;
+  const { alias, user_id } = data;
 
   return client
     .from(USERS_COMMUNITY_ACCESS_TABLE_NAME)
     .delete()
     .eq('user_id', user_id)
+    .eq('alias', alias);
+};
+
+export const getUsersOfCommunity = async (args: {
+  alias: string;
+  client: SupabaseClient;
+}): Promise<PostgrestResponse<UserCommunityAccessT & { user: UserT }>> => {
+  const { alias, client } = args;
+
+  return client
+    .from(USERS_COMMUNITY_ACCESS_TABLE_NAME)
+    .select(
+      `
+      *,
+      user:${USERS_TABLE_NAME}!user_id!inner(*)
+    `,
+      { count: 'exact' }
+    )
     .eq('alias', alias);
 };
