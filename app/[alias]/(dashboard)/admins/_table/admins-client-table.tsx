@@ -29,9 +29,7 @@ export function AdminsClientTable({
       state.filter((admin) => admin.user_id !== adminIdToRemove)
   );
 
-  const handleRemoveAdmin = async (args: {
-    userId: number;
-  }) => {
+  const handleRemoveAdmin = async (args: { userId: number }) => {
     const { userId } = args;
 
     startTransition(async () => {

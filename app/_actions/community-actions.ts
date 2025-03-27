@@ -142,7 +142,6 @@ export const fetchCommunityByAliasAction = async (
 
     return isMatchAlias;
   });
-  
 
   if (community.length === 0) {
     throw new Error('Community not found');
