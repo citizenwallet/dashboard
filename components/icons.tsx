@@ -143,7 +143,9 @@ export function CommunityLogo(props: {
   return (
     <Avatar className={`h-${size} w-${size}`}>
       <AvatarImage src={props.logoUrl} alt="community logo" />
-      <AvatarFallback>{props.tokenSymbol}</AvatarFallback>
+      <AvatarFallback className="bg-gray-200 text-gray-400">
+        {props.tokenSymbol}
+      </AvatarFallback>
     </Avatar>
   );
 }
