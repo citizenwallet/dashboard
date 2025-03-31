@@ -23,7 +23,7 @@ export function MetricCard({ icon, title, value }: MetricCardProps) {
       <CardContent className="pb-6">
         <div className="space-y-1">
           <p className="text-3xl md:text-5xl font-bold tracking-tighter text-zinc-900">
-            {value}
+            {value.toLocaleString()}
           </p>
           {/* <p className="text-xs md:text-sm text-zinc-600">
             <span
