@@ -37,7 +37,8 @@ export default async function TreasuryTable({
     config.community.primary_token;
   const theme = config.community.theme?.primary;
 
-  const [authRole, hasMinterRole, treasuryData] = await Promise.all([
+const [authRoleResult, hasMinterRoleResult, treasuryDataResult] =
+  await Promise.allSettled([
     getAuthUserRoleInCommunityAction({
       alias
     }),
@@ -55,6 +56,19 @@ export default async function TreasuryTable({
       to
     })
   ]);
+
+
+  const authRole =
+    authRoleResult.status === 'fulfilled' ? authRoleResult.value : null;
+  const hasMinterRole =
+    hasMinterRoleResult.status === 'fulfilled'
+      ? hasMinterRoleResult.value
+      : false;
+  const treasuryData =
+    treasuryDataResult.status === 'fulfilled'
+      ? treasuryDataResult.value
+      : { data: [], count: 0 };
+
 
   const { data, count: totalCount } = treasuryData;
 
@@ -86,7 +100,7 @@ export default async function TreasuryTable({
 
       <div className="sticky bottom-0 left-0 right-0 bg-background flex flex-col sm:flex-row justify-between items-center gap-2 pb-4">
         <p className="text-sm text-gray-500 whitespace-nowrap">
-          Total: {totalCount}
+          Total: {Number(totalCount).toLocaleString()}
         </p>
         <UrlPagination totalPages={totalPages} />
       </div>
