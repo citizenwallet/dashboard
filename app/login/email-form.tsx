@@ -78,8 +78,10 @@ export default function EmailForm({ onSuccess }: EmailFormProps) {
                   <FormLabel>Email</FormLabel>
                   <FormControl>
                     <Input
-                      placeholder="name@example.com"
                       type="email"
+                      autoComplete="email"
+                      placeholder="name@example.com"
+                      required
                       {...field}
                     />
                   </FormControl>
