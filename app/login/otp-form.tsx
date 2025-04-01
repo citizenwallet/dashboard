@@ -94,7 +94,15 @@ export default function OtpForm({
                 <FormItem className="flex flex-col items-center">
                   <FormLabel className="text-center mb-2">Login Code</FormLabel>
                   <FormControl>
-                    <InputOTP maxLength={6} {...field}>
+                    <InputOTP
+                      type="text"
+                      inputMode="numeric"
+                      autoComplete="one-time-code"
+                      pattern="\d{6}"
+                      maxLength={6}
+                      required
+                      {...field}
+                    >
                       <InputOTPGroup>
                         {Array.from({ length: 6 }).map((_, index) => (
                           <InputOTPSlot
