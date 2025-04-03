@@ -46,7 +46,7 @@ export default async function TransferTable({
 
       <div className="sticky bottom-0 left-0 right-0 bg-background flex flex-col sm:flex-row justify-between items-center gap-2 pb-4">
         <p className="text-sm text-gray-500 whitespace-nowrap">
-          Total: {totalCount}
+          Total: {Number(totalCount).toLocaleString()}
         </p>
         <UrlPagination totalPages={totalPages} />
       </div>

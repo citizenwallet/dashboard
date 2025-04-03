@@ -1,7 +1,7 @@
 'use client';
 import { ColumnDef } from '@tanstack/react-table';
-import { Config } from '@citizenwallet/sdk';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Config, CommunityConfig } from '@citizenwallet/sdk';
+import { CommunityLogo } from '@/components/icons';
 import { ExternalLink } from 'lucide-react';
 import { Skeleton } from '@/components/ui/skeleton';
 import Link from 'next/link';
@@ -36,14 +36,14 @@ export const columns: ColumnDef<Config>[] = [
     header: 'Logo',
     accessorKey: 'community.logo',
     cell: ({ row }) => {
-      const logo = row.original.community.logo;
-      const name = row.original.community.name;
+
+      const communityConfig = new CommunityConfig(row.original);
+      const tokenSymbol = communityConfig.primaryToken.symbol;
+      const logoUrl = communityConfig.community.logo;
+      
       return (
         <div className="min-w-[50px]">
-          <Avatar className="h-10 w-10">
-            <AvatarImage src={logo} alt={`logo for ${name}`} />
-            <AvatarFallback>{name}</AvatarFallback>
-          </Avatar>
+          <CommunityLogo logoUrl={logoUrl} tokenSymbol={tokenSymbol} />
         </div>
       );
     }
