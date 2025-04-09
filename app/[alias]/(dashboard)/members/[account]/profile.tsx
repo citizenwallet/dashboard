@@ -13,7 +13,8 @@ import { useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
 import { useDebounce } from 'use-debounce'
 import type { Profile } from "./action"
-import { demoAction, updateProfileAction, updateProfileImageAction } from "./action"
+import { deleteProfileAction, updateProfileAction, updateProfileImageAction } from "./action"
+import { useRouter } from "next/navigation"
 
 export default function Profile({
     memberData,
@@ -32,13 +33,14 @@ export default function Profile({
         description: memberData.description,
         avatarUrl: memberData.image,
     });
-    //TODO :formatProfileImageLinks
+
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [isAvailable, setIsAvailable] = useState(true);
     const [usernameEdit, setUsernameEdit] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
     const [debouncedUsername] = useDebounce(userData.username, 1000);
     const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
 
     const handleEdit = () => {
         setIsEditing(true)
@@ -68,18 +70,20 @@ export default function Profile({
     const handleSave = async () => {
 
         try {
-
+            setIsLoading(true);
             if (userData.username === memberData.username &&
                 userData.name === memberData.name &&
                 userData.description === memberData.description &&
                 userData.avatarUrl === memberData.image) {
 
-                toast.error('No changes to save')
+                toast.error('No changes to save');
+                setIsLoading(false);
                 return
             }
 
             if (!isAvailable) {
-                toast.error('Username is already taken,You can not save it')
+                toast.error('Username is already taken,You can not save it');
+                setIsLoading(false);
                 return
             }
             //default image
@@ -89,6 +93,7 @@ export default function Profile({
 
                 if (!imageFile) {
                     toast.error('Please upload an image')
+                    setIsLoading(false);
                     return
                 }
 
@@ -107,27 +112,50 @@ export default function Profile({
             };
 
             const result = await updateProfileAction(profile, config.community.alias, config);
-            console.log(result)
-
-
-            // const result = await demoAction(config);
-            // console.log(result)
-
             toast.success('Profile updated successfully');
         } catch (error) {
             console.error('Error updating profile:', error);
             toast.error('Error updating profile');
         } finally {
             setIsEditing(false);
+            setIsLoading(false);
         }
 
 
-
     }
+
 
     const handleDelete = () => {
+        toast.custom((t) => (
+            <div className="flex flex-col gap-2 bg-background p-2 rounded-lg border">
+                <h3 className="font-semibold text-base">Delete Profile</h3>
+                <p className="text-sm text-muted-foreground">
+                    This will permanently delete this member's profile.
+                </p>
+                <div className="flex gap-2 justify-end pt-2">
+                    <Button variant="outline" onClick={() => toast.dismiss(t)}>Cancel</Button>
+                    <Button
+                        variant="destructive"
+                        onClick={async () => {
+                            const result = await deleteProfileAction(
+                                userData.avatarUrl, config.community.alias, config, memberData.account
+                            );
 
-    }
+                            if (result.success) {
+                                toast.dismiss(t);
+                                toast.success('Profile deleted successfully');
+                                router.push(`/${config.community.alias}/members`);
+                            } else {
+                                toast.error(result.message as string);
+                            }
+                        }}
+                    >
+                        Delete
+                    </Button>
+                </div>
+            </div>
+        ));
+    };
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { id, value } = e.target
