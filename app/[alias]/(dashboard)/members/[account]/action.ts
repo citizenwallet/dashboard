@@ -5,7 +5,7 @@ import {
   getAuthUserRoleInCommunityAction
 } from '@/app/_actions/user-actions';
 import { pinFileToIPFS, pinJSONToIPFS, unpin } from '@/services/pinata/pinata';
-import { BundlerService, Config, CommunityConfig } from '@citizenwallet/sdk';
+import { BundlerService, CommunityConfig, Config } from '@citizenwallet/sdk';
 import { Wallet } from 'ethers';
 
 export interface Profile {
@@ -80,7 +80,7 @@ export async function deleteProfileAction(
   try {
     //unpin profile image
     const cid = imageCid.split('/').pop();
-    const result = await unpin(cid as string);
+    await unpin(cid as string);
 
     const community = new CommunityConfig(config);
     const bundler = new BundlerService(community);

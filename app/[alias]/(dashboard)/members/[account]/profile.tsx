@@ -9,12 +9,12 @@ import { Textarea } from "@/components/ui/textarea"
 import { MemberT } from '@/services/chain-db/members'
 import { CommunityConfig, Config, checkUsernameAvailability } from '@citizenwallet/sdk'
 import { PenLine, Save, Trash2, Upload, User } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
 import { useDebounce } from 'use-debounce'
 import type { Profile } from "./action"
 import { deleteProfileAction, updateProfileAction, updateProfileImageAction } from "./action"
-import { useRouter } from "next/navigation"
 
 export default function Profile({
     memberData,
@@ -111,7 +111,7 @@ export default function Profile({
                 username: userData.username,
             };
 
-            const result = await updateProfileAction(profile, config.community.alias, config);
+            await updateProfileAction(profile, config.community.alias, config);
             toast.success('Profile updated successfully');
         } catch (error) {
             console.error('Error updating profile:', error);
@@ -130,7 +130,7 @@ export default function Profile({
             <div className="flex flex-col gap-2 bg-background p-2 rounded-lg border">
                 <h3 className="font-semibold text-base">Delete Profile</h3>
                 <p className="text-sm text-muted-foreground">
-                    This will permanently delete this member's profile.
+                    This will permanently delete this member profile.
                 </p>
                 <div className="flex gap-2 justify-end pt-2">
                     <Button variant="outline" onClick={() => toast.dismiss(t)}>Cancel</Button>
