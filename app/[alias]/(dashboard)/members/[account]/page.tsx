@@ -62,7 +62,6 @@ async function AsyncPage({ config, account, alias }: { config: Config, account: 
         hasAdminRole = true;
     }
 
-    console.log(data)
     return (
         <Profile memberData={data} hasAdminRole={hasAdminRole} config={config} />
     );

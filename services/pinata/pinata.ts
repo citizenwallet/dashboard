@@ -65,11 +65,7 @@ export const unpin = async (hash: string) => {
       }
     );
 
-    if (!response.ok) {
-      throw new Error(`Failed to unpin: ${response.statusText}`);
-    }
-
-    return response.json();
+    return response;
   } catch (error) {
     throw new Error(`Failed to unpin: ${error}`);
   }
