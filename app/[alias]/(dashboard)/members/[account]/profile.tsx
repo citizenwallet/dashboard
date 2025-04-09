@@ -7,7 +7,7 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { PenLine, Save, Trash2, Upload, User } from "lucide-react"
-import { useState } from "react"
+import { useState, useRef } from "react"
 import { MemberT } from '@/services/chain-db/members';
 
 export default function Profile({ memberData, hasAdminRole }: { memberData: MemberT, hasAdminRole: boolean }) {
@@ -19,6 +19,7 @@ export default function Profile({ memberData, hasAdminRole }: { memberData: Memb
         bio: memberData.description,
         avatarUrl: memberData.image,
     })
+    const fileInputRef = useRef<HTMLInputElement>(null)
 
     const handleEdit = () => {
         setIsEditing(true)
@@ -41,6 +42,22 @@ export default function Profile({ memberData, hasAdminRole }: { memberData: Memb
         }))
     }
 
+    const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0]
+        if (file) {
+            // Create a URL for the uploaded file
+            const imageUrl = URL.createObjectURL(file)
+            setUserData(prev => ({
+                ...prev,
+                avatarUrl: imageUrl
+            }))
+        }
+    }
+
+    const triggerFileInput = () => {
+        fileInputRef.current?.click()
+    }
+
     return (
         <Card className="shadow-lg border-0">
 
@@ -54,7 +71,20 @@ export default function Profile({ memberData, hasAdminRole }: { memberData: Memb
                             </AvatarFallback>
                         </Avatar>
                         <p className="text-sm text-gray-500">@{memberData.username}</p>
-                        <Button variant="outline" size="sm" className="text-xs" disabled={!isEditing}>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            onChange={handleImageUpload}
+                            accept="image/*"
+                            className="hidden"
+                        />
+                        <Button
+                            variant="outline"
+                            size="sm"
+                            className="text-xs"
+                            disabled={!isEditing}
+                            onClick={triggerFileInput}
+                        >
                             <Upload className="mr-2 h-3 w-3" />
                             Change photo
                         </Button>
@@ -102,7 +132,7 @@ export default function Profile({ memberData, hasAdminRole }: { memberData: Memb
                 </div>
             </CardContent>
 
-            {/* it can access only admin or owner  */}
+            {/* it can access only admin and community owner  */}
             {hasAdminRole && (
                 <CardFooter className="flex justify-between pt-6">
                     {isEditing ? (
@@ -111,7 +141,15 @@ export default function Profile({ memberData, hasAdminRole }: { memberData: Memb
                                 <Save className="h-4 w-4" />
                                 Save Changes
                             </Button>
-                            <Button variant="outline" onClick={() => setIsEditing(false)}>
+                            <Button variant="outline" onClick={() => {
+                                setIsEditing(false);
+                                setUserData({
+                                    username: memberData.username,
+                                    name: memberData.name,
+                                    bio: memberData.description,
+                                    avatarUrl: memberData.image,
+                                })
+                            }}>
                                 Cancel
                             </Button>
                         </div>
