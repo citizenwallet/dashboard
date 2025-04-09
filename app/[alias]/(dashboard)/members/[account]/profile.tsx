@@ -6,14 +6,14 @@ import { Card, CardContent, CardFooter } from "@/components/ui/card"
 import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
+import { MemberT } from '@/services/chain-db/members'
+import { CommunityConfig, Config, checkUsernameAvailability } from '@citizenwallet/sdk'
 import { PenLine, Save, Trash2, Upload, User } from "lucide-react"
-import { useState, useRef, useEffect, useMemo } from "react"
-import { MemberT } from '@/services/chain-db/members';
-import { useDebounce } from 'use-debounce';
-import { Config, CommunityConfig, checkUsernameAvailability, BundlerService } from '@citizenwallet/sdk';
+import { useEffect, useMemo, useRef, useState } from "react"
 import { toast } from "sonner"
-import { updateProfileAction, updateProfileImageAction } from "./action"
-import type { Profile } from "./action";
+import { useDebounce } from 'use-debounce'
+import type { Profile } from "./action"
+import { demoAction, updateProfileAction, updateProfileImageAction } from "./action"
 
 export default function Profile({
     memberData,
@@ -32,6 +32,7 @@ export default function Profile({
         description: memberData.description,
         avatarUrl: memberData.image,
     });
+    //TODO :formatProfileImageLinks
     const [imageFile, setImageFile] = useState<File | null>(null);
     const [isAvailable, setIsAvailable] = useState(true);
     const [usernameEdit, setUsernameEdit] = useState(false);
@@ -82,7 +83,7 @@ export default function Profile({
                 return
             }
             //default image
-            let cid = 'QmZjzYmcbxj6Yr9EBmuMu3knYd25oYvnTu92yLWhiajvMr';
+            let cid = memberData.image;
 
             if (userData.avatarUrl != memberData.image) {
 
@@ -91,22 +92,27 @@ export default function Profile({
                     return
                 }
 
-                const response = await updateProfileImageAction(imageFile, config.community.alias);
+                const response = await updateProfileImageAction(imageFile, community.community.alias);
                 cid = response.IpfsHash;
             }
 
             const profile: Profile = {
                 account: memberData.account,
                 description: userData.description || "",
-                image: cid,
-                image_medium: cid,
-                image_small: cid,
+                image: `ipfs://${cid}`,
+                image_medium: `ipfs://${cid}`,
+                image_small: `ipfs://${cid}`,
                 name: userData.name || "",
                 username: userData.username,
             };
 
-            const result = await updateProfileAction(profile, config.community.alias);
+            const result = await updateProfileAction(profile, config.community.alias, config);
             console.log(result)
+
+
+            // const result = await demoAction(config);
+            // console.log(result)
+
             toast.success('Profile updated successfully');
         } catch (error) {
             console.error('Error updating profile:', error);
