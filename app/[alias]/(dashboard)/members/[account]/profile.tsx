@@ -7,27 +7,63 @@ import { Input } from "@/components/ui/input"
 import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { PenLine, Save, Trash2, Upload, User } from "lucide-react"
-import { useState, useRef } from "react"
+import { useState, useRef, useEffect, useMemo } from "react"
 import { MemberT } from '@/services/chain-db/members';
+import { useDebounce } from 'use-debounce';
+import { Config, CommunityConfig, checkUsernameAvailability } from '@citizenwallet/sdk';
+import { toast } from "sonner"
 
-export default function Profile({ memberData, hasAdminRole }: { memberData: MemberT, hasAdminRole: boolean }) {
 
+export default function Profile({
+    memberData,
+    hasAdminRole,
+    config
+}: {
+    memberData: MemberT,
+    hasAdminRole: boolean,
+    config: Config
+}) {
+    const community = useMemo(() => new CommunityConfig(config), [config]);
     const [isEditing, setIsEditing] = useState(false)
     const [userData, setUserData] = useState({
         username: memberData.username,
         name: memberData.name,
-        bio: memberData.description,
+        description: memberData.description,
         avatarUrl: memberData.image,
     })
+    const [isAvailable, setIsAvailable] = useState(true)
+    const [usernameEdit, setUsernameEdit] = useState(false)
     const fileInputRef = useRef<HTMLInputElement>(null)
+    const [debouncedUsername] = useDebounce(userData.username, 1000);
 
     const handleEdit = () => {
         setIsEditing(true)
     }
 
+    useEffect(() => {
+        if (debouncedUsername && usernameEdit) {
+            const checkUsername = async () => {
+
+                try {
+                    const isAvailable = await checkUsernameAvailability(community, debouncedUsername);
+                    if (!isAvailable) {
+                        toast.error('Username is already taken')
+                        setIsAvailable(false)
+                    } else {
+                        setIsAvailable(true)
+                    }
+                } catch (error) {
+                    console.error('Error checking username availability:', error);
+                }
+            };
+
+            checkUsername();
+        }
+    }, [debouncedUsername, usernameEdit, community]);
+
     const handleSave = () => {
         setIsEditing(false)
-
+        console.log(userData)
     }
 
     const handleDelete = () => {
@@ -36,6 +72,11 @@ export default function Profile({ memberData, hasAdminRole }: { memberData: Memb
 
     const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
         const { id, value } = e.target
+        if (id === 'username') {
+            setUsernameEdit(true)
+        } else {
+            setUsernameEdit(false)
+        }
         setUserData((prev) => ({
             ...prev,
             [id]: value,
@@ -100,12 +141,12 @@ export default function Profile({ memberData, hasAdminRole }: { memberData: Memb
                                     value={userData.username}
                                     onChange={handleChange}
                                     disabled={!isEditing}
-                                    className="bg-white"
+                                    className={`bg-white ${isAvailable ? '' : 'border-red-500'}`}
                                 />
                             </div>
 
                             <div className="space-y-2">
-                                <Label htmlFor="name">Full Name</Label>
+                                <Label htmlFor="name">Name</Label>
                                 <Input
                                     id="name"
                                     placeholder="Your name"
@@ -118,11 +159,11 @@ export default function Profile({ memberData, hasAdminRole }: { memberData: Memb
                         </div>
 
                         <div className="space-y-2">
-                            <Label htmlFor="bio">Bio</Label>
+                            <Label htmlFor="bio">Description</Label>
                             <Textarea
-                                id="bio"
+                                id="description"
                                 placeholder="Tell us about yourself"
-                                value={userData.bio}
+                                value={userData.description}
                                 onChange={handleChange}
                                 disabled={!isEditing}
                                 className="min-h-[120px] bg-white resize-none"
@@ -143,12 +184,14 @@ export default function Profile({ memberData, hasAdminRole }: { memberData: Memb
                             </Button>
                             <Button variant="outline" onClick={() => {
                                 setIsEditing(false);
+                                setUsernameEdit(false);
                                 setUserData({
                                     username: memberData.username,
                                     name: memberData.name,
-                                    bio: memberData.description,
+                                    description: memberData.description,
                                     avatarUrl: memberData.image,
                                 })
+                                setIsAvailable(true);
                             }}>
                                 Cancel
                             </Button>
