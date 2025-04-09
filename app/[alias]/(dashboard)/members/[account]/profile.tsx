@@ -10,9 +10,10 @@ import { PenLine, Save, Trash2, Upload, User } from "lucide-react"
 import { useState, useRef, useEffect, useMemo } from "react"
 import { MemberT } from '@/services/chain-db/members';
 import { useDebounce } from 'use-debounce';
-import { Config, CommunityConfig, checkUsernameAvailability } from '@citizenwallet/sdk';
+import { Config, CommunityConfig, checkUsernameAvailability, BundlerService } from '@citizenwallet/sdk';
 import { toast } from "sonner"
-
+import { updateProfileAction, updateProfileImageAction } from "./action"
+import type { Profile } from "./action";
 
 export default function Profile({
     memberData,
@@ -24,17 +25,19 @@ export default function Profile({
     config: Config
 }) {
     const community = useMemo(() => new CommunityConfig(config), [config]);
-    const [isEditing, setIsEditing] = useState(false)
+    const [isEditing, setIsEditing] = useState(false);
     const [userData, setUserData] = useState({
         username: memberData.username,
         name: memberData.name,
         description: memberData.description,
         avatarUrl: memberData.image,
-    })
-    const [isAvailable, setIsAvailable] = useState(true)
-    const [usernameEdit, setUsernameEdit] = useState(false)
-    const fileInputRef = useRef<HTMLInputElement>(null)
+    });
+    const [imageFile, setImageFile] = useState<File | null>(null);
+    const [isAvailable, setIsAvailable] = useState(true);
+    const [usernameEdit, setUsernameEdit] = useState(false);
+    const fileInputRef = useRef<HTMLInputElement>(null);
     const [debouncedUsername] = useDebounce(userData.username, 1000);
+    const [isLoading, setIsLoading] = useState(false);
 
     const handleEdit = () => {
         setIsEditing(true)
@@ -61,9 +64,59 @@ export default function Profile({
         }
     }, [debouncedUsername, usernameEdit, community]);
 
-    const handleSave = () => {
-        setIsEditing(false)
-        console.log(userData)
+    const handleSave = async () => {
+
+        try {
+
+            if (userData.username === memberData.username &&
+                userData.name === memberData.name &&
+                userData.description === memberData.description &&
+                userData.avatarUrl === memberData.image) {
+
+                toast.error('No changes to save')
+                return
+            }
+
+            if (!isAvailable) {
+                toast.error('Username is already taken,You can not save it')
+                return
+            }
+            //default image
+            let cid = 'QmZjzYmcbxj6Yr9EBmuMu3knYd25oYvnTu92yLWhiajvMr';
+
+            if (userData.avatarUrl != memberData.image) {
+
+                if (!imageFile) {
+                    toast.error('Please upload an image')
+                    return
+                }
+
+                const response = await updateProfileImageAction(imageFile, config.community.alias);
+                cid = response.IpfsHash;
+            }
+
+            const profile: Profile = {
+                account: memberData.account,
+                description: userData.description || "",
+                image: cid,
+                image_medium: cid,
+                image_small: cid,
+                name: userData.name || "",
+                username: userData.username,
+            };
+
+            const result = await updateProfileAction(profile, config.community.alias);
+            console.log(result)
+            toast.success('Profile updated successfully');
+        } catch (error) {
+            console.error('Error updating profile:', error);
+            toast.error('Error updating profile');
+        } finally {
+            setIsEditing(false);
+        }
+
+
+
     }
 
     const handleDelete = () => {
@@ -86,7 +139,7 @@ export default function Profile({
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
         if (file) {
-            // Create a URL for the uploaded file
+            setImageFile(file)
             const imageUrl = URL.createObjectURL(file)
             setUserData(prev => ({
                 ...prev,
@@ -180,7 +233,7 @@ export default function Profile({
                         <div className="flex gap-3">
                             <Button onClick={handleSave} className="gap-2">
                                 <Save className="h-4 w-4" />
-                                Save Changes
+                                {isLoading ? 'Saving...' : 'Save Changes'}
                             </Button>
                             <Button variant="outline" onClick={() => {
                                 setIsEditing(false);
