@@ -75,11 +75,13 @@ export const searchMembers = async (args: {
 export const getMemberByAccount = async (args: {
   client: SupabaseClient;
   account: string;
-}): Promise<PostgrestResponse<MemberT>> => {
-  const { client, account } = args;
+  profileContract: string;
+}) => {
+  const { client, account, profileContract } = args;
   const queryBuilder = client
     .from(TABLE_NAME)
     .select(`*`)
+    .ilike('profile_contract', profileContract)
     .eq('account', account)
     .single();
 

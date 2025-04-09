@@ -1,11 +1,11 @@
 import { fetchCommunityByAliasAction } from "@/app/_actions/community-actions";
-import Profile from "./profile";
-import { getMemberByAccount } from "@/services/chain-db/members";
-import { getServiceRoleClient } from '@/services/chain-db';
-
-import { Suspense } from "react";
+import { getAuthUserRoleInAppAction, getAuthUserRoleInCommunityAction } from "@/app/_actions/user-actions";
 import { Skeleton } from "@/components/ui/skeleton";
+import { getServiceRoleClient } from '@/services/chain-db';
+import { getMemberByAccount } from "@/services/chain-db/members";
 import { Config } from '@citizenwallet/sdk';
+import { Suspense } from "react";
+import Profile from "./profile";
 
 interface PageProps {
     params: Promise<{
@@ -34,7 +34,7 @@ export default async function page(props: PageProps) {
                     <Suspense
                         fallback={<Skeleton className="h-[125px] w-full rounded-xl" />}
                     >
-                        <AsyncPage config={config} account={account} />
+                        <AsyncPage config={config} account={account} alias={alias} />
                     </Suspense>
                 </div>
             </div>
@@ -44,15 +44,26 @@ export default async function page(props: PageProps) {
 }
 
 
-async function AsyncPage({ config, account }: { config: Config, account: string }) {
+async function AsyncPage({ config, account, alias }: { config: Config, account: string, alias: string }) {
 
     const supabase = getServiceRoleClient(config.community.profile.chain_id);
-    const member = await getMemberByAccount({ client: supabase, account });
-    console.log(member.data)
+    const profileContract = config.community.profile.address;
+    const { data } = await getMemberByAccount({ client: supabase, account, profileContract });
+    if (!data) {
+        return <div>Member not found</div>
+    }
+
+    //check admin role
+    const roleInApp = await getAuthUserRoleInAppAction();
+    const roleResult = await getAuthUserRoleInCommunityAction({ alias })
+    let hasAdminRole = false;
+
+    if (roleInApp == "admin" || roleResult == "owner") {
+        hasAdminRole = true;
+    }
 
     return (
-        <Profile />
+        <Profile memberData={data} hasAdminRole={hasAdminRole} />
     );
 }
-
 

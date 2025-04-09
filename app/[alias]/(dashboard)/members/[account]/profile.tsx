@@ -1,24 +1,23 @@
 "use client"
 
-import type React from "react"
-
-import { useState } from "react"
-import { Button } from "@/components/ui/button"
-import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card"
-import { Input } from "@/components/ui/input"
-import { Textarea } from "@/components/ui/textarea"
-import { Label } from "@/components/ui/label"
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
-import { Separator } from "@/components/ui/separator"
+import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import { Input } from "@/components/ui/input"
+import { Label } from "@/components/ui/label"
+import { Textarea } from "@/components/ui/textarea"
 import { PenLine, Save, Trash2, Upload, User } from "lucide-react"
+import { useState } from "react"
+import { MemberT } from '@/services/chain-db/members';
 
-export default function Profile() {
+export default function Profile({ memberData, hasAdminRole }: { memberData: MemberT, hasAdminRole: boolean }) {
+
     const [isEditing, setIsEditing] = useState(false)
     const [userData, setUserData] = useState({
-        username: "meadow_richardson",
-        name: "Meadow Richardson",
-        bio: "Product designer based in San Francisco. I enjoy creating intuitive, accessible interfaces that help people get things done.",
-        avatarUrl: "/placeholder.svg?height=96&width=96",
+        username: memberData.username,
+        name: memberData.name,
+        bio: memberData.description,
+        avatarUrl: memberData.image,
     })
 
     const handleEdit = () => {
@@ -54,7 +53,7 @@ export default function Profile() {
                                 <User className="h-12 w-12" />
                             </AvatarFallback>
                         </Avatar>
-
+                        <p className="text-sm text-gray-500">@{memberData.username}</p>
                         <Button variant="outline" size="sm" className="text-xs" disabled={!isEditing}>
                             <Upload className="mr-2 h-3 w-3" />
                             Change photo
@@ -103,29 +102,32 @@ export default function Profile() {
                 </div>
             </CardContent>
 
-            <CardFooter className="flex justify-between pt-6">
-                {isEditing ? (
-                    <div className="flex gap-3">
-                        <Button onClick={handleSave} className="gap-2">
-                            <Save className="h-4 w-4" />
-                            Save Changes
+            {/* it can access only admin or owner  */}
+            {hasAdminRole && (
+                <CardFooter className="flex justify-between pt-6">
+                    {isEditing ? (
+                        <div className="flex gap-3">
+                            <Button onClick={handleSave} className="gap-2">
+                                <Save className="h-4 w-4" />
+                                Save Changes
+                            </Button>
+                            <Button variant="outline" onClick={() => setIsEditing(false)}>
+                                Cancel
+                            </Button>
+                        </div>
+                    ) : (
+                        <Button onClick={handleEdit} variant="outline" className="gap-2">
+                            <PenLine className="h-4 w-4" />
+                            Edit Profile
                         </Button>
-                        <Button variant="outline" onClick={() => setIsEditing(false)}>
-                            Cancel
-                        </Button>
-                    </div>
-                ) : (
-                    <Button onClick={handleEdit} variant="outline" className="gap-2">
-                        <PenLine className="h-4 w-4" />
-                        Edit Profile
-                    </Button>
-                )}
+                    )}
 
-                <Button variant="destructive" onClick={handleDelete} className="gap-2">
-                    <Trash2 className="h-4 w-4" />
-                    Delete Account
-                </Button>
-            </CardFooter>
+                    <Button variant="destructive" onClick={handleDelete} className="gap-2">
+                        <Trash2 className="h-4 w-4" />
+                        Delete Account
+                    </Button>
+                </CardFooter>
+            )}
         </Card>
 
     )
