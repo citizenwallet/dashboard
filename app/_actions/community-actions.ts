@@ -1,8 +1,8 @@
 'use server';
 
-import { CommunityConfig, Config } from '@citizenwallet/sdk';
-import { getAuthUserAction, getAuthUserRoleInAppAction } from './user-actions';
+import { Config } from '@citizenwallet/sdk';
 import eureGnosisCommunity from './eure_gnosis_community.json' assert { type: 'json' };
+import { getAuthUserAction, getAuthUserRoleInAppAction } from './user-actions';
 const typedEureGnosisCommunity = eureGnosisCommunity as Config;
 
 export const fetchCommunitiesAction = async (args: {
