@@ -63,7 +63,7 @@ async function AsyncPage({ config, account, alias }: { config: Config, account: 
     }
 
     return (
-        <Profile memberData={data} hasAdminRole={hasAdminRole} />
+        <Profile memberData={data} hasAdminRole={hasAdminRole} config={config} />
     );
 }
 
