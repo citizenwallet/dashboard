@@ -4,7 +4,6 @@ import { CommunityConfig, Config } from '@citizenwallet/sdk';
 import { getAuthUserAction, getAuthUserRoleInAppAction } from './user-actions';
 import eureGnosisCommunity from './eure_gnosis_community.json' assert { type: 'json' };
 const typedEureGnosisCommunity = eureGnosisCommunity as Config;
-import communities from '@/services/cw/communities.json' assert { type: 'json' };
 
 export const fetchCommunitiesAction = async (args: {
   query?: string;
@@ -153,16 +152,4 @@ export const fetchCommunityByAliasAction = async (
   }
 
   return { community: community[0] };
-};
-
-export const getCommunity = async (
-  alias: string
-): Promise<{ community: Config }> => {
-  const community: Config = communities.find(
-    (community) => community.community.alias === alias
-  ) as unknown as Config;
-
-  if (!community) throw new Error(`Community ${alias} not found`);
-
-  return { community };
 };
