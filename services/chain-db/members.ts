@@ -71,3 +71,19 @@ export const searchMembers = async (args: {
 
   return queryBuilder;
 };
+
+export const getMemberByAccount = async (args: {
+  client: SupabaseClient;
+  account: string;
+  profileContract: string;
+}) => {
+  const { client, account, profileContract } = args;
+  const queryBuilder = client
+    .from(TABLE_NAME)
+    .select(`*`)
+    .ilike('profile_contract', profileContract)
+    .eq('account', account)
+    .single();
+
+  return queryBuilder;
+};
