@@ -31,7 +31,7 @@ export default async function page(props: Props) {
                     <Suspense
                         fallback={<Skeleton className="h-[125px] w-full rounded-xl" />}
                     >
-                        <AsyncPage />
+                        <AsyncPage account={account} />
                     </Suspense>
                 </div>
             </div>
@@ -40,14 +40,13 @@ export default async function page(props: Props) {
     )
 }
 
-async function AsyncPage() {
+async function AsyncPage({ account }: { account: string }) {
 
     const transakConfig: TransakConfig = {
         apiKey: process.env.TRANSAK_API_KEY || '',
         environment: Transak.ENVIRONMENTS.STAGING,
-        tokenId: 0x0D9B0790E97e3426C161580dF4Ee853E4A7C4607,
-        walletAddress: '',
-        fiatCurrency: 'USD',
+        walletAddress: account,
+        defaultCryptoCurrency: 'POL',
         network: 'polygon',
         colorMode: 'LIGHT',
         backgroundColors: "#ffffff",
