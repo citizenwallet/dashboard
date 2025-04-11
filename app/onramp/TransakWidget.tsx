@@ -55,6 +55,7 @@ export default function TransakWidget(
         // This will trigger when the user closed the widget
         Transak.on(Transak.EVENTS.TRANSAK_WIDGET_CLOSE, (eventData) => {
             console.log(eventData);
+            closeTransak();
             router.push('/');
 
         });
@@ -84,7 +85,7 @@ export default function TransakWidget(
 
     useEffect(() => {
         openTransak();
-    }, []); // Empty dependency array means this runs once on mount
+    }, []);
 
     return (
         <div className="w-full h-full">

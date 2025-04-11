@@ -11,10 +11,8 @@ interface Props {
 }
 
 export default async function page(props: Props) {
-    // 0x14808C00d0b434a4035ecC8B129462Cd63B6215A
-    const { alias } = await props.params;
-    const { account } = await props.searchParams;
 
+    const { account } = await props.searchParams;
 
     return (
         <>
