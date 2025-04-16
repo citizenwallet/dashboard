@@ -71,3 +71,14 @@ export const searchMembers = async (args: {
 
   return queryBuilder;
 };
+
+export const getAllMembers = async (args: {
+  client: SupabaseClient;
+  profileContract: string;
+}): Promise<PostgrestResponse<MemberT>> => {
+  const { client, profileContract } = args;
+  return client
+    .from(TABLE_NAME)
+    .select('*')
+    .ilike('profile_contract', profileContract);
+};
