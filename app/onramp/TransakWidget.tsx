@@ -63,8 +63,8 @@ export default function TransakWidget(
         // This will trigger when the user marks payment is made.
         Transak.on(Transak.EVENTS.TRANSAK_ORDER_SUCCESSFUL, (orderData) => {
             console.log(orderData);
-            // closeTransak();
-            // TODO: swap function should run here, CTZA 
+            closeTransak();
+            router.push('/onramp/success');
         });
     }
 
