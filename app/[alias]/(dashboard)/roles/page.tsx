@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import RolePage from "./RolePage";
 import { fetchCommunityByAliasAction } from "@/app/_actions/community-actions";
 import { Config } from "@citizenwallet/sdk";
-import { getAllMembers, MemberT } from "@/services/chain-db/members";
+import { getAllMembers, getMinterMembers, MemberT } from "@/services/chain-db/members";
 import { getServiceRoleClient } from '@/services/chain-db';
 
 interface RolePageProps {
@@ -39,11 +39,19 @@ async function PageLoader(config: Config) {
         profileContract: config.community.profile.address
     });
 
+
+    const minterMembers = await getMinterMembers({
+        client: supabase,
+        contractAddress: config.community.primary_token.address
+    });
+
     return (
 
-        <>
-            <RolePage members={members.data as MemberT[]} />
-        </>
+        <RolePage
+            members={members.data as MemberT[]}
+            minterMembers={minterMembers.data as any[]}
+            count={minterMembers.count || 0}
+        />
     )
 }
 
