@@ -1,24 +1,6 @@
 "use client"
-import { DataTable } from "@/components/ui/data-table";
-import { Separator } from "@/components/ui/separator";
 import UrlPagination from '@/components/custom/pagination-via-url';
-import {
-    Dialog,
-    DialogContent,
-    DialogDescription,
-    DialogFooter,
-    DialogHeader,
-    DialogTitle,
-    DialogTrigger
-} from '@/components/ui/dialog';
-import { Check, ChevronsUpDown, Plus } from "lucide-react";
-import { Input } from "@/components/ui/input";
-import { useState } from "react";
-import {
-    Popover,
-    PopoverContent,
-    PopoverTrigger
-} from '@/components/ui/popover';
+import { Avatar, AvatarImage } from '@/components/ui/avatar';
 import { Button } from "@/components/ui/button";
 import {
     Command,
@@ -28,20 +10,79 @@ import {
     CommandItem,
     CommandList
 } from '@/components/ui/command';
+import { DataTable } from "@/components/ui/data-table";
+import {
+    Dialog,
+    DialogContent,
+    DialogDescription,
+    DialogFooter,
+    DialogHeader,
+    DialogTitle,
+    DialogTrigger
+} from '@/components/ui/dialog';
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger
+} from '@/components/ui/popover';
+import { Separator } from "@/components/ui/separator";
+import { cn, formatAddress } from "@/lib/utils";
 import { MemberT } from "@/services/chain-db/members";
-import { cn } from "@/lib/utils";
+import { Check, ChevronsUpDown, Copy, Plus, Trash } from "lucide-react";
+import { useState } from "react";
 
-export default function RolePage({ members }: { members: MemberT[] }) {
+
+
+export default function RolePage({
+    members,
+    minterMembers,
+    count
+}: {
+
+    members: MemberT[],
+    minterMembers: any[],
+    count: number
+}) {
 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-    const [newRole, setNewRole] = useState('');
-    const [isAddLoading, setIsAddLoading] = useState(false);
     const [open, setOpen] = useState(false);
     const [memberAccount, setMemberAccount] = useState('');
 
+    const totalPages = Math.ceil(Number(count) / 25);
+
+    const IDRow = ({ account }: { account: string }) => {
+        const [isCopied, setIsCopied] = useState(false);
+
+        const copyToClipboard = () => {
+            navigator.clipboard.writeText(account);
+            setIsCopied(true);
+
+            setTimeout(() => {
+                setIsCopied(false);
+            }, 2000);
+        };
+
+        return (
+            <div className="w-[120px] truncate">
+                <div
+                    className="flex items-center gap-1 cursor-pointer hover:bg-muted rounded-md p-1"
+                    onClick={copyToClipboard}
+                >
+                    <span className="text-xs font-mono truncate">
+                        {formatAddress(account)}
+                    </span>
+                    {isCopied ? (
+                        <Check className="ml-1 h-3 w-3" />
+                    ) : (
+                        <Copy className="ml-1 h-3 w-3" />
+                    )}
+                </div>
+            </div>
+        );
+    };
+
     return (
         <>
-
 
             <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
                 <DialogTrigger asChild>
@@ -114,18 +155,6 @@ export default function RolePage({ members }: { members: MemberT[] }) {
                             </Popover>
                         </div>
 
-                        <div className="grid gap-2">
-                            <label htmlFor="role" className="text-sm font-medium">
-                                Role
-                            </label>
-                            <Input
-                                className="text-base"
-                                id="role"
-                                value={newRole}
-                                placeholder="new role description"
-                            />
-                        </div>
-
                     </div>
                     <DialogFooter>
                         <Button
@@ -136,9 +165,9 @@ export default function RolePage({ members }: { members: MemberT[] }) {
                         </Button>
                         <Button
                             className="mb-2 md:mb-0"
-                            disabled={isAddLoading}
                         >
-                            Add
+                            <Plus size={16} />
+                            Add Minter
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -150,14 +179,55 @@ export default function RolePage({ members }: { members: MemberT[] }) {
                         <div className="h-full overflow-y-auto rounded-md ">
                             <DataTable columns={[
                                 {
-                                    header: 'Role',
-                                    accessorKey: 'role'
+                                    header: 'ID',
+                                    accessorKey: 'id',
+                                    cell: ({ row }) => <IDRow account={row.original.account_address} />
+                                },
+
+                                {
+                                    header: 'Member',
+                                    cell: ({ row }) => {
+                                        const { image, username, name } = row.original.a_member;
+
+                                        return (
+                                            <div className="flex items-center gap-2 w-[250px]">
+                                                <Avatar className="h-10 w-10 flex-shrink-0">
+                                                    <AvatarImage src={image} alt={username} />
+                                                </Avatar>
+                                                <div className="flex flex-col">
+                                                    <p className="text-sm font-medium">@{username}</p>
+                                                    <p className="text-sm text-gray-500">{name}</p>
+                                                </div>
+                                            </div>
+                                        )
+                                    }
                                 },
                                 {
-                                    header: 'Description',
-                                    accessorKey: 'description'
+                                    header: 'Created At',
+                                    accessorKey: 'created_at',
+                                    cell: ({ row }) => {
+                                        const createdAt = new Date(row.original.created_at);
+                                        return (
+                                            <div className="w-[150px]">
+                                                <span className="text-muted-foreground text-sm whitespace-nowrap">{createdAt.toLocaleString()}</span>
+                                            </div>
+                                        )
+                                    }
+                                },
+                                {
+                                    header: 'Actions',
+                                    cell: ({ row }) => {
+                                        return (
+                                            <div className="flex items-center gap-2">
+                                                <Button variant="outline" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white">
+                                                    <Trash size={16} />
+                                                    Remove
+                                                </Button>
+                                            </div>
+                                        )
+                                    }
                                 }
-                            ]} data={[]} />
+                            ]} data={minterMembers} />
                         </div>
                     </div>
 
@@ -165,9 +235,9 @@ export default function RolePage({ members }: { members: MemberT[] }) {
 
                     <div className="sticky bottom-0 left-0 right-0 bg-background flex flex-col sm:flex-row justify-between items-center gap-2 pb-4">
                         <p className="text-sm text-gray-500 whitespace-nowrap">
-                            Total: 100
+                            Total: {count}
                         </p>
-                        <UrlPagination totalPages={10} />
+                        <UrlPagination totalPages={totalPages} />
                     </div>
                 </div>
             </div>
