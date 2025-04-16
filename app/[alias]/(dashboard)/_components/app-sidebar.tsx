@@ -7,7 +7,8 @@ import {
   LucideLineChart,
   Shield,
   Landmark,
-  ArrowLeft
+  ArrowLeft,
+  UserCog
 } from 'lucide-react';
 import { NavProjects } from './nav-projects';
 import { NavUser } from './nav-user';
@@ -76,6 +77,12 @@ export function AppSidebar({
         name: 'Admins',
         url: `/${selectedCommunity?.community.alias}/admins`,
         icon: Shield
+      }
+      ,
+      {
+        name: 'Roles',
+        url: `/${selectedCommunity?.community.alias}/roles`,
+        icon: UserCog
       }
     ]
   };
