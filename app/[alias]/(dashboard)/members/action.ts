@@ -12,8 +12,9 @@ export const getMembersAction = async (args: {
   config: Config;
   query: string;
   page: number;
+  showAllMembers: boolean;
 }) => {
-  const { config, query, page } = args;
+  const { config, query, page, showAllMembers } = args;
 
   const { chain_id: chainId, address: profileContract } =
     config.community.profile;
@@ -39,7 +40,8 @@ export const getMembersAction = async (args: {
     client: supabase,
     profileContract,
     query,
-    page
+    page,
+    showAllMembers
   });
 
   if (error) {
