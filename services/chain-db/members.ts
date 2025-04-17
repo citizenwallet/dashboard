@@ -92,3 +92,26 @@ export const getMemberByAccount = async (args: {
 
   return queryBuilder;
 };
+
+export const removeMember = async (args: {
+  client: SupabaseClient;
+  account: string;
+  profileContract: string;
+}) => {
+  const { client, account, profileContract } = args;
+  const queryBuilder = client
+    .from(TABLE_NAME)
+    .update({
+      username: 'anonymous',
+      name: 'Anonymous',
+      description: 'This user does not have a profile',
+      image: 'ipfs://QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh',
+      image_medium: 'ipfs://QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh',
+      image_small: 'ipfs://QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh'
+    })
+    .ilike('profile_contract', profileContract)
+    .eq('account', account)
+    .single();
+
+  return queryBuilder;
+};
