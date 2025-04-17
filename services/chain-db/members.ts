@@ -86,21 +86,26 @@ export const getAllMembers = async (args: {
 export const getMinterMembers = async (args: {
   client: SupabaseClient;
   contractAddress: string;
+  page: number;
 }) => {
-  const { client, contractAddress } = args;
+  const { client, contractAddress, page } = args;
+  const offset = (page - 1) * PAGE_SIZE;
 
   // Fetch roles
   const {
     data: roles,
     error: rolesError,
-    status: rolesStatus
+    count: rolesCount
   } = await client
     .from('a_roles')
-    .select('*')
-    .ilike('contract_address', contractAddress);
+    .select('*', { count: 'exact' })
+    .ilike('contract_address', contractAddress)
+    .order('created_at', { ascending: false })
+    .range(offset, offset + PAGE_SIZE - 1)
+    .limit(PAGE_SIZE);
 
   if (rolesError) {
-    return { data: null, error: rolesError, status: rolesStatus };
+    return { data: null, error: rolesError };
   }
 
   if (!roles?.length) {
@@ -129,5 +134,5 @@ export const getMinterMembers = async (args: {
     a_member: memberMap[role.account_address.toLowerCase()] || null
   }));
 
-  return { data: combined, count: combined.length };
+  return { data: combined, count: rolesCount };
 };
