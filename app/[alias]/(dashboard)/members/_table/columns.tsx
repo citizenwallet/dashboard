@@ -1,19 +1,67 @@
 'use client';
-import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn, formatAddress } from '@/lib/utils';
 import { MemberT } from '@/services/chain-db/members';
-import { ColumnDef } from '@tanstack/react-table';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
-  MINTER_ROLE,
   hasRole as CWCheckRoleAccess,
-  CommunityConfig
+  CommunityConfig,
+  Config,
+  MINTER_ROLE
 } from '@citizenwallet/sdk';
+import { ColumnDef } from '@tanstack/react-table';
 import { JsonRpcProvider } from 'ethers';
-import { Copy, X } from 'lucide-react';
-import { Check } from 'lucide-react';
+import { Check, Copy, Trash, X } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { deleteProfileAction } from '../[account]/action';
+
+
+const removeMember = async (
+  account: string,
+  config: Config,
+  image: string,
+  router: ReturnType<typeof useRouter>
+) => {
+
+  toast.custom((t) => (
+    <div>
+      <h3>Are you sure you want to delete this member?</h3>
+      <p>This action cannot be undone</p>
+      <div className="mt-4 flex justify-end gap-3">
+
+        <Button onClick={() => toast.dismiss(t)}>Cancel</Button>
+
+        <Button
+          className="ml-4 bg-red-600 text-white hover:bg-red-700"
+          onClick={async () => {
+            toast.dismiss(t);
+
+            const result = await deleteProfileAction(
+              image, config.community.alias, config, account
+            );
+
+            if (result.success) {
+              toast.dismiss(t);
+              toast.success('Profile deleted successfully');
+              router.refresh();
+            } else {
+              toast.error(result.message as string);
+            }
+
+          }}
+        >
+          Delete
+        </Button>
+
+      </div>
+    </div>
+  ));
+
+}
 
 const IDRow = ({ account }: { account: string }) => {
   const [isCopied, setIsCopied] = useState(false);
@@ -47,7 +95,9 @@ const IDRow = ({ account }: { account: string }) => {
 };
 
 export const createColumns = (
-  communityConfig: CommunityConfig
+  communityConfig: CommunityConfig,
+  config: Config,
+  router: ReturnType<typeof useRouter>
 ): ColumnDef<MemberT>[] => [
     {
       header: 'ID',
@@ -198,6 +248,19 @@ export const createColumns = (
             </span>
           </div>
         );
+      }
+    }, {
+      header: 'Actions',
+      cell: ({ row }) => {
+        const { image, account } = row.original;
+        return (
+          <div className="flex items-center gap-2">
+            <Button variant="outline" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white" onClick={() => removeMember(account, config, image, router)}>
+              <Trash size={16} />
+              Remove
+            </Button>
+          </div>
+        )
       }
     }
   ];
