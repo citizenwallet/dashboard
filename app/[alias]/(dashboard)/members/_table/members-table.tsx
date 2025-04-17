@@ -1,31 +1,54 @@
 import UrlPagination from '@/components/custom/pagination-via-url';
-import { getMembersAction } from '../action';
-import { MembersClientTable } from './members-client-table';
+import UrlSearch from '@/components/custom/url-search';
 import { Separator } from '@/components/ui/separator';
 import { PAGE_SIZE } from '@/services/chain-db/members';
 import { Config } from '@citizenwallet/sdk';
+import { getMembersAction } from '../action';
+import { MembersClientTable } from './members-client-table';
+import SwitcherButton from './switcher-button';
+
 
 interface MembersTableProps {
   query: string;
   page: number;
   config: Config;
+  showAllMembers: boolean;
 }
 
 export default async function MembersTable({
   query,
   page,
-  config
+  config,
+  showAllMembers
 }: MembersTableProps) {
+
   const { data, count: totalCount } = await getMembersAction({
     config,
     query,
-    page
+    page,
+    showAllMembers
   });
 
   const totalPages = Math.ceil(Number(totalCount) / PAGE_SIZE);
 
   return (
     <>
+
+      <div className="grid grid-cols-2 gap-4 mb-4">
+        <div className="flex flex-col">
+          <h1 className="text-2xl font-bold">Members</h1>
+          <p className="text-sm text-gray-500">{config.community.name}</p>
+        </div>
+      </div>
+
+      <div className="flex">
+
+        <SwitcherButton />
+
+        <UrlSearch />
+      </div>
+
+
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto rounded-md border">
           <MembersClientTable data={data ?? []} config={config} />
