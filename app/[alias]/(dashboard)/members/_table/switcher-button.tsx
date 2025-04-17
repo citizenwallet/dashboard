@@ -18,7 +18,7 @@ export default function SwitcherButton() {
     useEffect(() => {
         const showMembers = searchParams.get('showMembers') === 'true';
         setShowAllMembers(showMembers)
-    }, [])
+    }, [searchParams])
 
 
     const handleShowAllMembers = async () => {
