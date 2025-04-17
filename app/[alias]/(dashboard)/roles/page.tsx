@@ -7,10 +7,12 @@ import { getServiceRoleClient } from '@/services/chain-db';
 
 interface RolePageProps {
     params: Promise<{ alias: string }>;
+    searchParams: Promise<{ page: string }>;
 }
 
 export default async function page(props: RolePageProps) {
     const { alias } = await props.params;
+    const { page } = await props.searchParams;
     const { community: config } = await fetchCommunityByAliasAction(alias);
     return (
         <div className="flex flex-1 w-full flex-col h-full">
@@ -24,14 +26,20 @@ export default async function page(props: RolePageProps) {
 
 
             <Suspense fallback={<div>Loading...</div>}>
-                <PageLoader {...config} />
+                <PageLoader config={config} page={page} />
             </Suspense>
 
         </div>
     )
 }
 
-async function PageLoader(config: Config) {
+async function PageLoader({
+    config,
+    page
+}: {
+    config: Config,
+    page?: string;
+}) {
 
     const supabase = getServiceRoleClient(config.community.profile.chain_id);
     const members = await getAllMembers({
@@ -42,7 +50,8 @@ async function PageLoader(config: Config) {
 
     const minterMembers = await getMinterMembers({
         client: supabase,
-        contractAddress: config.community.primary_token.address
+        contractAddress: config.community.primary_token.address,
+        page: parseInt(page || '1')
     });
 
     return (
