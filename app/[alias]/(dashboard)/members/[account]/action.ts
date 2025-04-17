@@ -7,6 +7,8 @@ import {
 import { pinFileToIPFS, pinJSONToIPFS, unpin } from '@/services/pinata/pinata';
 import { BundlerService, CommunityConfig, Config } from '@citizenwallet/sdk';
 import { Wallet } from 'ethers';
+import { getServiceRoleClient } from '@/services/chain-db';
+import { removeMember } from '@/services/chain-db/members';
 
 export interface Profile {
   account: string;
@@ -93,6 +95,15 @@ export async function deleteProfileAction(
       signerAccountAddress,
       account
     );
+
+    const supabase = getServiceRoleClient(config.community.profile.chain_id);
+    const profileContract = config.community.profile.address;
+
+    await removeMember({
+      client: supabase,
+      account,
+      profileContract
+    });
 
     return {
       success: true,
