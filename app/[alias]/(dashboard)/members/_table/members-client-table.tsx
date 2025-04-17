@@ -1,9 +1,10 @@
 'use client';
 
 import { DataTable } from '@/components/ui/data-table';
-import { Config, CommunityConfig } from '@citizenwallet/sdk';
 import { MemberT } from '@/services/chain-db/members';
+import { CommunityConfig, Config } from '@citizenwallet/sdk';
 import { createColumns } from './columns';
+import { useRouter } from 'next/navigation';
 
 interface MembersClientTableProps {
   data: MemberT[];
@@ -11,9 +12,10 @@ interface MembersClientTableProps {
 }
 
 export function MembersClientTable({ data, config }: MembersClientTableProps) {
+  const router = useRouter();
   const communityConfig = new CommunityConfig(config);
 
-  const columns = createColumns(communityConfig);
+  const columns = createColumns(communityConfig, config, router);
 
   return <DataTable columns={columns} data={data} />;
 }
