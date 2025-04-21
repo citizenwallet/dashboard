@@ -1,9 +1,12 @@
-import { Suspense } from "react";
-import RolePage from "./RolePage";
 import { fetchCommunityByAliasAction } from "@/app/_actions/community-actions";
-import { Config } from "@citizenwallet/sdk";
-import { getAllMembers, getMinterMembers, MemberT } from "@/services/chain-db/members";
+import { DataTable } from "@/components/ui/data-table";
 import { getServiceRoleClient } from '@/services/chain-db';
+import { getAllMembers, getMinterMembers, MemberT } from "@/services/chain-db/members";
+import { Config } from "@citizenwallet/sdk";
+import { Suspense } from "react";
+import { placeholderData, skeletonColumns } from "./_table/columns";
+import RolePage from "./RolePage";
+
 
 interface RolePageProps {
     params: Promise<{ alias: string }>;
@@ -25,7 +28,7 @@ export default async function page(props: RolePageProps) {
             </div>
 
 
-            <Suspense fallback={<div>Loading...</div>}>
+            <Suspense fallback={<Fallback />}>
                 <PageLoader config={config} page={page} />
             </Suspense>
 
@@ -64,3 +67,12 @@ async function PageLoader({
     )
 }
 
+function Fallback() {
+    return (
+        <div className="flex-1 overflow-hidden">
+            <div className="h-full overflow-y-auto rounded-md border">
+                <DataTable columns={skeletonColumns} data={placeholderData} />
+            </div>
+        </div>
+    );
+}
