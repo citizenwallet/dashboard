@@ -79,7 +79,10 @@ export default function UrlSearch({ config }: { config: Config }) {
             </div>
             {/* if the address is valid and not available, show the add member button */}
             {isvaildAddress && !isAvailableAddress && (
-                <Button className='absolute right-0  h-7 m-1.5 w-fit font-normal text-xs'>
+                <Button className='absolute right-0  h-7 m-1.5 w-fit font-normal text-xs'
+                    onClick={() => {
+                        router.push(`members/${searchParams.get('query')?.toString()}`);
+                    }}>
                     Add Member
                 </Button>
             )}
