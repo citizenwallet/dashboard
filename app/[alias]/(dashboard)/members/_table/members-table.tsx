@@ -1,5 +1,5 @@
 import UrlPagination from '@/components/custom/pagination-via-url';
-import UrlSearch from '@/components/custom/url-search';
+import UrlSearch from '@/components/custom/url-button-search';
 import { Separator } from '@/components/ui/separator';
 import { PAGE_SIZE } from '@/services/chain-db/members';
 import { Config } from '@citizenwallet/sdk';
@@ -45,7 +45,7 @@ export default async function MembersTable({
 
         <SwitcherButton config={config} />
 
-        <UrlSearch />
+        <UrlSearch config={config} />
       </div>
 
 
