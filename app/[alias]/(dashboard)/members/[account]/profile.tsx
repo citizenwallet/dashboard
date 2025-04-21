@@ -19,19 +19,24 @@ import { deleteProfileAction, updateProfileAction, updateProfileImageAction } fr
 export default function Profile({
     memberData,
     hasAdminRole,
-    config
+    config,
+    type
 }: {
     memberData: MemberT,
     hasAdminRole: boolean,
-    config: Config
+    config: Config,
+    type: 'edit' | 'new'
 }) {
     const community = useMemo(() => new CommunityConfig(config), [config]);
-    const [isEditing, setIsEditing] = useState(false);
+    const [isEditing, setIsEditing] = useState(
+        type === 'edit' ? false : true
+    );
+
     const [userData, setUserData] = useState({
-        username: memberData.username,
-        name: memberData.name,
-        description: memberData.description,
-        avatarUrl: memberData.image,
+        username: type === 'edit' ? memberData.username : '',
+        name: type === 'edit' ? memberData.name : '',
+        description: type === 'edit' ? memberData.description : '',
+        avatarUrl: type === 'edit' ? memberData.image : '',
     });
 
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -198,7 +203,9 @@ export default function Profile({
                                 <User className="h-12 w-12" />
                             </AvatarFallback>
                         </Avatar>
-                        <p className="text-sm text-gray-500">@{memberData.username}</p>
+                        {type === 'edit' && (
+                            <p className="text-sm text-gray-500">@{memberData.username}</p>
+                        )}
                         <input
                             type="file"
                             ref={fileInputRef}
@@ -261,7 +268,7 @@ export default function Profile({
             </CardContent>
 
             {/* it can access only admin and community owner  */}
-            {hasAdminRole && (
+            {hasAdminRole && type === 'edit' && (
                 <CardFooter className="flex justify-between pt-6">
                     {isEditing ? (
                         <div className="flex gap-3">
@@ -296,6 +303,22 @@ export default function Profile({
                     </Button>
                 </CardFooter>
             )}
+
+            {/* if the type is new, show the cancel and add member button */}
+            {type === 'new' && (
+                <CardFooter className="flex justify-between pt-6">
+                    <Button variant="destructive" className="gap-2" onClick={() => {
+                        router.push(`/${config.community.alias}/members`);
+                    }}>
+                        Cancel
+                    </Button>
+
+                    <Button variant="outline" className="gap-2" disabled={!isAvailable}>
+                        Add Member
+                    </Button>
+                </CardFooter>
+            )}
+
         </Card>
 
     )

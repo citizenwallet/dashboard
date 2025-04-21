@@ -49,8 +49,9 @@ async function AsyncPage({ config, account, alias }: { config: Config, account: 
     const supabase = getServiceRoleClient(config.community.profile.chain_id);
     const profileContract = config.community.profile.address;
     const { data } = await getMemberByAccount({ client: supabase, account, profileContract });
+    let type = data ? 'edit' : 'new';
     if (!data) {
-        return <div>Member not found</div>
+        type = 'new';
     }
 
     //check admin role
@@ -61,9 +62,12 @@ async function AsyncPage({ config, account, alias }: { config: Config, account: 
     if (roleInApp == "admin" || roleResult == "owner") {
         hasAdminRole = true;
     }
-
     return (
-        <Profile memberData={data} hasAdminRole={hasAdminRole} config={config} />
+        <Profile
+            memberData={data}
+            hasAdminRole={hasAdminRole}
+            config={config}
+            type={type as "edit" | "new"}
+        />
     );
 }
-
