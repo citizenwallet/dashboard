@@ -104,7 +104,7 @@ export default function SwitcherButton({ config }: { config: Config }) {
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
-                        {!validAddress && (
+                        {!validAddress && address != '' && (
                             <p className='text-red-500'>Invalid address.please enter a valid address</p>
                         )}
                         <div className="grid gap-2">
@@ -135,6 +135,9 @@ export default function SwitcherButton({ config }: { config: Config }) {
                             isAvailable ? (
                                 <Button
                                     className="mb-2 md:mb-0"
+                                    onClick={() => {
+                                        router.push(`members/${address}`);
+                                    }}
                                 >
                                     <Plus size={16} />
                                     Add
