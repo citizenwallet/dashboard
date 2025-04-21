@@ -18,7 +18,7 @@ import { Plus } from 'lucide-react'
 import { usePathname, useRouter, useSearchParams } from 'next/navigation'
 import { useEffect, useState } from 'react'
 import { useDebounce } from 'use-debounce'
-import { checkAvailableAddressMember } from '../action'
+import { checkAvailableAddressMemberAction } from '../action'
 
 
 export default function SwitcherButton({ config }: { config: Config }) {
@@ -55,14 +55,6 @@ export default function SwitcherButton({ config }: { config: Config }) {
         return ethers.isAddress(address);
     }
 
-    //check if the address is available
-    const isAvailableAddress = async (address: string) => {
-        const isAvailable = await checkAvailableAddressMember({
-            config: config,
-            address: address
-        });
-        return isAvailable;
-    }
 
     //check if the address is Available
     useEffect(() => {
@@ -71,7 +63,12 @@ export default function SwitcherButton({ config }: { config: Config }) {
             const isValid = checkValidAddress(usebouncedAddress[0]);
             if (isValid) {
                 setValidAddress(true)
-                const isAvailable = await isAvailableAddress(usebouncedAddress[0]);
+
+                const isAvailable = await checkAvailableAddressMemberAction({
+                    config: config,
+                    address: usebouncedAddress[0]
+                });
+
                 if (isAvailable) {
                     setIsAvailable(false)
                 } else {
@@ -83,7 +80,7 @@ export default function SwitcherButton({ config }: { config: Config }) {
 
         }
         checkAddress();
-    }, [usebouncedAddress])
+    }, [usebouncedAddress, config])
 
 
     return (
