@@ -54,7 +54,7 @@ export const getMembersAction = async (args: {
   };
 };
 
-export const checkAvailableAddressMember = async (args: {
+export const checkAvailableAddressMemberAction = async (args: {
   config: Config;
   address: string;
 }) => {
