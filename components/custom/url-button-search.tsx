@@ -1,14 +1,14 @@
 'use client';
 
-import { useEffect, useState } from 'react';
-import { useSearchParams, usePathname, useRouter } from 'next/navigation';
+import { checkAvailableAddressMemberAction } from '@/app/[alias]/(dashboard)/members/action';
 import { Input } from '@/components/ui/input';
-import { Loader2, Plus, Search } from 'lucide-react';
+import { Config } from '@citizenwallet/sdk';
+import { ethers } from 'ethers';
+import { Loader2, Search } from 'lucide-react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
 import { Button } from '../ui/button';
-import { ethers } from 'ethers';
-import { checkAvailableAddressMember } from '@/app/[alias]/(dashboard)/members/action';
-import { Config } from '@citizenwallet/sdk';
 
 export default function UrlSearch({ config }: { config: Config }) {
     const searchParams = useSearchParams();
@@ -42,15 +42,6 @@ export default function UrlSearch({ config }: { config: Config }) {
         return ethers.isAddress(address);
     }
 
-    //check if the address is available
-    const checkAvailableAddress = async (address: string) => {
-        const isAvailable = await checkAvailableAddressMember({
-            config: config,
-            address: address
-        });
-        return isAvailable;
-    }
-
     //check if the address is Available
     useEffect(() => {
         const checkAddress = async () => {
@@ -58,7 +49,11 @@ export default function UrlSearch({ config }: { config: Config }) {
             const isValid = checkValidAddress(query);
             if (isValid) {
                 setIsvaildAddress(true)
-                const isAvailable = await checkAvailableAddress(query);
+                const isAvailable = await checkAvailableAddressMemberAction({
+                    config: config,
+                    address: query
+                });
+
                 if (isAvailable) {
                     setIsAvailableAddress(true)
                 } else {
@@ -70,7 +65,7 @@ export default function UrlSearch({ config }: { config: Config }) {
 
         }
         checkAddress();
-    }, [])
+    }, [searchParams, config])
 
 
     return (
