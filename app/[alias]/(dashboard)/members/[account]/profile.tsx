@@ -20,12 +20,14 @@ export default function Profile({
     memberData,
     hasAdminRole,
     config,
-    type
+    type,
+    account
 }: {
     memberData: MemberT,
     hasAdminRole: boolean,
     config: Config,
-    type: 'edit' | 'new'
+    type: 'edit' | 'new',
+    account: string
 }) {
     const community = useMemo(() => new CommunityConfig(config), [config]);
     const [isEditing, setIsEditing] = useState(
@@ -72,6 +74,7 @@ export default function Profile({
         }
     }, [debouncedUsername, usernameEdit, community]);
 
+    //handle the edit profile data saved
     const handleSave = async () => {
 
         try {
@@ -129,7 +132,7 @@ export default function Profile({
 
     }
 
-
+    //handle the delete profile
     const handleDelete = () => {
         toast.custom((t) => (
             <div className="flex flex-col gap-2 bg-background p-2 rounded-lg border">
@@ -189,6 +192,63 @@ export default function Profile({
 
     const triggerFileInput = () => {
         fileInputRef.current?.click()
+    }
+
+    //handle the new member profile save
+    const handleAddMember = async () => {
+        try {
+            setIsLoading(true);
+
+            if (userData.username === '' &&
+                userData.name === '') {
+
+                toast.error('Please enter a username and name');
+                setIsLoading(false);
+                return
+            }
+
+            if (!isAvailable) {
+                toast.error('Username is already taken,You can not save it');
+                setIsLoading(false);
+                return
+            }
+            //default image
+            let cid = 'QmZjzYmcbxj6Yr9EBmuMu3knYd25oYvnTu92yLWhiajvMr';
+
+            if (userData.avatarUrl) {
+
+                if (!imageFile) {
+                    toast.error('Please upload an image')
+                    setIsLoading(false);
+                    return
+                }
+
+                const response = await updateProfileImageAction(imageFile, community.community.alias);
+                cid = response.IpfsHash;
+            }
+
+            const profile: Profile = {
+                account: account,
+                description: userData.description || "",
+                image: `ipfs://${cid}`,
+                image_medium: `ipfs://${cid}`,
+                image_small: `ipfs://${cid}`,
+                name: userData.name || "",
+                username: userData.username,
+            };
+
+            console.log(profile);
+            toast.success('Profile updated successfully');
+
+            //call to API to add member
+
+        } catch (error) {
+            console.error('Error adding member:', error);
+            toast.error('Error updating profile');
+
+        } finally {
+            setIsLoading(false);
+        }
     }
 
     return (
@@ -313,8 +373,8 @@ export default function Profile({
                         Cancel
                     </Button>
 
-                    <Button variant="outline" className="gap-2" disabled={!isAvailable}>
-                        Add Member
+                    <Button variant="outline" className="gap-2" disabled={!isAvailable} onClick={handleAddMember}>
+                        {isLoading ? 'Saving...' : 'Add Member'}
                     </Button>
                 </CardFooter>
             )}

@@ -68,6 +68,7 @@ async function AsyncPage({ config, account, alias }: { config: Config, account: 
             hasAdminRole={hasAdminRole}
             config={config}
             type={type as "edit" | "new"}
+            account={account}
         />
     );
 }
