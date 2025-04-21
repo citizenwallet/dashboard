@@ -28,8 +28,9 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { cn, formatAddress } from "@/lib/utils";
 import { MemberT } from "@/services/chain-db/members";
-import { Check, ChevronsUpDown, Copy, Plus, Trash } from "lucide-react";
+import { Check, ChevronsUpDown, Copy, Loader2, Plus, Trash } from "lucide-react";
 import { useState } from "react";
+import { toast } from 'sonner';
 
 
 
@@ -45,6 +46,8 @@ export default function RolePage({
 }) {
 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+
     const [open, setOpen] = useState(false);
     const [memberAccount, setMemberAccount] = useState('');
 
@@ -81,6 +84,57 @@ export default function RolePage({
         );
     };
 
+
+    const handleGrantAccess = () => {
+        toast.custom((t) => (
+            <div>
+                <h3>Are you sure you want to grant access to this member?</h3>
+                <div className="mt-4 flex justify-end gap-3">
+                    <Button
+                        className="ml-4 bg-red-600 text-white hover:bg-red-700"
+                        onClick={() => {
+                            toast.dismiss(t);
+                            setIsAddDialogOpen(false);
+                            setMemberAccount('');
+                        }}
+                    >
+                        Cancel
+                    </Button>
+                    <Button >
+                        Confirm
+                    </Button>
+                </div>
+            </div>
+        ));
+    }
+
+
+    const handleRevokeAccess = (id: string) => {
+        setIsLoading(false);
+
+        toast.custom((t) => (
+            <div>
+                <h3>Are you sure you want to revoke access to this member?</h3>
+                <div className="mt-4 flex justify-end gap-3">
+                    <Button
+                        className="ml-4 bg-red-600 text-white hover:bg-red-700"
+                        onClick={() => {
+                            toast.dismiss(t);
+                            setIsLoading(false);
+                        }}
+                    >
+                        Cancel
+                    </Button>
+                    <Button onClick={() => {
+                        console.log(id);
+                    }}>
+                        Confirm
+                    </Button>
+                </div>
+            </div>
+        ));
+    }
+
     return (
         <>
 
@@ -89,16 +143,16 @@ export default function RolePage({
                     <div className="flex justify-start mb-4">
                         <Button >
                             <Plus size={16} />
-                            Add Role
+                            Grant Access
                         </Button>
                     </div>
                 </DialogTrigger>
 
                 <DialogContent>
                     <DialogHeader>
-                        <DialogTitle>Add Role</DialogTitle>
+                        <DialogTitle>Grant Minting Access</DialogTitle>
                         <DialogDescription>
-                            Add a new role
+                            This will allow the member to both mint and burn from member accounts.
                         </DialogDescription>
                     </DialogHeader>
                     <div className="grid gap-4 py-4">
@@ -159,15 +213,19 @@ export default function RolePage({
                     <DialogFooter>
                         <Button
                             variant="outline"
-                            onClick={() => setIsAddDialogOpen(false)}
+                            onClick={() => {
+                                setIsAddDialogOpen(false);
+                                setMemberAccount('');
+                            }}
                         >
                             cancel
                         </Button>
                         <Button
                             className="mb-2 md:mb-0"
+                            onClick={handleGrantAccess}
                         >
-                            <Plus size={16} />
-                            Add Minter
+                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                            Confirm
                         </Button>
                     </DialogFooter>
                 </DialogContent>
@@ -203,6 +261,13 @@ export default function RolePage({
                                     }
                                 },
                                 {
+                                    header: 'Name',
+                                    accessorKey: 'name',
+                                    cell: ({ row }) => (
+                                        <div className="w-[150px] truncate">{row.original.a_member.name}</div>
+                                    )
+                                },
+                                {
                                     header: 'Created At',
                                     accessorKey: 'created_at',
                                     cell: ({ row }) => {
@@ -219,9 +284,12 @@ export default function RolePage({
                                     cell: ({ row }) => {
                                         return (
                                             <div className="flex items-center gap-2">
-                                                <Button variant="outline" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white">
+                                                <Button variant="outline"
+                                                    className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                                                    onClick={() => handleRevokeAccess(row.original.id)}
+                                                >
                                                     <Trash size={16} />
-                                                    Remove
+                                                    Revoke Access
                                                 </Button>
                                             </div>
                                         )
