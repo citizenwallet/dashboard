@@ -43,7 +43,7 @@ export default async function MembersTable({
 
       <div className="flex">
 
-        <SwitcherButton />
+        <SwitcherButton config={config} />
 
         <UrlSearch />
       </div>
