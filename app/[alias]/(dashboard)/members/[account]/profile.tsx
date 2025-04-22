@@ -121,6 +121,7 @@ export default function Profile({
 
             await updateProfileAction(profile, config.community.alias, config);
             toast.success('Profile updated successfully');
+            router.push(`/${config.community.alias}/members`);
         } catch (error) {
             console.error('Error updating profile:', error);
             toast.error('Error updating profile');
@@ -238,6 +239,7 @@ export default function Profile({
             };
 
             console.log(profile);
+            await updateProfileAction(profile, config.community.alias, config);
             toast.success('Profile updated successfully');
 
             //call to API to add member
