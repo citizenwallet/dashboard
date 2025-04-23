@@ -31,18 +31,22 @@ import { MemberT } from "@/services/chain-db/members";
 import { Check, ChevronsUpDown, Copy, Loader2, Plus, Trash } from "lucide-react";
 import { useState } from "react";
 import { toast } from 'sonner';
+import { grantRoleAction } from './action';
+import { Config } from '@citizenwallet/sdk';
 
 
 
 export default function RolePage({
     members,
     minterMembers,
-    count
+    count,
+    config
 }: {
 
     members: MemberT[],
     minterMembers: any[],
-    count: number
+    count: number,
+    config: Config
 }) {
 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -84,7 +88,9 @@ export default function RolePage({
         );
     };
 
-
+    const grantAccess = async () => {
+        await grantRoleAction({ config, account: memberAccount });
+    }
     const handleGrantAccess = () => {
         toast.custom((t) => (
             <div>
@@ -100,7 +106,7 @@ export default function RolePage({
                     >
                         Cancel
                     </Button>
-                    <Button >
+                    <Button onClick={grantAccess}>
                         Confirm
                     </Button>
                 </div>
@@ -187,7 +193,7 @@ export default function RolePage({
                                                         key={member.id}
                                                         value={member.username.toLowerCase()}
                                                         onSelect={() => {
-                                                            setMemberAccount(member.id.toString());
+                                                            setMemberAccount(member.account);
                                                             setOpen(false);
                                                         }}
                                                     >
