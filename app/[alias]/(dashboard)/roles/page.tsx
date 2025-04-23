@@ -63,6 +63,7 @@ async function PageLoader({
             members={members.data as MemberT[]}
             minterMembers={minterMembers.data as any[]}
             count={minterMembers.count || 0}
+            config={config}
         />
     )
 }
