@@ -1,19 +1,17 @@
-// lib/auth/verify-jwt.ts
 import { verifyJWT } from 'did-jwt';
 import { Resolver } from 'did-resolver';
 import { getResolver } from 'ethr-did-resolver';
 
-export async function verifycheckJWT(token: string) {
-  let resolver = new Resolver({
+export async function verifycheckJWT(token: string, account: string) {
+  const resolver = new Resolver({
     ...getResolver({
-      infuraProjectId: 'key' // https://developer.metamask.io/key/settings
+      infuraProjectId: process.env.INFURA_PROJECT_ID // https://developer.metamask.io/key/settings
     })
   });
 
-  // use the JWT from step 1
-  let verificationResponse = await verifyJWT(token, {
+  const verificationResponse = await verifyJWT(token, {
     resolver,
-    audience: 'did:ethr:ACCOUNT_DID'
+    audience: `did:ethr:${account}`
   });
   return verificationResponse;
 }
