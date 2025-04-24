@@ -1,8 +1,11 @@
-import { NextAuthConfig, CredentialsSignin } from 'next-auth';
-import CredentialProvider from 'next-auth/providers/credentials';
 import { getServiceRoleClient } from '@/services/top-db';
-import { getOTPOfSource, deleteOTPOfSource } from '@/services/top-db/otp';
+import { deleteOTPOfSource, getOTPOfSource } from '@/services/top-db/otp';
 import { getUserByEmail } from '@/services/top-db/users';
+import { CredentialsSignin, NextAuthConfig, Profile } from 'next-auth';
+import { JWT } from 'next-auth/jwt';
+import CredentialProvider from 'next-auth/providers/credentials';
+import { createJWTtoken } from './lib/auth/create-jwt';
+import { verifycheckJWT } from './lib/auth/verify-jwt';
 
 const authConfig = {
   providers: [
@@ -58,34 +61,70 @@ const authConfig = {
 
         deleteOTPOfSource({ client, source: email });
 
-        user = {
+        const profile = {
           id: userData.id.toString(),
           email: userData.email,
           name: userData.name,
-          avatar: userData.avatar
+          avatar: userData.avatar,
+          account: '0xf3.....'
+          // TODO: get account from user data
+          // TODO: That account address should save on local storage for 30 days
         };
 
-        return user;
+        return profile;
       }
     })
   ],
   pages: {
     signIn: '/login'
   },
+  session: {
+    strategy: 'jwt'
+  },
+  jwt: {
+    encode: async ({ token }) => {
+      const jwtToken = await createJWTtoken(
+        {
+          id: token?.id as string,
+          email: token?.email as string,
+          name: token?.name as string
+        },
+        token?.account as string
+      );
+      return jwtToken;
+    },
+    decode: async ({ token }) => {
+      const decodedToken = await verifycheckJWT(
+        token as string,
+        //TODO: get account address from local storage
+        '0xf3.....'
+      );
+      return decodedToken as unknown as JWT;
+    }
+  },
 
   callbacks: {
-    jwt: async ({ token, user }) => {
-      if (user) {
-        token.id = user.id;
+    jwt: async ({ token, user, profile }) => {
+      profile = user as Profile;
+      if (profile) {
+        token.id = profile.id;
+        token.email = profile.email;
+        token.name = profile.name;
+        token.account = profile.account;
       }
+
       return token;
     },
     session: async ({ session, token }) => {
+      const user = (token as any)?.payload?.user;
+
       return {
         ...session,
         user: {
-          ...session.user,
-          id: `${token.id}`
+          id: user?.id,
+          name: user?.name,
+          email: user?.email,
+          account: user?.account
         }
       };
     },
