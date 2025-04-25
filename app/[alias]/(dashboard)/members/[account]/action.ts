@@ -9,6 +9,7 @@ import { BundlerService, CommunityConfig, Config } from '@citizenwallet/sdk';
 import { Wallet } from 'ethers';
 import { getServiceRoleClient } from '@/services/chain-db';
 import { removeMember } from '@/services/chain-db/members';
+import { revalidatePath } from 'next/cache';
 
 export interface Profile {
   account: string;
@@ -63,7 +64,8 @@ export async function updateProfileAction(
     username,
     profileCid
   );
-  return 'success';
+
+  revalidatePath(`/${alias}/members`, 'page');
 }
 
 export async function deleteProfileAction(
@@ -105,15 +107,8 @@ export async function deleteProfileAction(
       profileContract
     });
 
-    return {
-      success: true,
-      message: 'Profile deleted successfully',
-      txHash
-    };
+    revalidatePath(`/${alias}/members`, 'page');
   } catch (error) {
-    return {
-      success: false,
-      message: error
-    };
+    console.error(error);
   }
 }
