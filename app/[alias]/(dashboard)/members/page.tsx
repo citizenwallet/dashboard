@@ -22,7 +22,7 @@ export default async function Page(props: {
 
   return (
     <div className="flex flex-1 w-full flex-col h-full">
-      <Suspense key={alias + query + page} fallback={<Fallback />}>
+      <Suspense key={alias + query + page + showAllMembers} fallback={<Fallback />}>
         <MembersTable query={query} page={Number(page)} config={config} showAllMembers={showAllMembers === 'true'} />
       </Suspense>
     </div>
