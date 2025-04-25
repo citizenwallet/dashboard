@@ -76,7 +76,7 @@ export default function Profile({
 
             checkUsername();
         }
-    }, [debouncedUsername, usernameEdit, community]);
+    }, [debouncedUsername, usernameEdit, community, memberData.username]);
 
     //handle the edit profile data saved
     const handleSave = async () => {
