@@ -1,7 +1,4 @@
-import { getAuthUserRoleInAppAction, getAuthUserRoleInCommunityAction } from "@/app/_actions/user-actions";
 import { Skeleton } from "@/components/ui/skeleton";
-import { getServiceRoleClient } from '@/services/chain-db';
-import { getMemberByAccount } from "@/services/chain-db/members";
 import { getCommunity } from "@/services/cw";
 import { Config } from '@citizenwallet/sdk';
 import { Suspense } from "react";
