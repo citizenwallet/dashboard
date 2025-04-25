@@ -120,8 +120,7 @@ export default function Profile({
             };
 
             await updateProfileAction(profile, config.community.alias, config);
-            toast.success('Profile updated successfully');
-            router.push(`/${config.community.alias}/members`);
+
         } catch (error) {
             console.error('Error updating profile:', error);
             toast.error('Error updating profile');
@@ -146,17 +145,10 @@ export default function Profile({
                     <Button
                         variant="destructive"
                         onClick={async () => {
-                            const result = await deleteProfileAction(
+                            await deleteProfileAction(
                                 userData.avatarUrl, config.community.alias, config, memberData.account
                             );
 
-                            if (result.success) {
-                                toast.dismiss(t);
-                                toast.success('Profile deleted successfully');
-                                router.push(`/${config.community.alias}/members`);
-                            } else {
-                                toast.error(result.message as string);
-                            }
                         }}
                     >
                         Delete
