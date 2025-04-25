@@ -23,7 +23,6 @@ import { ColumnDef } from '@tanstack/react-table';
 import { ethers, JsonRpcProvider } from 'ethers';
 import { Check, Copy, Trash, X } from 'lucide-react';
 import Link from 'next/link';
-import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { deleteProfileAction } from '../[account]/action';
