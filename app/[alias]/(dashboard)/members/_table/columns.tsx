@@ -11,13 +11,14 @@ import {
   MINTER_ROLE
 } from '@citizenwallet/sdk';
 import { ColumnDef } from '@tanstack/react-table';
-import { JsonRpcProvider } from 'ethers';
+import { ethers, JsonRpcProvider } from 'ethers';
 import { Check, Copy, Trash, X } from 'lucide-react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { deleteProfileAction } from '../[account]/action';
+
 
 
 const removeMember = async (
@@ -102,8 +103,7 @@ export const createColumns = (
         const { image, username, name, account } = row.original;
 
         const isAnonymous = username?.includes('anonymous');
-        const isZeroAddress =
-          account === '0x0000000000000000000000000000000000000000';
+        const isZeroAddress = ethers.ZeroAddress === account;
 
         return (
           <div className="flex items-center gap-2 w-[250px]">
