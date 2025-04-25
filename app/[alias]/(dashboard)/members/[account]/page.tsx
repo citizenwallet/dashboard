@@ -32,6 +32,7 @@ export default async function page(props: PageProps) {
             <div className="flex-1 overflow-hidden mt-3">
                 <div className="h-full overflow-y-auto rounded-md border-none">
                     <Suspense
+                        key={account + alias}
                         fallback={<Skeleton className="h-[125px] w-full rounded-xl" />}
                     >
                         <AsyncPage config={config} account={account} alias={alias} />
