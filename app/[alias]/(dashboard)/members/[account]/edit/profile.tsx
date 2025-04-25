@@ -3,17 +3,34 @@
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent, CardFooter } from "@/components/ui/card"
+import {
+    Form,
+    FormControl,
+    FormField,
+    FormItem,
+    FormLabel,
+    FormMessage,
+} from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
-import { Label } from "@/components/ui/label"
 import { Textarea } from "@/components/ui/textarea"
 import { MemberT } from '@/services/chain-db/members'
 import { CommunityConfig, Config, checkUsernameAvailability } from '@citizenwallet/sdk'
+import { zodResolver } from "@hookform/resolvers/zod"
 import { PenLine, Save, Trash2, Upload, User } from "lucide-react"
+import { useRouter } from "next/navigation"
 import { useEffect, useMemo, useRef, useState } from "react"
+import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import { useDebounce } from 'use-debounce'
+import * as z from "zod"
 import type { Profile } from "../action"
 import { deleteProfileAction, updateProfileAction, updateProfileImageAction } from "../action"
+
+const formSchema = z.object({
+    username: z.string().min(1, "Username is required"),
+    name: z.string().optional(),
+    description: z.string().optional(),
+})
 
 export default function Profile({
     memberData,
@@ -26,6 +43,15 @@ export default function Profile({
 }) {
     const community = useMemo(() => new CommunityConfig(config), [config]);
     const [isEditing, setIsEditing] = useState(false);
+    const router = useRouter();
+    const form = useForm<z.infer<typeof formSchema>>({
+        resolver: zodResolver(formSchema),
+        defaultValues: {
+            username: memberData?.username || "",
+            name: memberData?.name || "",
+            description: memberData?.description || "",
+        },
+    })
 
     const [userData, setUserData] = useState({
         username: memberData?.username,
@@ -38,7 +64,7 @@ export default function Profile({
     const [isAvailable, setIsAvailable] = useState(true);
     const [usernameEdit, setUsernameEdit] = useState(false);
     const fileInputRef = useRef<HTMLInputElement>(null);
-    const [debouncedUsername] = useDebounce(userData.username, 1000);
+    const [debouncedUsername] = useDebounce(form.watch('username'), 1000);
     const [isLoading, setIsLoading] = useState(false);
 
     const handleEdit = () => {
@@ -46,20 +72,20 @@ export default function Profile({
     }
 
     useEffect(() => {
-        if (debouncedUsername && usernameEdit) {
+        if (debouncedUsername && (usernameEdit || isEditing)) {
             const checkUsername = async () => {
-
-                if (debouncedUsername == memberData?.username) {
+                if (debouncedUsername === memberData?.username) {
+                    setIsAvailable(true);
                     return;
                 }
 
                 try {
                     const isAvailable = await checkUsernameAvailability(community, debouncedUsername);
                     if (!isAvailable) {
-                        toast.error('Username is already taken')
-                        setIsAvailable(false)
+                        toast.error('Username is already taken');
+                        setIsAvailable(false);
                     } else {
-                        setIsAvailable(true)
+                        setIsAvailable(true);
                     }
                 } catch (error) {
                     console.error('Error checking username availability:', error);
@@ -68,37 +94,28 @@ export default function Profile({
 
             checkUsername();
         }
-    }, [debouncedUsername, usernameEdit, community, memberData?.username]);
+    }, [debouncedUsername, usernameEdit, isEditing, community, memberData?.username]);
 
-    //handle the edit profile data saved
-    const handleSave = async () => {
-
+    const onSubmit = async (values: z.infer<typeof formSchema>) => {
         try {
             setIsLoading(true);
-            if (userData.username === memberData?.username &&
-                userData.name === memberData?.name &&
-                userData.description === memberData?.description &&
+            if (values.username === memberData?.username &&
+                values.name === memberData?.name &&
+                values.description === memberData?.description &&
                 userData.avatarUrl === memberData?.image) {
-
                 toast.error('No changes to save');
                 setIsLoading(false);
-                return
+                return;
             }
+            const cidPath = new URL(memberData?.image || '').pathname;
+            let cid = cidPath.slice(1);
 
-            if (!isAvailable) {
-                toast.error('Username is already taken,You can not save it');
-                setIsLoading(false);
-                return
-            }
-            //default image
-            let cid = memberData?.image;
 
             if (userData.avatarUrl != memberData?.image) {
-
                 if (!imageFile) {
-                    toast.error('Please upload an image')
+                    toast.error('Please upload an image');
                     setIsLoading(false);
-                    return
+                    return;
                 }
 
                 const response = await updateProfileImageAction(imageFile, community.community.alias);
@@ -107,27 +124,28 @@ export default function Profile({
 
             const profile: Profile = {
                 account: memberData?.account || '',
-                description: userData.description || "",
+                description: values.description || "",
                 image: `ipfs://${cid}`,
                 image_medium: `ipfs://${cid}`,
                 image_small: `ipfs://${cid}`,
-                name: userData.name || "",
-                username: userData.username || "",
+                name: values.name || "",
+                username: values.username || "",
             };
 
             await updateProfileAction(profile, config.community.alias, config);
-            toast.success('Profile updated successfully');
-
+            toast.success('Profile updated successfully', {
+                onAutoClose: () => {
+                    router.push(`/${config.community.alias}/members`);
+                }
+            });
+            setIsEditing(false);
         } catch (error) {
             console.error('Error updating profile:', error);
             toast.error('Error updating profile');
         } finally {
-            setIsEditing(false);
             setIsLoading(false);
         }
-
-
-    }
+    };
 
     //handle the delete profile
     const handleDelete = () => {
@@ -145,7 +163,11 @@ export default function Profile({
                             await deleteProfileAction(
                                 userData.avatarUrl || '', config.community.alias, config, memberData?.account || ''
                             );
-                            toast.success('Profile deleted successfully');
+                            toast.success('Profile deleted successfully', {
+                                onAutoClose: () => {
+                                    router.push(`/${config.community.alias}/members`);
+                                }
+                            });
                         }}
                     >
                         Delete
@@ -155,18 +177,7 @@ export default function Profile({
         ));
     };
 
-    const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
-        const { id, value } = e.target
-        if (id === 'username') {
-            setUsernameEdit(true)
-        } else {
-            setUsernameEdit(false)
-        }
-        setUserData((prev) => ({
-            ...prev,
-            [id]: value,
-        }))
-    }
+
 
     const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
         const file = e.target.files?.[0]
@@ -187,78 +198,101 @@ export default function Profile({
 
     return (
         <Card className="shadow-lg border-0">
-
             <CardContent className="pt-6">
-                <div className="flex flex-col md:flex-row gap-8 items-start">
-                    <div className="flex flex-col items-center space-y-3">
-                        <Avatar className="h-24 w-24">
-                            <AvatarImage src={userData.avatarUrl} alt={userData.name} />
-                            <AvatarFallback>
-                                <User className="h-12 w-12" />
-                            </AvatarFallback>
-                        </Avatar>
+                <Form {...form}>
+                    <div className="flex flex-col md:flex-row gap-8 items-start">
+                        <div className="flex flex-col items-center space-y-3">
+                            <Avatar className="h-24 w-24">
+                                <AvatarImage src={userData.avatarUrl} alt={form.watch('name')} />
+                                <AvatarFallback>
+                                    <User className="h-12 w-12" />
+                                </AvatarFallback>
+                            </Avatar>
 
-                        <p className="text-sm text-gray-500">@{memberData?.username}</p>
+                            <p className="text-sm text-gray-500">@{memberData?.username}</p>
 
-                        <input
-                            type="file"
-                            ref={fileInputRef}
-                            onChange={handleImageUpload}
-                            accept="image/*"
-                            className="hidden"
-                        />
-                        <Button
-                            variant="outline"
-                            size="sm"
-                            className="text-xs"
-                            disabled={!isEditing}
-                            onClick={triggerFileInput}
-                        >
-                            <Upload className="mr-2 h-3 w-3" />
-                            Change photo
-                        </Button>
-                    </div>
-
-                    <div className="flex-1 space-y-4 w-full">
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                            <div className="space-y-2">
-                                <Label htmlFor="username">Username</Label>
-                                <Input
-                                    id="username"
-                                    placeholder="Username"
-                                    value={userData.username}
-                                    onChange={handleChange}
-                                    disabled={!isEditing}
-                                    className={`bg-white ${isAvailable ? '' : 'border-red-500'}`}
-                                />
-                            </div>
-
-                            <div className="space-y-2">
-                                <Label htmlFor="name">Name</Label>
-                                <Input
-                                    id="name"
-                                    placeholder="Your name"
-                                    value={userData.name}
-                                    onChange={handleChange}
-                                    disabled={!isEditing}
-                                    className="bg-white"
-                                />
-                            </div>
+                            <input
+                                type="file"
+                                ref={fileInputRef}
+                                onChange={handleImageUpload}
+                                accept="image/*"
+                                className="hidden"
+                            />
+                            <Button
+                                variant="outline"
+                                size="sm"
+                                className="text-xs"
+                                disabled={!isEditing}
+                                onClick={triggerFileInput}
+                            >
+                                <Upload className="mr-2 h-3 w-3" />
+                                Change photo
+                            </Button>
                         </div>
 
-                        <div className="space-y-2">
-                            <Label htmlFor="bio">Description</Label>
-                            <Textarea
-                                id="description"
-                                placeholder="Tell us about yourself"
-                                value={userData.description}
-                                onChange={handleChange}
-                                disabled={!isEditing}
-                                className="min-h-[120px] bg-white resize-none"
+                        <div className="flex-1 space-y-4 w-full">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                <FormField
+                                    control={form.control}
+                                    name="username"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Username</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="Username"
+                                                    {...field}
+                                                    disabled={!isEditing}
+                                                    onChange={(e) => {
+                                                        setUsernameEdit(true);
+                                                        field.onChange(e);
+                                                    }}
+                                                    className={`bg-white ${isAvailable ? '' : 'border-red-500'}`}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                                <FormField
+                                    control={form.control}
+                                    name="name"
+                                    render={({ field }) => (
+                                        <FormItem>
+                                            <FormLabel>Name</FormLabel>
+                                            <FormControl>
+                                                <Input
+                                                    placeholder="Your name"
+                                                    {...field}
+                                                    disabled={!isEditing}
+                                                />
+                                            </FormControl>
+                                            <FormMessage />
+                                        </FormItem>
+                                    )}
+                                />
+                            </div>
+                            <FormField
+                                control={form.control}
+                                name="description"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Description</FormLabel>
+                                        <FormControl>
+                                            <Textarea
+                                                placeholder="Tell us about yourself"
+                                                {...field}
+                                                disabled={!isEditing}
+                                                className="min-h-[120px] bg-white resize-none"
+                                            />
+                                        </FormControl>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
                             />
                         </div>
                     </div>
-                </div>
+                </Form>
             </CardContent>
 
             {/* it can access only admin and community owner  */}
@@ -267,7 +301,7 @@ export default function Profile({
                     {isEditing ? (
                         <div className="flex gap-3">
                             <Button
-                                onClick={handleSave}
+                                onClick={form.handleSubmit(onSubmit)}
                                 className="gap-2"
                                 disabled={!isAvailable}
                             >
@@ -277,13 +311,7 @@ export default function Profile({
                             <Button variant="outline" onClick={() => {
                                 setIsEditing(false);
                                 setUsernameEdit(false);
-                                setUserData({
-                                    username: memberData?.username || "",
-                                    name: memberData?.name || "",
-                                    description: memberData?.description || "",
-                                    avatarUrl: memberData?.image || "",
-                                })
-                                setIsAvailable(true);
+                                form.reset();
                             }}>
                                 Cancel
                             </Button>
