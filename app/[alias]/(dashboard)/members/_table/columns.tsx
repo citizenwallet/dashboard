@@ -83,7 +83,7 @@ export const createColumns = (
               <AvatarFallback>{username.slice(0, 2)}</AvatarFallback>
             </Avatar>
             <div className="flex flex-col min-w-0">
-              <Link href={`members/${account}`}>
+              <Link href={`members/${account}/edit`}>
                 <span className="font-medium truncate">
                   {isAnonymous
                     ? isZeroAddress
