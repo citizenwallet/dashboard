@@ -57,6 +57,10 @@ export default function Profile({
         if (debouncedUsername && usernameEdit) {
             const checkUsername = async () => {
 
+                if (debouncedUsername == memberData.username) { // <-- username is taken by current user
+                    return;
+                }
+
                 try {
                     const isAvailable = await checkUsernameAvailability(community, debouncedUsername);
                     if (!isAvailable) {
@@ -326,7 +330,11 @@ export default function Profile({
                 <CardFooter className="flex justify-between pt-6">
                     {isEditing ? (
                         <div className="flex gap-3">
-                            <Button onClick={handleSave} className="gap-2">
+                            <Button
+                                onClick={handleSave}
+                                className="gap-2"
+                                disabled={!isAvailable}
+                            >
                                 <Save className="h-4 w-4" />
                                 {isLoading ? 'Saving...' : 'Save Changes'}
                             </Button>
