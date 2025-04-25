@@ -1,13 +1,22 @@
 'use client';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
 import { Skeleton } from '@/components/ui/skeleton';
 import { cn, formatAddress } from '@/lib/utils';
 import { MemberT } from '@/services/chain-db/members';
 import {
-  hasRole as CWCheckRoleAccess,
   CommunityConfig,
   Config,
+  hasRole as CWCheckRoleAccess,
   MINTER_ROLE
 } from '@citizenwallet/sdk';
 import { ColumnDef } from '@tanstack/react-table';
@@ -19,42 +28,6 @@ import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { deleteProfileAction } from '../[account]/action';
 
-
-
-const removeMember = async (
-  account: string,
-  config: Config,
-  image: string,
-  router: ReturnType<typeof useRouter>
-) => {
-
-  toast.custom((t) => (
-    <div>
-      <h3>Are you sure you want to delete this member?</h3>
-      <p>This action cannot be undone</p>
-      <div className="mt-4 flex justify-end gap-3">
-
-        <Button onClick={() => toast.dismiss(t)}>Cancel</Button>
-
-        <Button
-          className="ml-4 bg-red-600 text-white hover:bg-red-700"
-          onClick={async () => {
-            toast.dismiss(t);
-
-            await deleteProfileAction(
-              image, config.community.alias, config, account
-            );
-
-          }}
-        >
-          Delete
-        </Button>
-
-      </div>
-    </div>
-  ));
-
-}
 
 const IDRow = ({ account }: { account: string }) => {
   const [isCopied, setIsCopied] = useState(false);
@@ -90,7 +63,6 @@ const IDRow = ({ account }: { account: string }) => {
 export const createColumns = (
   communityConfig: CommunityConfig,
   config: Config,
-  router: ReturnType<typeof useRouter>
 ): ColumnDef<MemberT>[] => [
     {
       header: 'ID',
@@ -241,18 +213,88 @@ export const createColumns = (
           </div>
         );
       }
-    }, {
+    },
+    {
       header: 'Actions',
-      cell: ({ row }) => {
+      cell: function RemoveCell({ row }) {
+        const [isDialogOpen, setIsDialogOpen] = useState(false);
+        const [isPending, setIsPending] = useState(false);
+
         const { image, account } = row.original;
+
+        const handleOpenDialog = () => {
+          setIsDialogOpen(true);
+        };
+
+        const handleCloseDialog = () => {
+          setIsDialogOpen(false);
+        };
+
+        const onRemoveMember = async () => {
+          try {
+            setIsPending(true);
+            await deleteProfileAction(
+              image, config.community.alias, config, account
+            );
+            handleCloseDialog();
+            toast.success('Member removed successfully');
+          } catch (error) {
+            if (error instanceof Error) {
+              toast.error(error.message);
+            } else {
+              toast.error('Could not remove member');
+            }
+          } finally {
+            setIsPending(false);
+          }
+        };
+
         return (
-          <div className="flex items-center gap-2">
-            <Button variant="outline" className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white" onClick={() => removeMember(account, config, image, router)}>
-              <Trash size={16} />
-              Remove
-            </Button>
-          </div>
-        )
+          <>
+
+            <div className="flex items-center gap-2">
+              <Button
+                variant="outline"
+                className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                disabled={isPending}
+                onClick={handleOpenDialog}>
+                <Trash size={16} />
+                Remove
+              </Button>
+            </div>
+
+            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+              <DialogContent className="sm:max-w-md">
+                <DialogHeader>
+                  <DialogTitle>Remove Member</DialogTitle>
+                  <DialogDescription>
+                    Are you sure you want to remove this member?
+
+                  </DialogDescription>
+                </DialogHeader>
+                <DialogFooter className="sm:justify-start gap-2">
+                  <Button
+                    disabled={isPending}
+                    onClick={onRemoveMember}
+                    type="button"
+                    variant="destructive"
+                  >
+                    {isPending ? 'Removing...' : 'Remove'}
+                  </Button>
+                  <DialogClose asChild>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      disabled={isPending}
+                    >
+                      Cancel
+                    </Button>
+                  </DialogClose>
+                </DialogFooter>
+              </DialogContent>
+            </Dialog>
+          </>
+        );
       }
     }
   ];
