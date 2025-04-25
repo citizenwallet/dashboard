@@ -124,6 +124,7 @@ export default function Profile({
             };
 
             await updateProfileAction(profile, config.community.alias, config);
+            toast.success('Profile updated successfully');
 
         } catch (error) {
             console.error('Error updating profile:', error);
@@ -152,7 +153,7 @@ export default function Profile({
                             await deleteProfileAction(
                                 userData.avatarUrl, config.community.alias, config, memberData.account
                             );
-
+                            toast.success('Profile deleted successfully');
                         }}
                     >
                         Delete
@@ -234,11 +235,10 @@ export default function Profile({
                 username: userData.username,
             };
 
-            console.log(profile);
+
             await updateProfileAction(profile, config.community.alias, config);
             toast.success('Profile updated successfully');
 
-            //call to API to add member
 
         } catch (error) {
             console.error('Error adding member:', error);

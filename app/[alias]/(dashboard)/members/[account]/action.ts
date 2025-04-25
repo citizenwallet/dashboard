@@ -5,20 +5,40 @@ import {
   getAuthUserRoleInCommunityAction
 } from '@/app/_actions/user-actions';
 import { pinFileToIPFS, pinJSONToIPFS, unpin } from '@/services/pinata/pinata';
-import { BundlerService, CommunityConfig, Config } from '@citizenwallet/sdk';
+import {
+  BundlerService,
+  CommunityConfig,
+  Config,
+  waitForTxSuccess
+} from '@citizenwallet/sdk';
 import { Wallet } from 'ethers';
 import { getServiceRoleClient } from '@/services/chain-db';
-import { removeMember } from '@/services/chain-db/members';
+import {
+  MemberT,
+  removeMember,
+  updateMember
+} from '@/services/chain-db/members';
 import { revalidatePath } from 'next/cache';
 
-export interface Profile {
-  account: string;
-  description: string;
-  image: string;
-  image_medium: string;
-  image_small: string;
-  name: string;
-  username: string;
+export type Profile = Pick<
+  MemberT,
+  | 'account'
+  | 'description'
+  | 'image'
+  | 'image_medium'
+  | 'image_small'
+  | 'name'
+  | 'username'
+>;
+
+function convertIpfsUrl(ipfsUrl: string) {
+  if (ipfsUrl.startsWith('ipfs://')) {
+    return ipfsUrl.replace(
+      'ipfs://',
+      'https://ipfs.internal.citizenwallet.xyz/'
+    );
+  }
+  return ipfsUrl;
 }
 
 export async function updateProfileImageAction(file: File, alias: string) {
@@ -57,15 +77,33 @@ export async function updateProfileAction(
   const account = profile.account;
   const username = profile.username;
 
-  await bundler.setProfile(
+  const txHash = await bundler.setProfile(
     signer,
     signerAccountAddress,
     account,
     username,
     profileCid
   );
+  const isSuccess = await waitForTxSuccess(community, txHash);
 
-  revalidatePath(`/${alias}/members`, 'page');
+  if (isSuccess) {
+    const supabase = getServiceRoleClient(config.community.profile.chain_id);
+    const profileContract = config.community.profile.address;
+
+    //convert ipfs url to https url
+    profile.image = convertIpfsUrl(profile.image);
+    profile.image_medium = convertIpfsUrl(profile.image_medium);
+    profile.image_small = convertIpfsUrl(profile.image_small);
+
+    await updateMember({
+      client: supabase,
+      account,
+      profileContract,
+      profile
+    });
+
+    revalidatePath(`/${alias}/members`, 'page');
+  }
 }
 
 export async function deleteProfileAction(
@@ -98,16 +136,20 @@ export async function deleteProfileAction(
       account
     );
 
-    const supabase = getServiceRoleClient(config.community.profile.chain_id);
-    const profileContract = config.community.profile.address;
+    const isSuccess = await waitForTxSuccess(community, txHash);
 
-    await removeMember({
-      client: supabase,
-      account,
-      profileContract
-    });
+    if (isSuccess) {
+      const supabase = getServiceRoleClient(config.community.profile.chain_id);
+      const profileContract = config.community.profile.address;
 
-    revalidatePath(`/${alias}/members`, 'page');
+      await removeMember({
+        client: supabase,
+        account,
+        profileContract
+      });
+
+      revalidatePath(`/${alias}/members`, 'page');
+    }
   } catch (error) {
     console.error(error);
   }
