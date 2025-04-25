@@ -40,17 +40,9 @@ const removeMember = async (
           onClick={async () => {
             toast.dismiss(t);
 
-            const result = await deleteProfileAction(
+            await deleteProfileAction(
               image, config.community.alias, config, account
             );
-
-            if (result.success) {
-              toast.dismiss(t);
-              toast.success('Profile deleted successfully');
-              router.refresh();
-            } else {
-              toast.error(result.message as string);
-            }
 
           }}
         >
