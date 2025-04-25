@@ -1,8 +1,12 @@
 import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
+import UrlSearch from '@/components/custom/url-button-search';
 import { DataTable } from '@/components/ui/data-table';
+import { Config } from '@citizenwallet/sdk';
 import { Suspense } from 'react';
 import { placeholderData, skeletonColumns } from './_table/columns';
 import MembersTable from './_table/members-table';
+import SwitcherButton from './_table/switcher-button';
+
 
 export default async function Page(props: {
   params: Promise<{ alias: string }>;
@@ -22,14 +26,14 @@ export default async function Page(props: {
 
   return (
     <div className="flex flex-1 w-full flex-col h-full">
-      <Suspense key={alias + query + page + showAllMembers} fallback={<Fallback />}>
+      <Suspense key={alias + query + page + showAllMembers} fallback={<Fallback config={config} />}>
         <MembersTable query={query} page={Number(page)} config={config} showAllMembers={showAllMembers === 'true'} />
       </Suspense>
     </div>
   );
 }
 
-function Fallback() {
+function Fallback({ config }: { config: Config }) {
   return (
     <div className="flex-1 overflow-hidden">
       <div className="grid grid-cols-2 gap-4 mb-4">
@@ -37,6 +41,12 @@ function Fallback() {
           <h1 className="text-2xl font-bold">Members</h1>
         </div>
       </div>
+      <div className="flex">
+
+        <SwitcherButton config={config} />
+        <UrlSearch config={config} />
+      </div>
+
       <div className="h-full overflow-y-auto rounded-md border">
         <DataTable columns={skeletonColumns} data={placeholderData} />
       </div>

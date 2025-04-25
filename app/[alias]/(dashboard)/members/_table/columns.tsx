@@ -350,6 +350,14 @@ export const skeletonColumns: ColumnDef<MemberT>[] = [
         <Skeleton className="h-4 w-32" />
       </div>
     )
+  },
+  {
+    header: 'Actions',
+    cell: () => (
+      <div className="min-w-[150px]">
+        <Skeleton className="h-4 w-32" />
+      </div>
+    )
   }
 ];
 
