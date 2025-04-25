@@ -1,6 +1,10 @@
 import 'server-only';
 
-import { SupabaseClient, PostgrestResponse } from '@supabase/supabase-js';
+import {
+  SupabaseClient,
+  PostgrestResponse,
+  PostgrestSingleResponse
+} from '@supabase/supabase-js';
 import { Profile } from '@/app/[alias]/(dashboard)/members/[account]/action';
 
 const TABLE_NAME = 'a_members';
@@ -82,7 +86,7 @@ export const getMemberByAccount = async (args: {
   client: SupabaseClient;
   account: string;
   profileContract: string;
-}) => {
+}): Promise<PostgrestSingleResponse<MemberT>> => {
   const { client, account, profileContract } = args;
   const queryBuilder = client
     .from(TABLE_NAME)

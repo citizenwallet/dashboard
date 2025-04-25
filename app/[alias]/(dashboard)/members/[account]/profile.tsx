@@ -23,7 +23,7 @@ export default function Profile({
     type,
     account
 }: {
-    memberData: MemberT,
+    memberData?: MemberT | null,
     hasAdminRole: boolean,
     config: Config,
     type: 'edit' | 'new',
@@ -35,10 +35,10 @@ export default function Profile({
     );
 
     const [userData, setUserData] = useState({
-        username: type === 'edit' ? memberData.username : '',
-        name: type === 'edit' ? memberData.name : '',
-        description: type === 'edit' ? memberData.description : '',
-        avatarUrl: type === 'edit' ? memberData.image : '',
+        username: type === 'edit' ? memberData?.username : '',
+        name: type === 'edit' ? memberData?.name : '',
+        description: type === 'edit' ? memberData?.description : '',
+        avatarUrl: type === 'edit' ? memberData?.image : '',
     });
 
     const [imageFile, setImageFile] = useState<File | null>(null);
@@ -57,7 +57,7 @@ export default function Profile({
         if (debouncedUsername && usernameEdit) {
             const checkUsername = async () => {
 
-                if (debouncedUsername == memberData.username) { // <-- username is taken by current user
+                if (debouncedUsername == memberData?.username) { // <-- username is taken by current user
                     return;
                 }
 
@@ -76,17 +76,17 @@ export default function Profile({
 
             checkUsername();
         }
-    }, [debouncedUsername, usernameEdit, community, memberData.username]);
+    }, [debouncedUsername, usernameEdit, community, memberData?.username]);
 
     //handle the edit profile data saved
     const handleSave = async () => {
 
         try {
             setIsLoading(true);
-            if (userData.username === memberData.username &&
-                userData.name === memberData.name &&
-                userData.description === memberData.description &&
-                userData.avatarUrl === memberData.image) {
+            if (userData.username === memberData?.username &&
+                userData.name === memberData?.name &&
+                userData.description === memberData?.description &&
+                userData.avatarUrl === memberData?.image) {
 
                 toast.error('No changes to save');
                 setIsLoading(false);
@@ -99,9 +99,9 @@ export default function Profile({
                 return
             }
             //default image
-            let cid = memberData.image;
+            let cid = memberData?.image;
 
-            if (userData.avatarUrl != memberData.image) {
+            if (userData.avatarUrl != memberData?.image) {
 
                 if (!imageFile) {
                     toast.error('Please upload an image')
@@ -114,13 +114,13 @@ export default function Profile({
             }
 
             const profile: Profile = {
-                account: memberData.account,
+                account: memberData?.account || '',
                 description: userData.description || "",
                 image: `ipfs://${cid}`,
                 image_medium: `ipfs://${cid}`,
                 image_small: `ipfs://${cid}`,
                 name: userData.name || "",
-                username: userData.username,
+                username: userData.username || "",
             };
 
             await updateProfileAction(profile, config.community.alias, config);
@@ -151,7 +151,7 @@ export default function Profile({
                         variant="destructive"
                         onClick={async () => {
                             await deleteProfileAction(
-                                userData.avatarUrl, config.community.alias, config, memberData.account
+                                userData.avatarUrl || '', config.community.alias, config, memberData?.account || ''
                             );
                             toast.success('Profile deleted successfully');
                         }}
@@ -232,7 +232,7 @@ export default function Profile({
                 image_medium: `ipfs://${cid}`,
                 image_small: `ipfs://${cid}`,
                 name: userData.name || "",
-                username: userData.username,
+                username: userData.username || "",
             };
 
 
@@ -262,7 +262,7 @@ export default function Profile({
                             </AvatarFallback>
                         </Avatar>
                         {type === 'edit' && (
-                            <p className="text-sm text-gray-500">@{memberData.username}</p>
+                            <p className="text-sm text-gray-500">@{memberData?.username}</p>
                         )}
                         <input
                             type="file"
@@ -342,10 +342,10 @@ export default function Profile({
                                 setIsEditing(false);
                                 setUsernameEdit(false);
                                 setUserData({
-                                    username: memberData.username,
-                                    name: memberData.name,
-                                    description: memberData.description,
-                                    avatarUrl: memberData.image,
+                                    username: memberData?.username || "",
+                                    name: memberData?.name || "",
+                                    description: memberData?.description || "",
+                                    avatarUrl: memberData?.image || "",
                                 })
                                 setIsAvailable(true);
                             }}>
