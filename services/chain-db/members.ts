@@ -1,6 +1,7 @@
 import 'server-only';
 
 import { SupabaseClient, PostgrestResponse } from '@supabase/supabase-js';
+import { Profile } from '@/app/[alias]/(dashboard)/members/[account]/action';
 
 const TABLE_NAME = 'a_members';
 export const PAGE_SIZE = 25;
@@ -108,6 +109,30 @@ export const removeMember = async (args: {
       image: 'ipfs://QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh',
       image_medium: 'ipfs://QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh',
       image_small: 'ipfs://QmeuAaXrJBHygzAEHnvw5AKUHfBasuavsX9fU69rdv4mhh'
+    })
+    .ilike('profile_contract', profileContract)
+    .eq('account', account)
+    .single();
+
+  return queryBuilder;
+};
+
+export const updateMember = async (args: {
+  client: SupabaseClient;
+  account: string;
+  profileContract: string;
+  profile: Profile;
+}) => {
+  const { client, account, profileContract, profile } = args;
+  const queryBuilder = client
+    .from(TABLE_NAME)
+    .update({
+      username: profile.username,
+      name: profile.name,
+      description: profile.description,
+      image: profile.image,
+      image_medium: profile.image_medium,
+      image_small: profile.image_small
     })
     .ilike('profile_contract', profileContract)
     .eq('account', account)
