@@ -81,7 +81,7 @@ export default function UrlSearch({ config }: { config: Config }) {
             {isvaildAddress && !isAvailableAddress && (
                 <Button className='absolute right-0  h-7 m-1.5 w-fit font-normal text-xs'
                     onClick={() => {
-                        router.push(`members/${searchParams.get('query')?.toString()}`);
+                        router.push(`members/${searchParams.get('query')?.toString()}/add`);
                     }}>
                     Add Member
                 </Button>
@@ -90,7 +90,7 @@ export default function UrlSearch({ config }: { config: Config }) {
             {isvaildAddress && isAvailableAddress && (
                 <Button className='absolute right-0  h-7 m-1.5 w-fit font-normal text-xs'
                     onClick={() => {
-                        router.push(`members/${searchParams.get('query')?.toString()}`);
+                        router.push(`members/${searchParams.get('query')?.toString()}/edit`);
                     }}
                 >
                     Edit member

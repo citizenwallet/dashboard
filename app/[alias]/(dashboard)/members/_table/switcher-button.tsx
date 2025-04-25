@@ -136,7 +136,7 @@ export default function SwitcherButton({ config }: { config: Config }) {
                                 <Button
                                     className="mb-2 md:mb-0"
                                     onClick={() => {
-                                        router.push(`members/${address}`);
+                                        router.push(`members/${address}/add`);
                                     }}
                                 >
                                     <Plus size={16} />
@@ -146,7 +146,7 @@ export default function SwitcherButton({ config }: { config: Config }) {
                                 <Button
                                     className="mb-2 md:mb-0"
                                     onClick={() => {
-                                        router.push(`members/${address}`);
+                                        router.push(`members/${address}/edit`);
                                     }}
                                 >
                                     Edit
