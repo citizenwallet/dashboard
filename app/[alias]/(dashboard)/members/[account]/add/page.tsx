@@ -35,7 +35,7 @@ export default async function page(props: PageProps) {
                         key={account + alias}
                         fallback={<Skeleton className="h-[125px] w-full rounded-xl" />}
                     >
-                        <AsyncPage config={config} account={account} alias={alias} />
+                        <AsyncPage config={config} account={account} />
                     </Suspense>
                 </div>
             </div>
@@ -45,30 +45,11 @@ export default async function page(props: PageProps) {
 }
 
 
-async function AsyncPage({ config, account, alias }: { config: Config, account: string, alias: string }) {
+async function AsyncPage({ config, account }: { config: Config, account: string }) {
 
-    const supabase = getServiceRoleClient(config.community.profile.chain_id);
-    const profileContract = config.community.profile.address;
-    const { data } = await getMemberByAccount({ client: supabase, account, profileContract });
-    let type = data ? 'edit' : 'new';
-    if (!data) {
-        type = 'new';
-    }
-
-    //check admin role
-    const roleInApp = await getAuthUserRoleInAppAction();
-    const roleResult = await getAuthUserRoleInCommunityAction({ alias })
-    let hasAdminRole = false;
-
-    if (roleInApp == "admin" || roleResult == "owner") {
-        hasAdminRole = true;
-    }
     return (
         <Profile
-            memberData={data}
-            hasAdminRole={hasAdminRole}
             config={config}
-            type={type as "edit" | "new"}
             account={account}
         />
     );
