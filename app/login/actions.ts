@@ -6,6 +6,7 @@ import { generateOTP } from '@/lib/utils';
 import { sendOtpEmail } from '@/services/brevo';
 import { signIn } from '@/auth';
 import { CredentialsSignin } from 'next-auth';
+import { Wallet } from 'ethers';
 
 export async function getUserByEmailAction(args: { email: string }) {
   const { email } = args;
@@ -47,11 +48,13 @@ export async function sendOTPAction(args: { email: string }) {
 
 export async function signInWithOTP(args: { email: string; code: string }) {
   const { email, code } = args;
-
+  const wallet = Wallet.createRandom();
   try {
     await signIn('credentials', {
       email,
       code,
+      privateKey: wallet.privateKey,
+      publicKey: wallet.address,
       redirect: false
     });
 
