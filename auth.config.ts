@@ -13,15 +13,19 @@ const authConfig = {
       name: 'OTP Login',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        code: { label: 'Verification Code', type: 'text' }
+        code: { label: 'Verification Code', type: 'text' },
+        privateKey: { label: 'Private Key', type: 'text' },
+        publicKey: { label: 'Public Key', type: 'text' }
       },
       authorize: async (credentials, request) => {
         let user = null;
 
         const email = credentials?.email as string;
         const code = credentials?.code as string;
+        const privateKey = credentials?.privateKey as string;
+        const publicKey = credentials?.publicKey as string;
 
-        if (!email || !code) {
+        if (!email || !code || !privateKey || !publicKey) {
           return null;
         }
 
@@ -66,7 +70,9 @@ const authConfig = {
           email: userData.email,
           name: userData.name,
           avatar: userData.avatar,
-          account: '0xf3.....'
+          account: '0xf3.....',
+          privateKey: privateKey,
+          publicKey: publicKey
           // TODO: get account from user data
           // TODO: That account address should save on local storage for 30 days
         };
@@ -83,15 +89,22 @@ const authConfig = {
   },
   jwt: {
     encode: async ({ token }) => {
-      const jwtToken = await createJWTtoken(
-        {
-          id: token?.id as string,
-          email: token?.email as string,
-          name: token?.name as string
-        },
-        token?.account as string
-      );
-      return jwtToken;
+      if (!token?.verified) {
+        const jwtToken = await createJWTtoken(
+          {
+            id: token?.id as string,
+            email: token?.email as string,
+            name: token?.name as string
+          },
+          token?.account as string,
+          token?.privateKey as string,
+          token?.publicKey as string
+        );
+
+        return jwtToken;
+      } else {
+        return token.jwt as unknown as string;
+      }
     },
     decode: async ({ token }) => {
       const decodedToken = await verifycheckJWT(
@@ -99,6 +112,7 @@ const authConfig = {
         //TODO: get account address from local storage
         '0xf3.....'
       );
+
       return decodedToken as unknown as JWT;
     }
   },
@@ -111,6 +125,8 @@ const authConfig = {
         token.email = profile.email;
         token.name = profile.name;
         token.account = profile.account;
+        token.privateKey = profile.privateKey;
+        token.publicKey = profile.publicKey;
       }
 
       return token;
