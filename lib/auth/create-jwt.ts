@@ -6,18 +6,20 @@ export interface UserJwt {
   name: string;
 }
 
-export async function createJWTtoken(user: UserJwt, account: string) {
-  if (!process.env.ACCOUNT_DID_PRIVATE_KEY) {
-    throw new Error('ACCOUNT_DID_PRIVATE_KEY is not set');
-  }
-  const signer = ES256KSigner(hexToBytes(process.env.ACCOUNT_DID_PRIVATE_KEY));
+export async function createJWTtoken(
+  user: UserJwt,
+  account: string,
+  privateKey: string,
+  publicKey: string
+) {
+  const signer = ES256KSigner(hexToBytes(privateKey));
 
   const jwt = await createJWT(
     {
       aud: `did:ethr:${account}`,
       user: user
     },
-    { issuer: `did:ethr:${process.env.ACCOUNT_DID}`, signer },
+    { issuer: `did:ethr:${publicKey}`, signer },
     { alg: 'ES256K' }
   );
   return jwt;
