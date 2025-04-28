@@ -6,6 +6,7 @@ import { Config } from "@citizenwallet/sdk";
 import { Suspense } from "react";
 import { placeholderData, skeletonColumns } from "./_table/columns";
 import RolePage from "./RolePage";
+import { getAuthUserRoleInAppAction, getAuthUserRoleInCommunityAction } from "@/app/_actions/user-actions";
 
 
 interface RolePageProps {
@@ -29,7 +30,7 @@ export default async function page(props: RolePageProps) {
 
 
             <Suspense fallback={<Fallback />}>
-                <PageLoader config={config} page={page} />
+                <PageLoader config={config} page={page} alias={alias} />
             </Suspense>
 
         </div>
@@ -38,10 +39,12 @@ export default async function page(props: RolePageProps) {
 
 async function PageLoader({
     config,
-    page
+    page,
+    alias
 }: {
     config: Config,
     page?: string;
+    alias: string;
 }) {
 
     const supabase = getServiceRoleClient(config.community.profile.chain_id);
@@ -57,6 +60,16 @@ async function PageLoader({
         page: parseInt(page || '1')
     });
 
+
+    //check admin role
+    const roleInApp = await getAuthUserRoleInAppAction();
+    const roleResult = await getAuthUserRoleInCommunityAction({ alias })
+    let hasAdminRole = false;
+
+    if (roleInApp == "admin" || roleResult == "owner") {
+        hasAdminRole = true;
+    }
+
     return (
 
         <RolePage
@@ -64,6 +77,7 @@ async function PageLoader({
             minterMembers={minterMembers.data as any[]}
             count={minterMembers.count || 0}
             config={config}
+            hasAdminRole={hasAdminRole}
         />
     )
 }
