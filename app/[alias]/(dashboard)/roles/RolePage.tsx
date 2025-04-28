@@ -31,7 +31,7 @@ import { MemberT } from "@/services/chain-db/members";
 import { Check, ChevronsUpDown, Copy, Loader2, Plus, Trash } from "lucide-react";
 import { useState } from "react";
 import { toast } from 'sonner';
-import { grantRoleAction } from './action';
+import { grantRoleAction, revokeRoleAction } from './action';
 import { Config } from '@citizenwallet/sdk';
 
 
@@ -40,13 +40,15 @@ export default function RolePage({
     members,
     minterMembers,
     count,
-    config
+    config,
+    hasAdminRole,
 }: {
 
     members: MemberT[],
     minterMembers: any[],
     count: number,
-    config: Config
+    config: Config,
+    hasAdminRole: boolean
 }) {
 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -89,9 +91,36 @@ export default function RolePage({
     };
 
     const grantAccess = async () => {
-        await grantRoleAction({ config, account: memberAccount });
+        setIsLoading(true);
+        const res = await grantRoleAction({ config, account: memberAccount });
+        if (res.success) {
+            toast.success('Access granted successfully.');
+        } else {
+            toast.error('Failed to grant access.');
+        }
+        setIsLoading(false);
     }
+
+
+    const revokeAccess = async (account: string) => {
+        setIsLoading(true);
+        const res = await revokeRoleAction({ config, account: account });
+        if (res.success) {
+            toast.success('Access revoked successfully.');
+        } else {
+            toast.error('Failed to revoke access.');
+        }
+        setIsLoading(false);
+    }
+
+
     const handleGrantAccess = () => {
+
+        if (!hasAdminRole) {
+            toast.error('You do not have permission to revoke access.');
+            return;
+        }
+
         toast.custom((t) => (
             <div>
                 <h3>Are you sure you want to grant access to this member?</h3>
@@ -107,6 +136,8 @@ export default function RolePage({
                         Cancel
                     </Button>
                     <Button onClick={grantAccess}>
+                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+
                         Confirm
                     </Button>
                 </div>
@@ -116,7 +147,12 @@ export default function RolePage({
 
 
     const handleRevokeAccess = (id: string) => {
+
         setIsLoading(false);
+        if (!hasAdminRole) {
+            toast.error('You do not have permission to revoke access.');
+            return;
+        }
 
         toast.custom((t) => (
             <div>
@@ -132,8 +168,9 @@ export default function RolePage({
                         Cancel
                     </Button>
                     <Button onClick={() => {
-                        console.log(id);
+                        revokeAccess(id);
                     }}>
+                        {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
                         Confirm
                     </Button>
                 </div>
@@ -143,99 +180,100 @@ export default function RolePage({
 
     return (
         <>
-
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                <DialogTrigger asChild>
-                    <div className="flex justify-start mb-4">
-                        <Button >
-                            <Plus size={16} />
-                            Grant Access
-                        </Button>
-                    </div>
-                </DialogTrigger>
-
-                <DialogContent>
-                    <DialogHeader>
-                        <DialogTitle>Grant Minting Access</DialogTitle>
-                        <DialogDescription>
-                            This will allow the member to both mint and burn from member accounts.
-                        </DialogDescription>
-                    </DialogHeader>
-                    <div className="grid gap-4 py-4">
-                        <div className="grid gap-2">
-                            <label htmlFor="memberAccount" className="text-sm font-medium">
-                                Member Account
-                            </label>
-                            <Popover open={open} onOpenChange={setOpen}>
-                                <PopoverTrigger asChild>
-                                    <Button
-                                        variant="outline"
-                                        role="combobox"
-                                        aria-expanded={open}
-                                        className="w-full overflow-hidden justify-between"
-                                        id="place"
-                                    >
-                                        {memberAccount || 'Select a member'}
-                                        <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
-                                    </Button>
-                                </PopoverTrigger>
-                                <PopoverContent className="w-full p-0">
-                                    <Command>
-                                        <CommandInput
-                                            placeholder=" Search username..."
-                                            className="h-9"
-                                        />
-                                        <CommandList>
-                                            <CommandEmpty>No Member found.</CommandEmpty>
-                                            <CommandGroup>
-                                                {members?.map((member) => (
-                                                    <CommandItem
-                                                        key={member.id}
-                                                        value={member.username.toLowerCase()}
-                                                        onSelect={() => {
-                                                            setMemberAccount(member.account);
-                                                            setOpen(false);
-                                                        }}
-                                                    >
-                                                        {member.username}
-                                                        <Check
-                                                            className={cn(
-                                                                'ml-auto h-4 w-4',
-                                                                memberAccount === member.id.toString()
-                                                                    ? 'opacity-100'
-                                                                    : 'opacity-0'
-                                                            )}
-                                                        />
-                                                    </CommandItem>
-                                                ))}
-                                            </CommandGroup>
-                                        </CommandList>
-                                    </Command>
-                                </PopoverContent>
-                            </Popover>
+            {hasAdminRole && (
+                <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                    <DialogTrigger asChild>
+                        <div className="flex justify-start mb-4">
+                            <Button >
+                                <Plus size={16} />
+                                Grant Access
+                            </Button>
                         </div>
+                    </DialogTrigger>
 
-                    </div>
-                    <DialogFooter>
-                        <Button
-                            variant="outline"
-                            onClick={() => {
-                                setIsAddDialogOpen(false);
-                                setMemberAccount('');
-                            }}
-                        >
-                            cancel
-                        </Button>
-                        <Button
-                            className="mb-2 md:mb-0"
-                            onClick={handleGrantAccess}
-                        >
-                            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-                            Confirm
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                    <DialogContent>
+                        <DialogHeader>
+                            <DialogTitle>Grant Minting Access</DialogTitle>
+                            <DialogDescription>
+                                This will allow the member to both mint and burn from member accounts.
+                            </DialogDescription>
+                        </DialogHeader>
+                        <div className="grid gap-4 py-4">
+                            <div className="grid gap-2">
+                                <label htmlFor="memberAccount" className="text-sm font-medium">
+                                    Member Account
+                                </label>
+                                <Popover open={open} onOpenChange={setOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            aria-expanded={open}
+                                            className="w-full overflow-hidden justify-between"
+                                            id="place"
+                                        >
+                                            {memberAccount || 'Select a member'}
+                                            <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-full p-0">
+                                        <Command>
+                                            <CommandInput
+                                                placeholder=" Search username..."
+                                                className="h-9"
+                                            />
+                                            <CommandList>
+                                                <CommandEmpty>No Member found.</CommandEmpty>
+                                                <CommandGroup>
+                                                    {members?.map((member) => (
+                                                        <CommandItem
+                                                            key={member.id}
+                                                            value={member.username.toLowerCase()}
+                                                            onSelect={() => {
+                                                                setMemberAccount(member.account);
+                                                                setOpen(false);
+                                                            }}
+                                                        >
+                                                            {member.username}
+                                                            <Check
+                                                                className={cn(
+                                                                    'ml-auto h-4 w-4',
+                                                                    memberAccount === member.id.toString()
+                                                                        ? 'opacity-100'
+                                                                        : 'opacity-0'
+                                                                )}
+                                                            />
+                                                        </CommandItem>
+                                                    ))}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
+                            </div>
+
+                        </div>
+                        <DialogFooter>
+                            <Button
+                                variant="outline"
+                                onClick={() => {
+                                    setIsAddDialogOpen(false);
+                                    setMemberAccount('');
+                                }}
+                            >
+                                cancel
+                            </Button>
+                            <Button
+                                className="mb-2 md:mb-0"
+                                onClick={handleGrantAccess}
+                            >
+                                {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
+                                Confirm
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+            )}
 
             <div className="flex-1 overflow-hidden">
                 <div className="h-full overflow-y-auto rounded-md border">
@@ -285,6 +323,7 @@ export default function RolePage({
                                         )
                                     }
                                 },
+
                                 {
                                     header: 'Actions',
                                     cell: ({ row }) => {
@@ -292,7 +331,7 @@ export default function RolePage({
                                             <div className="flex items-center gap-2">
                                                 <Button variant="outline"
                                                     className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                                                    onClick={() => handleRevokeAccess(row.original.id)}
+                                                    onClick={() => handleRevokeAccess(row.original.account_address)}
                                                 >
                                                     <Trash size={16} />
                                                     Revoke Access
