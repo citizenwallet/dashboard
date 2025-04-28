@@ -15,7 +15,8 @@ const authConfig = {
         email: { label: 'Email', type: 'email' },
         code: { label: 'Verification Code', type: 'text' },
         privateKey: { label: 'Private Key', type: 'text' },
-        publicKey: { label: 'Public Key', type: 'text' }
+        publicKey: { label: 'Public Key', type: 'text' },
+        accountAddress: { label: 'Account Address', type: 'text' }
       },
       authorize: async (credentials, request) => {
         let user = null;
@@ -24,8 +25,9 @@ const authConfig = {
         const code = credentials?.code as string;
         const privateKey = credentials?.privateKey as string;
         const publicKey = credentials?.publicKey as string;
+        const accountAddress = credentials?.accountAddress as string;
 
-        if (!email || !code || !privateKey || !publicKey) {
+        if (!email || !code || !privateKey || !publicKey || !accountAddress) {
           return null;
         }
 
@@ -70,11 +72,9 @@ const authConfig = {
           email: userData.email,
           name: userData.name,
           avatar: userData.avatar,
-          account: '0xf3.....',
+          account: accountAddress,
           privateKey: privateKey,
           publicKey: publicKey
-          // TODO: get account from user data
-          // TODO: That account address should save on local storage for 30 days
         };
 
         return profile;
@@ -107,11 +107,7 @@ const authConfig = {
       }
     },
     decode: async ({ token }) => {
-      const decodedToken = await verifycheckJWT(
-        token as string,
-        //TODO: get account address from local storage
-        '0xf3.....'
-      );
+      const decodedToken = await verifycheckJWT(token as string);
 
       return decodedToken as unknown as JWT;
     }
@@ -133,7 +129,6 @@ const authConfig = {
     },
     session: async ({ session, token }) => {
       const user = (token as any)?.payload?.user;
-
       return {
         ...session,
         user: {
