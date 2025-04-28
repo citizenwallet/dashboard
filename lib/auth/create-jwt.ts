@@ -17,7 +17,8 @@ export async function createJWTtoken(
   const jwt = await createJWT(
     {
       aud: `did:ethr:${account}`,
-      user: user
+      user: user,
+      account: account
     },
     { issuer: `did:ethr:${publicKey}`, signer },
     { alg: 'ES256K' }
