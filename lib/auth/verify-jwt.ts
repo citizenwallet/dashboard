@@ -3,7 +3,9 @@ import { Resolver } from 'did-resolver';
 import { getResolver } from 'ethr-did-resolver';
 
 const extractAccountFromJWT = async (token: string): Promise<string | null> => {
+  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   const [header, payload, signature] = token.split('.');
+
   if (!payload) return null;
   const decoded = JSON.parse(Buffer.from(payload, 'base64').toString('utf8'));
   return decoded.account || null;
