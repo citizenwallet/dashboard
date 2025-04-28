@@ -7,6 +7,9 @@ import { sendOtpEmail } from '@/services/brevo';
 import { signIn } from '@/auth';
 import { CredentialsSignin } from 'next-auth';
 import { Wallet } from 'ethers';
+import { CommunityConfig, getAccountAddress } from '@citizenwallet/sdk';
+import { generateSessionSalt } from '@/services/session';
+import { getCommunity } from '@/services/cw';
 
 export async function getUserByEmailAction(args: { email: string }) {
   const { email } = args;
@@ -49,12 +52,15 @@ export async function sendOTPAction(args: { email: string }) {
 export async function signInWithOTP(args: { email: string; code: string }) {
   const { email, code } = args;
   const wallet = Wallet.createRandom();
+  const accountAddress = await getAccountAddressByEmail(email);
+
   try {
     await signIn('credentials', {
       email,
       code,
       privateKey: wallet.privateKey,
       publicKey: wallet.address,
+      accountAddress,
       redirect: false
     });
 
@@ -71,4 +77,20 @@ export async function signInWithOTP(args: { email: string; code: string }) {
     }
     throw new Error('Sign in failed');
   }
+}
+
+async function getAccountAddressByEmail(email: string) {
+  const { community: config } = await getCommunity('wallet.pay.brussels');
+  const communityConfig = new CommunityConfig(config);
+  const provider = communityConfig.primarySessionConfig.provider_address;
+
+  const salt = generateSessionSalt(email, 'email');
+
+  const accountAddress = await getAccountAddress(
+    communityConfig,
+    provider,
+    BigInt(salt)
+  );
+
+  return accountAddress;
 }
