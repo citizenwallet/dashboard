@@ -48,8 +48,7 @@ export const mintTokenToMemberAction = async (args: {
   formData: z.infer<typeof mintTokenFormSchema>;
 }) => {
   const { config, formData } = args;
-  const { chain_id: chainId, address: tokenAddress } =
-    config.community.primary_token;
+  const { address: tokenAddress } = config.community.primary_token;
   const communityConfig = new CommunityConfig(config);
   const bundlerService = new BundlerService(communityConfig);
 
