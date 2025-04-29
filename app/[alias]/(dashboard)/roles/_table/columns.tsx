@@ -1,8 +1,9 @@
 'use client';
 import { Skeleton } from "@/components/ui/skeleton";
 import { ColumnDef } from "@tanstack/react-table";
+import { MinterMembers } from "../action";
 
-export const skeletonColumns: ColumnDef<any>[] = [
+export const skeletonColumns: ColumnDef<MinterMembers>[] = [
     {
         header: 'ID',
         cell: () => (
@@ -49,5 +50,5 @@ export const skeletonColumns: ColumnDef<any>[] = [
     }
 ];
 
-export const placeholderData: any[] = Array(5);
+export const placeholderData: MinterMembers[] = Array(5);
 

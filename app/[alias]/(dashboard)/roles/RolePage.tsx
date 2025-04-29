@@ -28,11 +28,11 @@ import {
 import { Separator } from "@/components/ui/separator";
 import { cn, formatAddress } from "@/lib/utils";
 import { MemberT } from "@/services/chain-db/members";
+import { Config } from '@citizenwallet/sdk';
 import { Check, ChevronsUpDown, Copy, Loader2, Plus, Trash } from "lucide-react";
 import { useState } from "react";
 import { toast } from 'sonner';
-import { grantRoleAction, revokeRoleAction } from './action';
-import { Config } from '@citizenwallet/sdk';
+import { grantRoleAction, MinterMembers, revokeRoleAction } from './action';
 
 
 
@@ -45,7 +45,7 @@ export default function RolePage({
 }: {
 
     members: MemberT[],
-    minterMembers: any[],
+    minterMembers: MinterMembers[],
     count: number,
     config: Config,
     hasAdminRole: boolean
