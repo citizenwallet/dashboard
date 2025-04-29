@@ -1,12 +1,13 @@
 import { fetchCommunityByAliasAction } from "@/app/_actions/community-actions";
+import { getAuthUserRoleInAppAction, getAuthUserRoleInCommunityAction } from "@/app/_actions/user-actions";
 import { DataTable } from "@/components/ui/data-table";
 import { getServiceRoleClient } from '@/services/chain-db';
 import { getAllMembers, getMinterMembers, MemberT } from "@/services/chain-db/members";
 import { Config } from "@citizenwallet/sdk";
 import { Suspense } from "react";
 import { placeholderData, skeletonColumns } from "./_table/columns";
+import { MinterMembers } from "./action";
 import RolePage from "./RolePage";
-import { getAuthUserRoleInAppAction, getAuthUserRoleInCommunityAction } from "@/app/_actions/user-actions";
 
 
 interface RolePageProps {
@@ -74,7 +75,7 @@ async function PageLoader({
 
         <RolePage
             members={members.data as MemberT[]}
-            minterMembers={minterMembers.data as any[]}
+            minterMembers={minterMembers.data as MinterMembers[]}
             count={minterMembers.count || 0}
             config={config}
             hasAdminRole={hasAdminRole}
