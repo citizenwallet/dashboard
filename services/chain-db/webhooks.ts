@@ -54,3 +54,11 @@ export const createWebhook = async (args: {
 
   return client.from(TABLE_NAME).insert(webhook).select().single();
 };
+
+export const deleteWebhook = async (args: {
+  client: SupabaseClient;
+  id: string;
+}): Promise<PostgrestSingleResponse<Webhook>> => {
+  const { client, id } = args;
+  return client.from(TABLE_NAME).delete().eq('id', id).select().single();
+};
