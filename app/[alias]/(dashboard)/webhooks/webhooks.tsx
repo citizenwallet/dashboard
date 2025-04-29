@@ -15,10 +15,12 @@ import { Input } from '@/components/ui/input';
 import { Separator } from "@/components/ui/separator";
 import { Webhook } from '@/services/chain-db/webhooks';
 import { Config } from '@citizenwallet/sdk';
-import { Plus, Trash } from "lucide-react";
+import { Plus } from "lucide-react";
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { createWebhookAction } from './action';
+import { createColumns } from './_components/columns';
 
 
 export default function Webhooks({
@@ -30,17 +32,17 @@ export default function Webhooks({
     count: number
     config: Config
 }) {
-    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
 
+    const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [name, setName] = useState('');
     const [url, setUrl] = useState('');
     const [eventTopic, setEventTopic] = useState('');
     const [showError, setShowError] = useState(false);
+    const router = useRouter();
 
     const isValidUrl = (urlString: string) => {
         try {
             new URL(urlString);
-            setShowError(true);
             return true;
         } catch (e) {
             setShowError(true);
@@ -49,6 +51,7 @@ export default function Webhooks({
     };
 
     const handleCreateWebhook = async () => {
+
         if (!isValidUrl(url)) {
             toast.error('Please enter a valid URL');
             return;
@@ -63,16 +66,23 @@ export default function Webhooks({
                     event_topic: eventTopic
                 }
             });
+
             toast.success('Webhook created successfully');
+            router.refresh();
             setIsAddDialogOpen(false);
             setName('');
             setUrl('');
             setEventTopic('');
+
         } catch (error) {
+
             console.error(error);
             toast.error('Failed to create webhook');
+
         }
     }
+
+
 
     return (
         <>
@@ -146,38 +156,7 @@ export default function Webhooks({
                 <div className="h-full overflow-y-auto rounded-md border">
                     <div className="flex-1 overflow-hidden">
                         <div className="h-full overflow-y-auto rounded-md ">
-                            <DataTable columns={[
-                                {
-                                    header: 'Event Topic',
-                                    accessorKey: 'event_topic',
-
-                                },
-                                {
-                                    header: 'Name',
-                                    accessorKey: 'name',
-                                }
-                                ,
-                                {
-                                    header: 'Url',
-                                    accessorKey: 'url',
-                                }
-                                , {
-                                    header: 'Action',
-                                    cell: ({ row }) => {
-                                        return (
-                                            <Button
-                                                variant="outline"
-                                                className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                                            >
-                                                <Trash size={16} />
-                                                Remove
-                                            </Button>
-                                        )
-                                    }
-                                }
-
-
-                            ]} data={data} />
+                            <DataTable columns={createColumns(config)} data={data} />
                         </div>
                     </div>
 
