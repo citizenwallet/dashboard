@@ -1,5 +1,6 @@
 'use server';
 
+import { MemberT } from '@/services/chain-db/members';
 import {
   BundlerService,
   CommunityConfig,
@@ -8,6 +9,15 @@ import {
   waitForTxSuccess
 } from '@citizenwallet/sdk';
 import { Wallet } from 'ethers';
+
+export interface MinterMembers {
+  id: number;
+  account_address: string;
+  contract_address: string;
+  role: string;
+  created_at: string;
+  a_member: MemberT;
+}
 
 export const grantRoleAction = async (args: {
   config: Config;
