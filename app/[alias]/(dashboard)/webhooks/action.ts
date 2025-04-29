@@ -1,7 +1,11 @@
 'use server';
 
 import { getServiceRoleClient } from '@/services/chain-db';
-import { createWebhook, CreateWebhook } from '@/services/chain-db/webhooks';
+import {
+  createWebhook,
+  CreateWebhook,
+  deleteWebhook
+} from '@/services/chain-db/webhooks';
 import { Config } from '@citizenwallet/sdk';
 
 export const createWebhookAction = async (args: {
@@ -15,4 +19,16 @@ export const createWebhookAction = async (args: {
   const supabase = getServiceRoleClient(chainId);
 
   return await createWebhook({ client: supabase, webhook });
+};
+
+export const deleteWebhookAction = async (args: {
+  config: Config;
+  id: string;
+}) => {
+  const { config, id } = args;
+  const { chain_id: chainId } = config.community.profile;
+
+  const supabase = getServiceRoleClient(chainId);
+
+  return await deleteWebhook({ client: supabase, id });
 };
