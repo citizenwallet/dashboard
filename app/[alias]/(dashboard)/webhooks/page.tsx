@@ -1,9 +1,11 @@
 import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
-import UrlSearch from '@/components/custom/url-search';
 import { DataTable } from '@/components/ui/data-table';
+import { getServiceRoleClient } from '@/services/chain-db';
+import { getWebhooks } from '@/services/chain-db/webhooks';
+import { Config } from '@citizenwallet/sdk';
 import { Suspense } from 'react';
-import Webhooks from './webhooks';
 import { placeholderData, skeletonColumns } from '../admins/_table/columns';
+import Webhooks from './webhooks';
 
 export default async function Page(props: {
     params: Promise<{ alias: string }>;
@@ -29,11 +31,37 @@ export default async function Page(props: {
 
             </div>
 
-            <Suspense key={alias + query + page} fallback={<Fallback />}>
-                <Webhooks />
+            <Suspense fallback={<Fallback />}>
+                <PageLoader config={config} page={page} query={query} />
             </Suspense>
         </div>
     );
+}
+
+async function PageLoader({
+    config,
+    page,
+    query
+}: {
+    config: Config,
+    page?: string;
+    query?: string;
+}) {
+
+    const { chain_id: chainId } = config.community.profile;
+
+    const supabase = getServiceRoleClient(chainId);
+
+    const { data, count, error } = await getWebhooks({
+        client: supabase,
+        query: query || '',
+        page: parseInt(page || '1')
+    });
+
+
+    return (
+        <Webhooks data={data || []} count={count || 0} config={config} />
+    )
 }
 
 function Fallback() {
