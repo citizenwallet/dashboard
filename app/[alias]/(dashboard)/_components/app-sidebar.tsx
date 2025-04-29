@@ -1,28 +1,30 @@
 'use client';
 
-import type * as React from 'react';
-import {
-  Home,
-  Users,
-  LucideLineChart,
-  Shield,
-  Landmark,
-  ArrowLeft
-} from 'lucide-react';
-import { NavProjects } from './nav-projects';
-import { NavUser } from './nav-user';
-import { CommunitySwitcher } from './community-switcher';
 import {
   Sidebar,
   SidebarContent,
   SidebarFooter,
   SidebarHeader,
+  SidebarMenuButton,
   SidebarRail
 } from '@/components/ui/sidebar';
-import { Config } from '@citizenwallet/sdk';
 import { UserT } from '@/services/top-db/users';
+import { Config } from '@citizenwallet/sdk';
+import {
+  ArrowLeft,
+  Home,
+  Landmark,
+  LucideLineChart,
+  Shield,
+  Users,
+  Webhook,
+  Wrench
+} from 'lucide-react';
 import Link from 'next/link';
-import { SidebarMenuButton } from '@/components/ui/sidebar';
+import type * as React from 'react';
+import { CommunitySwitcher } from './community-switcher';
+import { NavProjects } from './nav-projects';
+import { NavUser } from './nav-user';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   communities: Config[];
@@ -76,7 +78,19 @@ export function AppSidebar({
         name: 'Admins',
         url: `/${selectedCommunity?.community.alias}/admins`,
         icon: Shield
-      }
+      },
+      {
+        name: 'Developer',
+        url: `/${selectedCommunity?.community.alias}`,
+        icon: Wrench,
+        items: [
+          {
+            name: 'Webhooks',
+            url: `/${selectedCommunity?.community.alias}/webhooks`,
+            icon: Webhook
+          }
+        ]
+      },
     ]
   };
 
