@@ -1,14 +1,10 @@
 import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
-import { Button } from "@/components/ui/button";
-import { FormControl, FormDescription, FormItem, FormLabel, FormMessage } from "@/components/ui/form";
 import { Skeleton } from '@/components/ui/skeleton';
 import { getServiceRoleClient } from '@/services/chain-db';
 import { getWebhookById } from '@/services/chain-db/webhooks';
 import { Config } from '@citizenwallet/sdk';
-import { Trash2 } from "lucide-react";
 import { Suspense } from 'react';
 import { WebhookForm } from './edit-page';
-
 
 
 export default async function Page(props: {
@@ -63,7 +59,7 @@ async function PageLoader({
     }
 
     return (
-        <WebhookForm webhook={data} />
+        <WebhookForm webhook={data} config={config} />
     )
 }
 
