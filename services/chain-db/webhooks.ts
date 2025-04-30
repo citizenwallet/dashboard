@@ -74,3 +74,11 @@ export const getWebhookSecret = async (args: {
     .eq('alias', alias)
     .single();
 };
+
+export const getWebhookById = async (args: {
+  client: SupabaseClient;
+  id: string;
+}): Promise<PostgrestSingleResponse<Webhook>> => {
+  const { client, id } = args;
+  return client.from(TABLE_NAME).select('*').eq('id', id).single();
+};
