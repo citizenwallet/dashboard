@@ -17,12 +17,11 @@ import { toast } from 'sonner';
 import { deleteWebhookAction } from '../action';
 import { ColumnDef } from "@tanstack/react-table";
 import { Config } from '@citizenwallet/sdk';
-import { useRouter } from 'next/navigation';
 import { Skeleton } from "@/components/ui/skeleton";
 import Link from "next/link";
 
+
 export const createColumns = (config: Config): ColumnDef<Webhook>[] => {
-    const router = useRouter();
 
     return [
         {
@@ -73,7 +72,7 @@ export const createColumns = (config: Config): ColumnDef<Webhook>[] => {
                         });
                         handleCloseDialog();
                         toast.success('Webhook removed successfully');
-                        router.refresh();
+
                     } catch (error) {
                         if (error instanceof Error) {
                             toast.error(error.message);
