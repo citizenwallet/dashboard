@@ -13,14 +13,29 @@ import {
 } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Separator } from "@/components/ui/separator";
+import { Event } from '@/services/chain-db/event';
 import { Webhook } from '@/services/chain-db/webhooks';
 import { Config } from '@citizenwallet/sdk';
-import { Check, Copy, Plus } from "lucide-react";
+import { Check, ChevronsUpDown, Copy, Plus } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { createColumns } from './_components/columns';
 import { createWebhookAction } from './action';
+import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from "@/components/ui/command";
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover";
+import { cn } from "@/lib/utils";
 
 
 
@@ -28,19 +43,23 @@ export default function Webhooks({
     data,
     count,
     config,
-    secret
+    secret,
+    events
 }: {
     data: Webhook[]
     count: number
     config: Config
     secret: string
+    events: Event[]
 }) {
 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
     const [name, setName] = useState('');
     const [url, setUrl] = useState('');
-    const [eventTopic, setEventTopic] = useState('');
+    const [eventTopic, setEventTopic] = useState<Event | null>(null);
     const [showError, setShowError] = useState(false);
+    const [isCopied, setIsCopied] = useState(false);
+    const [open, setOpen] = useState(false);
     const router = useRouter();
 
     const isValidUrl = (urlString: string) => {
@@ -56,8 +75,14 @@ export default function Webhooks({
 
     const handleCreateWebhook = async () => {
 
+
         if (!isValidUrl(url)) {
             toast.error('Please enter a valid URL');
+            return;
+        }
+
+        if (!eventTopic) {
+            toast.error('Please select an event');
             return;
         }
 
@@ -67,7 +92,8 @@ export default function Webhooks({
                 webhook: {
                     name,
                     url,
-                    event_topic: eventTopic
+                    event_topic: eventTopic?.topic || '',
+                    event_contract: eventTopic?.contract || ''
                 }
             });
 
@@ -76,7 +102,7 @@ export default function Webhooks({
             setIsAddDialogOpen(false);
             setName('');
             setUrl('');
-            setEventTopic('');
+            setEventTopic(null);
 
         } catch (error) {
 
@@ -86,8 +112,6 @@ export default function Webhooks({
         }
     }
 
-
-    const [isCopied, setIsCopied] = useState(false);
 
     const copyToClipboard = () => {
         navigator.clipboard.writeText(secret || '');
@@ -124,7 +148,50 @@ export default function Webhooks({
                             <label htmlFor="eventTopic" className="text-sm font-medium">
                                 Event Topic
                             </label>
-                            <Input id="eventTopic" placeholder="Webhook Event Topic" value={eventTopic} onChange={(e) => setEventTopic(e.target.value)} />
+
+                            <Popover open={open} onOpenChange={setOpen}>
+                                <PopoverTrigger asChild>
+                                    <Button
+                                        variant="outline"
+                                        role="combobox"
+                                        aria-expanded={open}
+                                        className="w-full justify-between"
+                                    >
+                                        {eventTopic
+                                            ? eventTopic.name
+                                            : "Select event..."}
+                                        <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                    </Button>
+                                </PopoverTrigger>
+                                <PopoverContent className="w-full p-0">
+                                    <Command>
+                                        <CommandInput placeholder="Search event..." />
+                                        <CommandList>
+                                            <CommandEmpty>No event found.</CommandEmpty>
+                                            <CommandGroup>
+                                                {events.map((event) => (
+                                                    <CommandItem
+                                                        key={event.id}
+                                                        value={event.id}
+                                                        onSelect={(currentValue) => {
+                                                            setEventTopic(currentValue === eventTopic?.id ? null : event)
+                                                            setOpen(false)
+                                                        }}
+                                                    >
+                                                        <Check
+                                                            className={cn(
+                                                                "mr-2 h-4 w-4",
+                                                                eventTopic?.id === event.id ? "opacity-100" : "opacity-0"
+                                                            )}
+                                                        />
+                                                        {event.name}
+                                                    </CommandItem>
+                                                ))}
+                                            </CommandGroup>
+                                        </CommandList>
+                                    </Command>
+                                </PopoverContent>
+                            </Popover>
 
 
                             <label htmlFor="name" className="text-sm font-medium mt-4">
@@ -150,7 +217,7 @@ export default function Webhooks({
                                 setShowError(false);
                                 setName('');
                                 setUrl('');
-                                setEventTopic('');
+                                setEventTopic(null);
 
                             }}
                         >
