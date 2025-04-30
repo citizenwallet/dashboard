@@ -54,14 +54,14 @@ async function PageLoader({
 
     const supabase = getServiceRoleClient(chainId);
 
-    const { data, count, error } = await getWebhooks({
+    const { data, count } = await getWebhooks({
         client: supabase,
         query: query || '',
         page: parseInt(page || '1')
     });
 
 
-    const { data: secretData, error: secretError } = await getWebhookSecret({
+    const { data: secretData } = await getWebhookSecret({
         client: supabase,
         alias: config.community.alias
     });

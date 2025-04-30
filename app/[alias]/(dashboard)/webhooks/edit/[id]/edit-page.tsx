@@ -67,6 +67,7 @@ export function WebhookForm({ webhook, config }: WebhookFormProps) {
                 }
             });
         } catch (error) {
+            console.error(error)
             toast.error('Could not update webhook');
         } finally {
             setIsSaving(false)
@@ -91,6 +92,7 @@ export function WebhookForm({ webhook, config }: WebhookFormProps) {
                 }
             });
         } catch (error) {
+            console.error(error)
             toast.error('Could not remove webhook');
         } finally {
             setIsDeleting(false)

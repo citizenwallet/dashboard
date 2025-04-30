@@ -23,6 +23,7 @@ import { createColumns } from './_components/columns';
 import { createWebhookAction } from './action';
 
 
+
 export default function Webhooks({
     data,
     count,
@@ -47,6 +48,7 @@ export default function Webhooks({
             new URL(urlString);
             return true;
         } catch (e) {
+            console.error(e)
             setShowError(true);
             return false;
         }
