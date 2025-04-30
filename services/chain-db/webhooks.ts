@@ -82,3 +82,12 @@ export const getWebhookById = async (args: {
   const { client, id } = args;
   return client.from(TABLE_NAME).select('*').eq('id', id).single();
 };
+
+export const updateWebhook = async (args: {
+  client: SupabaseClient;
+  id: string;
+  webhook: Partial<Webhook>;
+}): Promise<PostgrestSingleResponse<Webhook>> => {
+  const { client, id, webhook } = args;
+  return client.from(TABLE_NAME).update(webhook).eq('id', id).select().single();
+};
