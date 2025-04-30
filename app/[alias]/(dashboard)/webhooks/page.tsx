@@ -1,7 +1,7 @@
 import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 import { DataTable } from '@/components/ui/data-table';
 import { getServiceRoleClient } from '@/services/chain-db';
-import { getWebhooks } from '@/services/chain-db/webhooks';
+import { getWebhooks, getWebhookSecret } from '@/services/chain-db/webhooks';
 import { Config } from '@citizenwallet/sdk';
 import { Suspense } from 'react';
 import { placeholderData, skeletonColumns } from '../admins/_table/columns';
@@ -59,8 +59,13 @@ async function PageLoader({
     });
 
 
+    const { data: secretData, error: secretError } = await getWebhookSecret({
+        client: supabase,
+        alias: config.community.alias
+    });
+
     return (
-        <Webhooks data={data || []} count={count || 0} config={config} />
+        <Webhooks data={data || []} count={count || 0} config={config} secret={secretData?.secret || ''} />
     )
 }
 

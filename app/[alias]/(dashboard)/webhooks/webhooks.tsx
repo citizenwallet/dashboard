@@ -15,22 +15,24 @@ import { Input } from '@/components/ui/input';
 import { Separator } from "@/components/ui/separator";
 import { Webhook } from '@/services/chain-db/webhooks';
 import { Config } from '@citizenwallet/sdk';
-import { Plus } from "lucide-react";
+import { Check, Copy, Plus } from "lucide-react";
 import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { toast } from 'sonner';
-import { createWebhookAction } from './action';
 import { createColumns } from './_components/columns';
+import { createWebhookAction } from './action';
 
 
 export default function Webhooks({
     data,
     count,
-    config
+    config,
+    secret
 }: {
     data: Webhook[]
     count: number
     config: Config
+    secret: string
 }) {
 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
@@ -82,6 +84,17 @@ export default function Webhooks({
         }
     }
 
+
+    const [isCopied, setIsCopied] = useState(false);
+
+    const copyToClipboard = () => {
+        navigator.clipboard.writeText(secret || '');
+        setIsCopied(true);
+
+        setTimeout(() => {
+            setIsCopied(false);
+        }, 3000);
+    };
 
 
     return (
@@ -151,6 +164,18 @@ export default function Webhooks({
                     </DialogFooter>
                 </DialogContent>
             </Dialog>
+
+            <div className="flex items-center gap-2 my-2 p-2 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer select-none w-fit">
+                <span className="text-sm font-medium text-gray-700">
+                    Copy Webhook Secret
+                </span>
+                {isCopied ? (
+                    <Check className="ml-1 h-4 w-4 text-green-500" />
+                ) : (
+                    <Copy className="ml-1 h-4 w-4 text-gray-500 hover:text-gray-700" onClick={copyToClipboard} />
+                )}
+            </div>
+
 
             <div className="flex-1 overflow-hidden">
                 <div className="h-full overflow-y-auto rounded-md border">
