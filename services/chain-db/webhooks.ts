@@ -19,7 +19,10 @@ export interface Webhook {
   event_topic: string;
 }
 
-export type CreateWebhook = Pick<Webhook, 'name' | 'url' | 'event_topic'>;
+export type CreateWebhook = Pick<
+  Webhook,
+  'name' | 'url' | 'event_topic' | 'event_contract'
+>;
 
 // used in paginated tables
 export const getWebhooks = async (args: {
