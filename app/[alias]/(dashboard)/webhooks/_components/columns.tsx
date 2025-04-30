@@ -19,6 +19,7 @@ import { ColumnDef } from "@tanstack/react-table";
 import { Config } from '@citizenwallet/sdk';
 import { useRouter } from 'next/navigation';
 import { Skeleton } from "@/components/ui/skeleton";
+import Link from "next/link";
 
 export const createColumns = (config: Config): ColumnDef<Webhook>[] => {
     const router = useRouter();
@@ -27,6 +28,15 @@ export const createColumns = (config: Config): ColumnDef<Webhook>[] => {
         {
             header: 'Event Topic',
             accessorKey: 'event_topic',
+            cell: function EventTopicCell({ row }) {
+                return (
+                    <div className="flex items-center gap-2">
+                        <Link href={`./webhooks/edit/${row.original.id}`}>
+                            <span className="text-sm font-medium text-gray-700">{row.original.event_topic}</span>
+                        </Link>
+                    </div>
+                );
+            }
 
         },
         {
