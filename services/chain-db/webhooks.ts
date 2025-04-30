@@ -62,3 +62,15 @@ export const deleteWebhook = async (args: {
   const { client, id } = args;
   return client.from(TABLE_NAME).delete().eq('id', id).select().single();
 };
+
+export const getWebhookSecret = async (args: {
+  client: SupabaseClient;
+  alias: string;
+}): Promise<PostgrestSingleResponse<{ secret: string }>> => {
+  const { client, alias } = args;
+  return client
+    .from('webhook_secrets')
+    .select('secret')
+    .eq('alias', alias)
+    .single();
+};
