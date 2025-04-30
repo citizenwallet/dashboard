@@ -18,6 +18,7 @@ import { deleteWebhookAction } from '../action';
 import { ColumnDef } from "@tanstack/react-table";
 import { Config } from '@citizenwallet/sdk';
 import { useRouter } from 'next/navigation';
+import { Skeleton } from "@/components/ui/skeleton";
 
 export const createColumns = (config: Config): ColumnDef<Webhook>[] => {
     const router = useRouter();
@@ -125,3 +126,49 @@ export const createColumns = (config: Config): ColumnDef<Webhook>[] => {
         }
     ];
 }
+
+
+
+export const skeletonColumns: ColumnDef<Webhook>[] = [
+    {
+        header: 'Event Topic',
+        cell: () => (
+            <div className="flex items-center gap-2 w-[250px]">
+                <Skeleton className="h-10 w-10 rounded-full flex-shrink-0" />
+                <div className="flex flex-col gap-2 flex-1">
+                    <Skeleton className="h-4 w-24" />
+                    <Skeleton className="h-3 w-32" />
+                </div>
+            </div>
+        )
+    },
+    {
+        header: 'Name',
+        cell: () => (
+            <div className="w-[150px]">
+                <Skeleton className="h-4 w-32" />
+            </div>
+        )
+    }
+    ,
+    {
+        header: 'Url',
+        cell: () => (
+            <div className="w-[150px]">
+                <Skeleton className="h-4 w-32" />
+            </div>
+        )
+    }
+    ,
+    {
+        header: 'Action',
+        cell: () => (
+            <div className="w-[150px]">
+                <Skeleton className="h-4 w-32" />
+            </div>
+        )
+    }
+];
+
+export const placeholderData: (Webhook)[] =
+    Array(5);

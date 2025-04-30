@@ -4,8 +4,10 @@ import { getServiceRoleClient } from '@/services/chain-db';
 import { getWebhooks, getWebhookSecret } from '@/services/chain-db/webhooks';
 import { Config } from '@citizenwallet/sdk';
 import { Suspense } from 'react';
-import { placeholderData, skeletonColumns } from '../admins/_table/columns';
 import Webhooks from './webhooks';
+import { placeholderData, skeletonColumns } from './_components/columns';
+import { Button } from '@/components/ui/button';
+import { Copy, Plus } from 'lucide-react';
 
 export default async function Page(props: {
     params: Promise<{ alias: string }>;
@@ -71,10 +73,26 @@ async function PageLoader({
 
 function Fallback() {
     return (
-        <div className="flex-1 overflow-hidden">
-            <div className="h-full overflow-y-auto rounded-md border">
-                <DataTable columns={skeletonColumns} data={placeholderData} />
+        <>
+            <div className="flex justify-start mb-4">
+                <Button >
+                    <Plus size={16} />
+                    Add Webhook
+                </Button>
             </div>
-        </div>
+
+            <div className="flex items-center gap-2 my-2 p-2 rounded-md bg-gray-100 hover:bg-gray-200 transition-colors cursor-pointer select-none w-fit">
+                <span className="text-sm font-medium text-gray-700">
+                    Copy Webhook Secret
+                </span>
+                <Copy className="ml-1 h-4 w-4 text-gray-500 hover:text-gray-700" />
+            </div>
+
+            <div className="flex-1 overflow-hidden">
+                <div className="h-full overflow-y-auto rounded-md border">
+                    <DataTable columns={skeletonColumns} data={placeholderData} />
+                </div>
+            </div>
+        </>
     );
 }
