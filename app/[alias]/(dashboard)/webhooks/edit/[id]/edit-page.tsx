@@ -2,6 +2,14 @@
 
 import { Button } from "@/components/ui/button"
 import {
+    Command,
+    CommandEmpty,
+    CommandGroup,
+    CommandInput,
+    CommandItem,
+    CommandList,
+} from "@/components/ui/command"
+import {
     Dialog,
     DialogClose,
     DialogContent,
@@ -12,33 +20,52 @@ import {
 } from "@/components/ui/dialog"
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from "@/components/ui/form"
 import { Input } from "@/components/ui/input"
+import {
+    Popover,
+    PopoverContent,
+    PopoverTrigger,
+} from "@/components/ui/popover"
+import { cn } from "@/lib/utils"
 import { Webhook } from "@/services/chain-db/webhooks"
 import { Config } from "@citizenwallet/sdk"
 import { zodResolver } from "@hookform/resolvers/zod"
-import { Trash2 } from "lucide-react"
+import { Check, ChevronsUpDown, Trash2 } from "lucide-react"
 import { useRouter } from "next/navigation"
 import { useState } from "react"
 import { useForm } from "react-hook-form"
 import { toast } from "sonner"
 import * as z from "zod"
 import { deleteWebhookAction, updateWebhookAction } from "../../action"
+import { Event } from "@/services/chain-db/event"
+
+
 const formSchema = z.object({
     name: z.string().min(1, { message: "Name is required" }),
-    event_topic: z.string().min(1, { message: "Event topic is required" }),
+    event_topic: z.string().optional(),
     url: z.string().url({ message: "Please enter a valid URL" }),
 })
 
 type WebhookFormProps = {
     webhook?: Webhook
     config: Config
+    events: Event[]
+    selectedEvent: Event | null
 }
 
-export function WebhookForm({ webhook, config }: WebhookFormProps) {
+export function WebhookForm({
+    webhook,
+    config,
+    events,
+    selectedEvent
+}: WebhookFormProps
+) {
+
     const router = useRouter()
     const [isDeleting, setIsDeleting] = useState(false)
     const [isSaving, setIsSaving] = useState(false)
     const [isDialogOpen, setIsDialogOpen] = useState(false)
-
+    const [open, setOpen] = useState(false)
+    const [eventTopic, setEventTopic] = useState<Event | null>(selectedEvent)
 
     // Initialize the form with default values or existing webhook data
     const form = useForm<z.infer<typeof formSchema>>({
@@ -58,7 +85,11 @@ export function WebhookForm({ webhook, config }: WebhookFormProps) {
             await updateWebhookAction({
                 config,
                 id: webhook?.id || "",
-                webhook: values
+                webhook: {
+                    ...values,
+                    event_contract: eventTopic?.contract,
+                    event_topic: eventTopic?.topic
+                }
             });
 
             toast.success('Webhook updated successfully', {
@@ -73,8 +104,6 @@ export function WebhookForm({ webhook, config }: WebhookFormProps) {
             setIsSaving(false)
         }
     }
-
-
 
 
     // Handle webhook deletion
@@ -125,7 +154,49 @@ export function WebhookForm({ webhook, config }: WebhookFormProps) {
                         <FormItem>
                             <FormLabel>Event Topic</FormLabel>
                             <FormControl>
-                                <Input placeholder="Event topic" {...field} />
+                                <Popover open={open} onOpenChange={setOpen}>
+                                    <PopoverTrigger asChild>
+                                        <Button
+                                            variant="outline"
+                                            role="combobox"
+                                            aria-expanded={open}
+                                            className="w-full justify-between"
+                                        >
+                                            {eventTopic
+                                                ? eventTopic.name
+                                                : "Select event..."}
+                                            <ChevronsUpDown className="ml-2 h-4 w-4 shrink-0 opacity-50" />
+                                        </Button>
+                                    </PopoverTrigger>
+                                    <PopoverContent className="w-full p-0">
+                                        <Command>
+                                            <CommandInput placeholder="Search event..." />
+                                            <CommandList>
+                                                <CommandEmpty>No event found.</CommandEmpty>
+                                                <CommandGroup>
+                                                    {events.map((event) => (
+                                                        <CommandItem
+                                                            key={event.id}
+                                                            value={event.id}
+                                                            onSelect={(currentValue) => {
+                                                                setEventTopic(currentValue === eventTopic?.id ? null : event)
+                                                                setOpen(false)
+                                                            }}
+                                                        >
+                                                            <Check
+                                                                className={cn(
+                                                                    "mr-2 h-4 w-4",
+                                                                    eventTopic?.id === event.id ? "opacity-100" : "opacity-0"
+                                                                )}
+                                                            />
+                                                            {event.name}
+                                                        </CommandItem>
+                                                    ))}
+                                                </CommandGroup>
+                                            </CommandList>
+                                        </Command>
+                                    </PopoverContent>
+                                </Popover>
                             </FormControl>
                             <FormDescription>The event that will trigger this webhook.</FormDescription>
                             <FormMessage />
