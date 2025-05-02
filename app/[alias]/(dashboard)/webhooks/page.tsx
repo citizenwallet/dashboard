@@ -8,7 +8,7 @@ import Webhooks from './webhooks';
 import { placeholderData, skeletonColumns } from './_components/columns';
 import { Button } from '@/components/ui/button';
 import { Copy, Plus } from 'lucide-react';
-import { getEvents } from '@/services/chain-db/event';
+import { getEventsByChainId } from '@/services/chain-db/event';
 
 export default async function Page(props: {
     params: Promise<{ alias: string }>;
@@ -68,7 +68,7 @@ async function PageLoader({
     });
 
 
-    const { data: events } = await getEvents({
+    const { data: events } = await getEventsByChainId({
         client: supabase,
         chainId: chainId.toString(),
         alias: config.community.alias
