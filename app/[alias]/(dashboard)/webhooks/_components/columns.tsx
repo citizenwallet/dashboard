@@ -10,15 +10,16 @@ import {
     DialogHeader,
     DialogTitle
 } from '@/components/ui/dialog';
+import { Skeleton } from "@/components/ui/skeleton";
+import { formatAddress } from '@/lib/utils';
 import { Webhook } from '@/services/chain-db/webhooks';
+import { Config } from '@citizenwallet/sdk';
+import { ColumnDef } from "@tanstack/react-table";
 import { Trash } from "lucide-react";
+import Link from "next/link";
 import { useState } from 'react';
 import { toast } from 'sonner';
 import { deleteWebhookAction } from '../action';
-import { ColumnDef } from "@tanstack/react-table";
-import { Config } from '@citizenwallet/sdk';
-import { Skeleton } from "@/components/ui/skeleton";
-import Link from "next/link";
 
 
 export const createColumns = (config: Config): ColumnDef<Webhook>[] => {
@@ -31,7 +32,9 @@ export const createColumns = (config: Config): ColumnDef<Webhook>[] => {
                 return (
                     <div className="flex items-center gap-2">
                         <Link href={`./webhooks/edit/${row.original.id}`}>
-                            <span className="text-sm font-medium text-gray-700">{row.original.event_topic}</span>
+                            <span className="text-sm font-medium text-gray-700">
+                                {formatAddress(row.original.event_topic || "")}
+                            </span>
                         </Link>
                     </div>
                 );
