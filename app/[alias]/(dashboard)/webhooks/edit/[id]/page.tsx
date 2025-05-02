@@ -5,6 +5,7 @@ import { getWebhookById } from '@/services/chain-db/webhooks';
 import { Config } from '@citizenwallet/sdk';
 import { Suspense } from 'react';
 import { WebhookForm } from './edit-page';
+import { getEventByContractAndTopic, getEventsByChainId } from '@/services/chain-db/event';
 
 
 export default async function Page(props: {
@@ -58,8 +59,29 @@ async function PageLoader({
         return <div>Webhook not found</div>;
     }
 
+    const { data: events } = await getEventsByChainId({
+        client: supabase,
+        chainId: chainId.toString(),
+        alias: config.community.alias
+    });
+
+
+    const { data: event } = await getEventByContractAndTopic({
+        client: supabase,
+        chainId: chainId.toString(),
+        contract: data.event_contract,
+        topic: data.event_topic || null,
+        alias: config.community.alias
+    });
+
+
     return (
-        <WebhookForm webhook={data} config={config} />
+        <WebhookForm
+            webhook={data}
+            config={config}
+            events={events || []}
+            selectedEvent={event || null}
+        />
     )
 }
 
