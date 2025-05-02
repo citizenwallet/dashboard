@@ -70,7 +70,8 @@ async function PageLoader({
 
     const { data: events } = await getEvents({
         client: supabase,
-        chainId: chainId.toString()
+        chainId: chainId.toString(),
+        alias: config.community.alias
     });
 
     return (

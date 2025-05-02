@@ -18,7 +18,8 @@ export interface Event {
 export const getEvents = async (args: {
   client: SupabaseClient;
   chainId: string;
+  alias: string;
 }): Promise<PostgrestResponse<Event>> => {
-  const { client, chainId } = args;
-  return client.from(TABLE_NAME + chainId).select(`*`);
+  const { client, chainId, alias } = args;
+  return client.from(TABLE_NAME + chainId).select(`*`).eq('alias', alias);
 };
