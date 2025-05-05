@@ -9,6 +9,7 @@ import {
   Webhook
 } from '@/services/chain-db/webhooks';
 import { Config } from '@citizenwallet/sdk';
+import { revalidatePath } from 'next/cache';
 
 export const createWebhookAction = async (args: {
   config: Config;
@@ -31,7 +32,7 @@ export const deleteWebhookAction = async (args: {
   const { chain_id: chainId } = config.community.profile;
 
   const supabase = getServiceRoleClient(chainId);
-
+  revalidatePath(`/${config.community.alias}/webhooks`);
   return await deleteWebhook({ client: supabase, id });
 };
 
