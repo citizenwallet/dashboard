@@ -150,7 +150,7 @@ export function WebhookForm({
                 <FormField
                     control={form.control}
                     name="event_topic"
-                    render={({ field }) => (
+                    render={({ }) => (
                         <FormItem>
                             <FormLabel>Event Topic</FormLabel>
                             <FormControl>
