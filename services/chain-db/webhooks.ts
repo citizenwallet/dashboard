@@ -17,11 +17,12 @@ export interface Webhook {
   url: string;
   event_contract: string;
   event_topic: string;
+  alias: string;
 }
 
 export type CreateWebhook = Pick<
   Webhook,
-  'name' | 'url' | 'event_topic' | 'event_contract'
+  'name' | 'url' | 'event_topic' | 'event_contract' | 'alias'
 >;
 
 // used in paginated tables
@@ -29,13 +30,17 @@ export const getWebhooks = async (args: {
   client: SupabaseClient;
   query: string;
   page: number;
+  alias: string;
 }): Promise<PostgrestResponse<Webhook>> => {
-  const { client, query, page } = args;
+  const { client, query, page, alias } = args;
 
   const offset = (page - 1) * PAGE_SIZE;
   const searchQuery = query.trim().toLowerCase();
 
-  let queryBuilder = client.from(TABLE_NAME).select(`*`, { count: 'exact' });
+  let queryBuilder = client
+    .from(TABLE_NAME)
+    .select(`*`, { count: 'exact' })
+    .eq('alias', alias);
 
   if (searchQuery) {
     queryBuilder = queryBuilder.or(

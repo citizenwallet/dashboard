@@ -35,7 +35,7 @@ export default async function Page(props: {
             </div>
 
             <Suspense fallback={<Fallback />}>
-                <PageLoader config={config} page={page} query={query} />
+                <PageLoader config={config} page={page} query={query} alias={alias} />
             </Suspense>
         </div>
     );
@@ -44,11 +44,13 @@ export default async function Page(props: {
 async function PageLoader({
     config,
     page,
-    query
+    query,
+    alias
 }: {
     config: Config,
     page?: string;
     query?: string;
+    alias: string;
 }) {
 
     const { chain_id: chainId } = config.community.profile;
@@ -58,7 +60,8 @@ async function PageLoader({
     const { data, count } = await getWebhooks({
         client: supabase,
         query: query || '',
-        page: parseInt(page || '1')
+        page: parseInt(page || '1'),
+        alias: alias
     });
 
 

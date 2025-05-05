@@ -93,7 +93,8 @@ export default function Webhooks({
                     name,
                     url,
                     event_topic: eventTopic?.topic || '',
-                    event_contract: eventTopic?.contract || ''
+                    event_contract: eventTopic?.contract || '',
+                    alias: config.community.alias
                 }
             });
 
