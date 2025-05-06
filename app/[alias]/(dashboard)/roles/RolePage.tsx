@@ -96,8 +96,8 @@ export default function RolePage({
 
   const grantAccess = async () => {
     setIsLoading(true);
-      const res = await grantRoleAction({ config, account: memberAccount });
-      
+    const res = await grantRoleAction({ config, account: memberAccount });
+
     if (res.success) {
       toast.success('Access granted successfully.');
     } else {

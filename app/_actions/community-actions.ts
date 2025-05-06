@@ -5,7 +5,6 @@ import { getAuthUserAction, getAuthUserRoleInAppAction } from './user-actions';
 import eureGnosisCommunity from './eure_gnosis_community.json' assert { type: 'json' };
 const typedEureGnosisCommunity = eureGnosisCommunity as Config;
 
-
 export const fetchCommunitiesAction = async (args: {
   query?: string;
 }): Promise<{ communities: Config[]; total: number }> => {
@@ -62,7 +61,7 @@ const fetchCommunitiesForUserAction = async (args: {
   const response = await fetch(process.env.COMMUNITIES_CONFIG_URL);
   const data = (await response.json()) as Config[];
   data.push(typedEureGnosisCommunity);
-  
+
   const communities = data.filter((community) => {
     const { hidden, name, alias, description } = community.community;
 
