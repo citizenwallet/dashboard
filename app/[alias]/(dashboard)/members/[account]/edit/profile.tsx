@@ -183,21 +183,24 @@ export default function Profile({
           </Button>
           <Button
             variant="destructive"
+            disabled={isLoading}
             onClick={async () => {
+              setIsLoading(true);
               await deleteProfileAction(
                 userData.avatarUrl || '',
                 config.community.alias,
                 config,
                 memberData?.account || ''
               );
+              setIsLoading(false);
               toast.success('Profile deleted successfully', {
                 onAutoClose: () => {
                   router.push(`/${config.community.alias}/members`);
                 }
               });
             }}
-          >
-            Delete
+                >
+            {isLoading ? 'Deleting...' : 'Delete'}
           </Button>
         </div>
       </div>
