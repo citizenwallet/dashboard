@@ -86,7 +86,7 @@ export const getMemberByAccount = async (args: {
   client: SupabaseClient;
   account: string;
   profileContract: string;
-}): Promise<PostgrestResponse<MemberT>> => {
+}): Promise<PostgrestSingleResponse<MemberT>> => {
   const { client, account, profileContract } = args;
   const queryBuilder = client
     .from(TABLE_NAME)
