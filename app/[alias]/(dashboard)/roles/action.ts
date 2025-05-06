@@ -41,6 +41,8 @@ export const grantRoleAction = async (args: {
   );
   const isSuccess = await waitForTxSuccess(community, hash);
   if (isSuccess) {
+    // TODO: db service to add the role to the member
+    // TODO: revalidate path
     return { success: true };
   } else {
     return { success: false };
@@ -69,6 +71,8 @@ export const revokeRoleAction = async (args: {
   );
   const isSuccess = await waitForTxSuccess(community, hash);
   if (isSuccess) {
+    // TODO: db service to remove the role from the member
+    // TODO: revalidate path
     return { success: true };
   } else {
     return { success: false };
