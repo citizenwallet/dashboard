@@ -83,8 +83,7 @@ export function AppSidebar({
             name: 'Minters',
             url: `/${selectedCommunity?.community.alias}/roles`,
             icon: Hammer
-          },
-
+          }
         ]
       },
       {
