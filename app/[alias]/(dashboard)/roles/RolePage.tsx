@@ -13,6 +13,7 @@ import {
 import { DataTable } from '@/components/ui/data-table';
 import {
   Dialog,
+  DialogClose,
   DialogContent,
   DialogDescription,
   DialogFooter,
@@ -57,6 +58,7 @@ export default function RolePage({
 }) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   const [open, setOpen] = useState(false);
   const [memberAccount, setMemberAccount] = useState('');
@@ -104,6 +106,7 @@ export default function RolePage({
       toast.error('Failed to grant access.');
     }
     setIsLoading(false);
+    setIsAddDialogOpen(false);
   };
 
   const revokeAccess = async (account: string) => {
@@ -123,28 +126,8 @@ export default function RolePage({
       return;
     }
 
-    toast.custom((t) => (
-      <div>
-        <h3>Are you sure you want to grant access to this member?</h3>
-        <div className="mt-4 flex justify-end gap-3">
-          <Button
-            disabled={isLoading}
-            className="ml-4 bg-red-600 text-white hover:bg-red-700"
-            onClick={() => {
-              toast.dismiss(t);
-              setIsAddDialogOpen(false);
-              setMemberAccount('');
-            }}
-          >
-            Cancel
-          </Button>
-          <Button disabled={isLoading} onClick={grantAccess}>
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Confirm
-          </Button>
-        </div>
-      </div>
-    ));
+    setIsDialogOpen(true);
+
   };
 
   const handleRevokeAccess = (id: string) => {
@@ -188,6 +171,9 @@ export default function RolePage({
       commandListRef.current.scrollTop += e.deltaY
     }
   }, [])
+
+
+
 
   return (
     <>
@@ -303,6 +289,35 @@ export default function RolePage({
           </DialogContent>
         </Dialog>
       )}
+
+      {/* Dialog for confirming access grant */}
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Grant Access</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to grant access to this member?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-start gap-2">
+            <Button
+              onClick={() => {
+                grantAccess();
+                setIsDialogOpen(false);
+              }}
+              type="button"
+            >
+              Grant
+            </Button>
+            <DialogClose asChild>
+              <Button type="button" variant="outline">
+                Cancel
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
 
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto rounded-md border">
