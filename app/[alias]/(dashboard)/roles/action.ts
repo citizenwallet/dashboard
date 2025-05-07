@@ -1,7 +1,10 @@
 'use server';
 
 import { MemberT } from '@/services/chain-db/members';
-import { deleteAccountFromRole, upsertAccountToRole } from '@/services/chain-db/role';
+import {
+  deleteAccountFromRole,
+  upsertAccountToRole
+} from '@/services/chain-db/role';
 import {
   BundlerService,
   CommunityConfig,
