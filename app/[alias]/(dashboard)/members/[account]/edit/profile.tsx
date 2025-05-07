@@ -126,8 +126,15 @@ export default function Profile({
         setIsLoading(false);
         return;
       }
-      const cidPath = new URL(memberData?.image || '').pathname;
-      let cid = cidPath.slice(1);
+
+      //check memberData.image is URL or not
+      let cid = '';
+      if (isValidURL(memberData?.image || '')) {
+        const cidPath = new URL(memberData?.image || '').pathname;
+        cid = cidPath.slice(1);
+      } else {
+        cid = memberData?.image || '';
+      }
 
       if (userData.avatarUrl != memberData?.image) {
         if (!imageFile) {
@@ -223,6 +230,15 @@ export default function Profile({
     fileInputRef.current?.click();
   };
 
+
+  const isValidURL = (str: string) => {
+    try {
+      new URL(str);
+      return true;
+    } catch (_) {
+      return false;
+    }
+  }
   return (
     <Card className="shadow-lg border-0">
       <CardContent className="pt-6">
