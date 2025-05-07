@@ -1,7 +1,7 @@
 'use server';
 
 import { MemberT } from '@/services/chain-db/members';
-import { deleteRole, insertRoleNotItHas } from '@/services/chain-db/role';
+import { deleteAccountFromRole, upsertAccountToRole } from '@/services/chain-db/role';
 import {
   BundlerService,
   CommunityConfig,
@@ -45,7 +45,7 @@ export const grantRoleAction = async (args: {
   );
   const isSuccess = await waitForTxSuccess(community, hash);
   if (isSuccess) {
-    await insertRoleNotItHas({
+    await upsertAccountToRole({
       client: supabase,
       role: {
         account_address: account,
@@ -83,7 +83,7 @@ export const revokeRoleAction = async (args: {
   );
   const isSuccess = await waitForTxSuccess(community, hash);
   if (isSuccess) {
-    await deleteRole({
+    await deleteAccountFromRole({
       client: supabase,
       role: {
         account_address: account,
