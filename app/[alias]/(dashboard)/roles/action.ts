@@ -1,6 +1,7 @@
 'use server';
 
 import { MemberT } from '@/services/chain-db/members';
+import { deleteRole, insertRole } from '@/services/chain-db/role';
 import {
   BundlerService,
   CommunityConfig,
@@ -9,6 +10,8 @@ import {
   waitForTxSuccess
 } from '@citizenwallet/sdk';
 import { Wallet } from 'ethers';
+import { getServiceRoleClient } from '@/services/chain-db';
+import { revalidatePath } from 'next/cache';
 
 export interface MinterMembers {
   id: number;
@@ -26,6 +29,7 @@ export const grantRoleAction = async (args: {
   const { config, account } = args;
   const community = new CommunityConfig(config);
   const bundler = new BundlerService(community);
+  const supabase = getServiceRoleClient(community.primaryToken.chain_id);
 
   const tokenAddress = community.primaryToken.address;
 
@@ -41,8 +45,15 @@ export const grantRoleAction = async (args: {
   );
   const isSuccess = await waitForTxSuccess(community, hash);
   if (isSuccess) {
-    // TODO: db service to add the role to the member
-    // TODO: revalidate path
+    await insertRole({
+      client: supabase,
+      role: {
+        account_address: account,
+        contract_address: tokenAddress,
+        role: MINTER_ROLE
+      }
+    });
+    revalidatePath(`/${config.community.alias}/roles`);
     return { success: true };
   } else {
     return { success: false };
@@ -56,6 +67,7 @@ export const revokeRoleAction = async (args: {
   const { config, account } = args;
   const community = new CommunityConfig(config);
   const bundler = new BundlerService(community);
+  const supabase = getServiceRoleClient(community.primaryToken.chain_id);
 
   const tokenAddress = community.primaryToken.address;
 
@@ -71,8 +83,15 @@ export const revokeRoleAction = async (args: {
   );
   const isSuccess = await waitForTxSuccess(community, hash);
   if (isSuccess) {
-    // TODO: db service to remove the role from the member
-    // TODO: revalidate path
+    await deleteRole({
+      client: supabase,
+      role: {
+        account_address: account,
+        contract_address: tokenAddress,
+        role: MINTER_ROLE
+      }
+    });
+    revalidatePath(`/${config.community.alias}/roles`);
     return { success: true };
   } else {
     return { success: false };
