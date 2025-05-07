@@ -80,7 +80,7 @@ export default function Profile({
   };
 
   useEffect(() => {
-    if (debouncedUsername && (usernameEdit && isEditing)) {
+    if (debouncedUsername && usernameEdit && isEditing) {
       const checkUsername = async () => {
         if (debouncedUsername === memberData?.username) {
           setIsAvailable(true);

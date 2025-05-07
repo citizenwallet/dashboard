@@ -37,26 +37,25 @@ export default async function TreasuryTable({
     config.community.primary_token;
   const theme = config.community.theme?.primary;
 
-const [authRoleResult, hasMinterRoleResult, treasuryDataResult] =
-  await Promise.allSettled([
-    getAuthUserRoleInCommunityAction({
-      alias
-    }),
-    CWCheckRoleAccess(
-      tokenAddress,
-      MINTER_ROLE,
-      process.env[`SERVER_${chainId}_ACCOUNT_ADDRESS`] ?? '',
-      new JsonRpcProvider(primaryRpcUrl)
-    ),
-    getTreasuryTransfersOfTokenAction({
-      config,
-      query,
-      page,
-      from,
-      to
-    })
-  ]);
-
+  const [authRoleResult, hasMinterRoleResult, treasuryDataResult] =
+    await Promise.allSettled([
+      getAuthUserRoleInCommunityAction({
+        alias
+      }),
+      CWCheckRoleAccess(
+        tokenAddress,
+        MINTER_ROLE,
+        process.env[`SERVER_${chainId}_ACCOUNT_ADDRESS`] ?? '',
+        new JsonRpcProvider(primaryRpcUrl)
+      ),
+      getTreasuryTransfersOfTokenAction({
+        config,
+        query,
+        page,
+        from,
+        to
+      })
+    ]);
 
   const authRole =
     authRoleResult.status === 'fulfilled' ? authRoleResult.value : null;
@@ -68,7 +67,6 @@ const [authRoleResult, hasMinterRoleResult, treasuryDataResult] =
     treasuryDataResult.status === 'fulfilled'
       ? treasuryDataResult.value
       : { data: [], count: 0 };
-
 
   const { data, count: totalCount } = treasuryData;
 

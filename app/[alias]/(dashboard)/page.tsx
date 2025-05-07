@@ -57,10 +57,10 @@ async function getMembersOverview({ alias }: { alias: string }) {
       icon={<Users className="h-full w-full text-slate-600" />}
       title="Members"
       value={count || 0}
-    // change={{
-    //   value: 11.0,
-    //   trend: 'up'
-    // }}
+      // change={{
+      //   value: 11.0,
+      //   trend: 'up'
+      // }}
     />
   );
 }
@@ -79,10 +79,10 @@ async function getTransactionsOverview({ alias }: { alias: string }) {
       icon={<CreditCard className="h-full w-full text-slate-600" />}
       title="Transactions"
       value={count || 0}
-    // change={{
-    //   value: 22.0,
-    //   trend: 'down'
-    // }}
+      // change={{
+      //   value: 22.0,
+      //   trend: 'down'
+      // }}
     />
   );
 }
