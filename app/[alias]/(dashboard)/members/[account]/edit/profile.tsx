@@ -33,6 +33,15 @@ import {
   updateProfileAction,
   updateProfileImageAction
 } from '../action';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
 
 const formSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -74,6 +83,7 @@ export default function Profile({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [debouncedUsername] = useDebounce(form.watch('username'), 300);
   const [isLoading, setIsLoading] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
 
   useEffect(() => {
@@ -174,41 +184,31 @@ export default function Profile({
   };
 
   //handle the delete profile
-  const handleDelete = () => {
-    toast.custom((t) => (
-      <div className="flex flex-col gap-2 bg-background p-2 rounded-lg border">
-        <h3 className="font-semibold text-base">Delete Profile</h3>
-        <p className="text-sm text-muted-foreground">
-          This will permanently delete this member profile.
-        </p>
-        <div className="flex gap-2 justify-end pt-2">
-          <Button variant="outline" onClick={() => toast.dismiss(t)}>
-            Cancel
-          </Button>
-          <Button
-            variant="destructive"
-            disabled={isLoading}
-            onClick={async () => {
-              setIsLoading(true);
-              await deleteProfileAction(
-                userData.avatarUrl || '',
-                config.community.alias,
-                config,
-                memberData?.account || ''
-              );
-              setIsLoading(false);
-              toast.success('Profile deleted successfully', {
-                onAutoClose: () => {
-                  router.push(`/${config.community.alias}/members`);
-                }
-              });
-            }}
-          >
-            {isLoading ? 'Deleting...' : 'Delete'}
-          </Button>
-        </div>
-      </div>
-    ));
+  const handleDelete = async () => {
+    try {
+      setIsLoading(true);
+      await deleteProfileAction(
+        userData.avatarUrl || '',
+        config.community.alias,
+        config,
+        memberData?.account || ''
+      );
+
+      toast.success('Profile deleted successfully', {
+        onAutoClose: () => {
+          router.push(`/${config.community.alias}/members`);
+        }
+      });
+    } catch (error) {
+      console.error('Error deleting profile:', error);
+      toast.error('Error deleting profile');
+
+    } finally {
+      setIsLoading(false);
+      setIsDialogOpen(false);
+    }
+
+
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -338,6 +338,9 @@ export default function Profile({
         </Form>
       </CardContent>
 
+
+
+
       {/* it can access only admin and community owner  */}
       {hasAdminRole && (
         <CardFooter className="flex justify-between pt-6">
@@ -357,13 +360,45 @@ export default function Profile({
 
           <Button
             variant="destructive"
-            onClick={handleDelete}
+            onClick={() => {
+              setIsDialogOpen(true);
+            }}
             className="gap-2"
             disabled={isLoading}
           >
             <Trash2 className="h-4 w-4" />
             Delete Account
           </Button>
+
+
+
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Remove Member</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to remove this member?
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="sm:justify-start gap-2">
+                <Button
+                  disabled={isLoading}
+                  onClick={handleDelete}
+                  type="button"
+                  variant="destructive"
+                >
+                  {isLoading ? 'Removing...' : 'Remove'}
+                </Button>
+                <DialogClose asChild>
+                  <Button type="button" variant="outline" disabled={isLoading}>
+                    Cancel
+                  </Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+
+
         </CardFooter>
       )}
     </Card>
