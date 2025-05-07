@@ -33,20 +33,22 @@ async function AsyncPage({ account }: { account: string }) {
         apiKey: process.env.TRANSAK_API_KEY || '',
         environment: Transak.ENVIRONMENTS.STAGING,
         walletAddress: account,
+        fiatCurrency: 'USD',
+        fiatAmount: 10,
         network: 'polygon-amoy',
         colorMode: 'LIGHT',
         backgroundColors: "#ffffff",
         hideMenu: true,
         // Transak One
-        // isTransakOne: true,
-        // smartContractAddress: '0x6b3a1f4277391526413F583c23D5B9EF4d2fE986',
-        // estimatedGasLimit: 200000,
-        // sourceTokenData: [
-        //     {
-        //         sourceTokenCode: "POL",
-        //         sourceTokenAmount: 10,
-        //     },
-        // ],
+        isTransakOne: true,
+        smartContractAddress: '0x6b3a1f4277391526413F583c23D5B9EF4d2fE986',
+        estimatedGasLimit: 200000,
+        sourceTokenData: [
+            {
+                sourceTokenCode: "POL",
+                sourceTokenAmount: 10,
+            },
+        ],
     }
 
     return (
