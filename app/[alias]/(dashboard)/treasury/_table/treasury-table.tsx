@@ -33,7 +33,8 @@ export default async function TreasuryTable({
   const communityConfig = new CommunityConfig(config);
 
   const primaryRpcUrl = communityConfig.primaryRPCUrl;
-  const { address: tokenAddress } = config.community.primary_token;
+  const { chain_id: chainId, address: tokenAddress } =
+    config.community.primary_token;
   const theme = config.community.theme?.primary;
 
   const [authRoleResult, hasMinterRoleResult, treasuryDataResult] =
@@ -44,7 +45,7 @@ export default async function TreasuryTable({
       CWCheckRoleAccess(
         tokenAddress,
         MINTER_ROLE,
-        process.env['SERVER_ACCOUNT_ADDRESS'] ?? '',
+        process.env[`SERVER_${chainId}_ACCOUNT_ADDRESS`] ?? '',
         new JsonRpcProvider(primaryRpcUrl)
       ),
       getTreasuryTransfersOfTokenAction({
