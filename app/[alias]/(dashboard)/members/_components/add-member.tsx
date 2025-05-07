@@ -30,12 +30,11 @@ export default function AddMember({ config }: { config: Config }) {
   const [isSearching, setIsSearching] = useState(false);
 
   const handleSearch = useDebouncedCallback(async (term: string) => {
-      
-      const member = await searchAccountAddressAction({
-          config,
-          address: term
-        });
-        
+    const member = await searchAccountAddressAction({
+      config,
+      address: term
+    });
+
     setValidAddress(ethers.isAddress(term));
     setAddress(term);
     setIsFound(member ? true : false);

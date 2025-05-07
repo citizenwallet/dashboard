@@ -30,7 +30,7 @@ export default function SwitcherButton() {
           checked={showAllMembers}
           onCheckedChange={handleShowAllMembers}
         />
-        <Label htmlFor="show-all-members-switch" >
+        <Label htmlFor="show-all-members-switch">
           Show all members (Including Anonymous)
         </Label>
       </div>
