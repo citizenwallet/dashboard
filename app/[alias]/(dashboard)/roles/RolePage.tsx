@@ -20,6 +20,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
 import {
   Popover,
   PopoverContent,
@@ -37,10 +38,9 @@ import {
   Plus,
   Trash
 } from 'lucide-react';
-import { useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { grantRoleAction, MinterMembers, revokeRoleAction } from './action';
-import { Label } from '@/components/ui/label';
 
 export default function RolePage({
   members,
@@ -180,6 +180,15 @@ export default function RolePage({
     ));
   };
 
+
+  const commandListRef = useRef<HTMLDivElement>(null)
+  const handleWheel = useCallback((e: React.WheelEvent) => {
+    if (commandListRef.current) {
+      e.stopPropagation()
+      commandListRef.current.scrollTop += e.deltaY
+    }
+  }, [])
+
   return (
     <>
       {hasAdminRole && (
@@ -230,7 +239,7 @@ export default function RolePage({
                         placeholder="Search username..."
                         className="h-9"
                       />
-                      <CommandList className="max-h-[200px] overflow-y-auto">
+                      <CommandList ref={commandListRef} className="max-h-[200px] overflow-y-auto" onWheel={handleWheel}>
                         <CommandEmpty>No Member found.</CommandEmpty>
                         <CommandGroup>
                           {members?.map((member) => (
