@@ -12,30 +12,24 @@ export interface RoleT {
   created_at: Date;
 }
 
-export const insertRoleNotItHas = async (args: {
+export const upsertAccountToRole = async (args: {
   client: SupabaseClient;
-  role: Partial<RoleT>;
+  role: Pick<RoleT, 'account_address' | 'contract_address' | 'role'>;
 }): Promise<PostgrestSingleResponse<RoleT>> => {
   const { client, role } = args;
 
-  const { data, error } = await client
+  return await client
     .from(TABLE_NAME)
-    .select('*')
-    .eq('account_address', role.account_address)
-    .eq('contract_address', role.contract_address)
-    .eq('role', role.role)
+    .upsert(role, {
+      onConflict: 'account_address,contract_address,role'
+    })
+    .select()
     .single();
-
-  if (data) {
-    return data;
-  }
-
-  return await client.from(TABLE_NAME).insert(role).select().single();
 };
 
-export const deleteRole = async (args: {
+export const deleteAccountFromRole = async (args: {
   client: SupabaseClient;
-  role: Partial<RoleT>;
+  role: Pick<RoleT, 'account_address' | 'contract_address' | 'role'>;
 }) => {
   const { client, role } = args;
   return await client
