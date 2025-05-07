@@ -85,7 +85,6 @@ export default function Profile({
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
 
-
   useEffect(() => {
     if (debouncedUsername && usernameEdit && isEditing) {
       const checkUsername = async () => {
@@ -202,13 +201,10 @@ export default function Profile({
     } catch (error) {
       console.error('Error deleting profile:', error);
       toast.error('Error deleting profile');
-
     } finally {
       setIsLoading(false);
       setIsDialogOpen(false);
     }
-
-
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -227,7 +223,6 @@ export default function Profile({
     fileInputRef.current?.click();
   };
 
-
   const isValidURL = (str: string) => {
     try {
       new URL(str);
@@ -236,7 +231,7 @@ export default function Profile({
       console.error('Error validating URL:', error);
       return false;
     }
-  }
+  };
   return (
     <Card className="shadow-lg border-0">
       <CardContent className="pt-6">
@@ -339,9 +334,6 @@ export default function Profile({
         </Form>
       </CardContent>
 
-
-
-
       {/* it can access only admin and community owner  */}
       {hasAdminRole && (
         <CardFooter className="flex justify-between pt-6">
@@ -356,8 +348,7 @@ export default function Profile({
                 {isLoading ? 'Saving...' : 'Save Changes'}
               </Button>
             </div>
-          )
-          }
+          )}
 
           <Button
             variant="destructive"
@@ -370,8 +361,6 @@ export default function Profile({
             <Trash2 className="h-4 w-4" />
             Delete Account
           </Button>
-
-
 
           <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
             <DialogContent className="sm:max-w-md">
@@ -398,8 +387,6 @@ export default function Profile({
               </DialogFooter>
             </DialogContent>
           </Dialog>
-
-
         </CardFooter>
       )}
     </Card>
