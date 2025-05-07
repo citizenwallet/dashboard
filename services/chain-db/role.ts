@@ -12,11 +12,24 @@ export interface RoleT {
   created_at: Date;
 }
 
-export const insertRole = async (args: {
+export const insertRoleNotItHas = async (args: {
   client: SupabaseClient;
   role: Partial<RoleT>;
 }): Promise<PostgrestSingleResponse<RoleT>> => {
   const { client, role } = args;
+
+  const { data, error } = await client
+    .from(TABLE_NAME)
+    .select('*')
+    .eq('account_address', role.account_address)
+    .eq('contract_address', role.contract_address)
+    .eq('role', role.role)
+    .single();
+
+  if (data) {
+    return data;
+  }
+
   return await client.from(TABLE_NAME).insert(role).select().single();
 };
 
