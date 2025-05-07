@@ -50,7 +50,7 @@ export default function Profile({
   config: Config;
 }) {
   const community = useMemo(() => new CommunityConfig(config), [config]);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(hasAdminRole);
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -75,9 +75,6 @@ export default function Profile({
   const [debouncedUsername] = useDebounce(form.watch('username'), 300);
   const [isLoading, setIsLoading] = useState(false);
 
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
 
   useEffect(() => {
     if (debouncedUsername && usernameEdit && isEditing) {
@@ -344,7 +341,7 @@ export default function Profile({
       {/* it can access only admin and community owner  */}
       {hasAdminRole && (
         <CardFooter className="flex justify-between pt-6">
-          {isEditing ? (
+          {isEditing && (
             <div className="flex gap-3">
               <Button
                 onClick={form.handleSubmit(onSubmit)}
@@ -354,29 +351,9 @@ export default function Profile({
                 <Save className="h-4 w-4" />
                 {isLoading ? 'Saving...' : 'Save Changes'}
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsEditing(false);
-                  setUsernameEdit(false);
-                  form.reset();
-                }}
-                disabled={isLoading}
-              >
-                Cancel
-              </Button>
             </div>
-          ) : (
-            <Button
-              onClick={handleEdit}
-              variant="outline"
-              className="gap-2"
-              disabled={isLoading}
-            >
-              <PenLine className="h-4 w-4" />
-              Edit Profile
-            </Button>
-          )}
+          )
+          }
 
           <Button
             variant="destructive"
