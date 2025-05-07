@@ -116,17 +116,15 @@ export default function RolePage({
     }
 
     setIsDialogOpen(true);
-
   };
 
-  const commandListRef = useRef<HTMLDivElement>(null)
+  const commandListRef = useRef<HTMLDivElement>(null);
   const handleWheel = useCallback((e: React.WheelEvent) => {
     if (commandListRef.current) {
-      e.stopPropagation()
-      commandListRef.current.scrollTop += e.deltaY
+      e.stopPropagation();
+      commandListRef.current.scrollTop += e.deltaY;
     }
-  }, [])
-
+  }, []);
 
   return (
     <>
@@ -178,7 +176,11 @@ export default function RolePage({
                         placeholder="Search username..."
                         className="h-9"
                       />
-                      <CommandList ref={commandListRef} className="max-h-[200px] overflow-y-auto" onWheel={handleWheel}>
+                      <CommandList
+                        ref={commandListRef}
+                        className="max-h-[200px] overflow-y-auto"
+                        onWheel={handleWheel}
+                      >
                         <CommandEmpty>No Member found.</CommandEmpty>
                         <CommandGroup>
                           {members?.map((member) => (
@@ -271,7 +273,6 @@ export default function RolePage({
         </DialogContent>
       </Dialog>
 
-
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto rounded-md border">
           <div className="flex-1 overflow-hidden">
@@ -334,20 +335,22 @@ export default function RolePage({
                       const [isDialogOpen, setIsDialogOpen] = useState(false);
                       const [isPending, setIsPending] = useState(false);
 
-
                       const handleOpenDialog = () => {
                         setIsDialogOpen(true);
                       };
 
-
                       const revokeAccess = async (account: string) => {
-
                         if (!hasAdminRole) {
-                          toast.error('You do not have permission to revoke access.');
+                          toast.error(
+                            'You do not have permission to revoke access.'
+                          );
                           return;
                         }
                         setIsPending(true);
-                        const res = await revokeRoleAction({ config, account: account });
+                        const res = await revokeRoleAction({
+                          config,
+                          account: account
+                        });
                         if (res.success) {
                           toast.success('Access revoked successfully.');
                         } else {
@@ -370,25 +373,35 @@ export default function RolePage({
                             </Button>
                           </div>
 
-                          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                          <Dialog
+                            open={isDialogOpen}
+                            onOpenChange={setIsDialogOpen}
+                          >
                             <DialogContent className="sm:max-w-md">
                               <DialogHeader>
                                 <DialogTitle>Revoke Access</DialogTitle>
                                 <DialogDescription>
-                                  Are you sure you want to revoke access to this member?
+                                  Are you sure you want to revoke access to this
+                                  member?
                                 </DialogDescription>
                               </DialogHeader>
                               <DialogFooter className="sm:justify-start gap-2">
                                 <Button
                                   disabled={isPending}
-                                  onClick={() => revokeAccess(row.original.account_address)}
+                                  onClick={() =>
+                                    revokeAccess(row.original.account_address)
+                                  }
                                   type="button"
                                   variant="destructive"
                                 >
                                   {isPending ? 'Revoking...' : 'Revoke'}
                                 </Button>
                                 <DialogClose asChild>
-                                  <Button type="button" variant="outline" disabled={isPending}>
+                                  <Button
+                                    type="button"
+                                    variant="outline"
+                                    disabled={isPending}
+                                  >
                                     Cancel
                                   </Button>
                                 </DialogClose>
