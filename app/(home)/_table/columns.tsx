@@ -36,11 +36,10 @@ export const columns: ColumnDef<Config>[] = [
     header: 'Logo',
     accessorKey: 'community.logo',
     cell: ({ row }) => {
-
       const communityConfig = new CommunityConfig(row.original);
       const tokenSymbol = communityConfig.primaryToken.symbol;
       const logoUrl = communityConfig.community.logo;
-      
+
       return (
         <div className="min-w-[50px]">
           <CommunityLogo logoUrl={logoUrl} tokenSymbol={tokenSymbol} />

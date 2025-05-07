@@ -1,18 +1,31 @@
 'use client';
-import { useState, useEffect } from 'react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
+import { Button } from '@/components/ui/button';
+import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
+import { Skeleton } from '@/components/ui/skeleton';
 import { cn, formatAddress } from '@/lib/utils';
 import { MemberT } from '@/services/chain-db/members';
-import { ColumnDef } from '@tanstack/react-table';
-import { Skeleton } from '@/components/ui/skeleton';
 import {
-  MINTER_ROLE,
+  CommunityConfig,
+  Config,
   hasRole as CWCheckRoleAccess,
-  CommunityConfig
+  MINTER_ROLE
 } from '@citizenwallet/sdk';
-import { JsonRpcProvider } from 'ethers';
-import { Copy, X } from 'lucide-react';
-import { Check } from 'lucide-react';
+import { ColumnDef } from '@tanstack/react-table';
+import { ethers, JsonRpcProvider } from 'ethers';
+import { Check, Copy, Trash, X } from 'lucide-react';
+import Link from 'next/link';
+import { useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { deleteProfileAction } from '../[account]/action';
 
 const IDRow = ({ account }: { account: string }) => {
   const [isCopied, setIsCopied] = useState(false);
@@ -46,7 +59,8 @@ const IDRow = ({ account }: { account: string }) => {
 };
 
 export const createColumns = (
-  communityConfig: CommunityConfig
+  communityConfig: CommunityConfig,
+  config: Config
 ): ColumnDef<MemberT>[] => [
   {
     header: 'ID',
@@ -59,32 +73,45 @@ export const createColumns = (
       const { image, username, name, account } = row.original;
 
       const isAnonymous = username?.includes('anonymous');
-      const isZeroAddress =
-        account === '0x0000000000000000000000000000000000000000';
+      const isZeroAddress = ethers.ZeroAddress === account;
+
+      const colour = communityConfig.community.theme?.primary || '#6B5CA4';
+
+      const style = {
+        backgroundColor: `${colour}1A`, // 10% opacity
+        borderColor: `${colour}33`, // 20% opacity
+        color: colour
+      };
 
       return (
-        <div className="flex items-center gap-2 w-[250px]">
-          <Avatar className="h-10 w-10 flex-shrink-0">
-            <AvatarImage src={image} alt={username} />
-            <AvatarFallback>{username.slice(0, 2)}</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col min-w-0">
-            <span className="font-medium truncate">
-              {isAnonymous
-                ? isZeroAddress
-                  ? communityConfig.community.name
-                  : `@${username}`
-                : `@${username}`}
-            </span>
-            <span className="text-xs font-mono truncate">
-              {isAnonymous
-                ? isZeroAddress
-                  ? communityConfig.community.name
-                  : formatAddress(account)
-                : name}
-            </span>
+        <Link
+          href={`members/${account}/edit`}
+          style={style}
+          className={`block hover:bg-opacity-10 rounded-lg transition-colors`}
+        >
+          <div className="flex items-center gap-2 w-[250px] p-2">
+            <Avatar className="h-10 w-10 flex-shrink-0">
+              <AvatarImage src={image} alt={username} />
+              <AvatarFallback>{username.slice(0, 2)}</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col min-w-0">
+              <span className="font-medium truncate">
+                {isAnonymous
+                  ? isZeroAddress
+                    ? communityConfig.community.name
+                    : `@${username}`
+                  : `@${username}`}
+              </span>
+              <span className="text-xs font-mono truncate">
+                {isAnonymous
+                  ? isZeroAddress
+                    ? communityConfig.community.name
+                    : formatAddress(account)
+                  : name}
+              </span>
+            </div>
           </div>
-        </div>
+        </Link>
       );
     }
   },
@@ -196,6 +223,87 @@ export const createColumns = (
         </div>
       );
     }
+  },
+  {
+    header: 'Actions',
+    cell: function RemoveCell({ row }) {
+      const [isDialogOpen, setIsDialogOpen] = useState(false);
+      const [isPending, setIsPending] = useState(false);
+
+      const { image, account } = row.original;
+
+      const handleOpenDialog = () => {
+        setIsDialogOpen(true);
+      };
+
+      const handleCloseDialog = () => {
+        setIsDialogOpen(false);
+      };
+
+      const onRemoveMember = async () => {
+        try {
+          setIsPending(true);
+          await deleteProfileAction(
+            image,
+            config.community.alias,
+            config,
+            account
+          );
+          handleCloseDialog();
+          toast.success('Member removed successfully');
+        } catch (error) {
+          if (error instanceof Error) {
+            toast.error(error.message);
+          } else {
+            toast.error('Could not remove member');
+          }
+        } finally {
+          setIsPending(false);
+        }
+      };
+
+      return (
+        <>
+          <div className="flex items-center gap-2">
+            <Button
+              variant="outline"
+              className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+              disabled={isPending}
+              onClick={handleOpenDialog}
+            >
+              <Trash size={16} />
+              Remove
+            </Button>
+          </div>
+
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Remove Member</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to remove this member?
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="sm:justify-start gap-2">
+                <Button
+                  disabled={isPending}
+                  onClick={onRemoveMember}
+                  type="button"
+                  variant="destructive"
+                >
+                  {isPending ? 'Removing...' : 'Remove'}
+                </Button>
+                <DialogClose asChild>
+                  <Button type="button" variant="outline" disabled={isPending}>
+                    Cancel
+                  </Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
+        </>
+      );
+    }
   }
 ];
 
@@ -246,6 +354,14 @@ export const skeletonColumns: ColumnDef<MemberT>[] = [
   },
   {
     header: 'Updated at',
+    cell: () => (
+      <div className="min-w-[150px]">
+        <Skeleton className="h-4 w-32" />
+      </div>
+    )
+  },
+  {
+    header: 'Actions',
     cell: () => (
       <div className="min-w-[150px]">
         <Skeleton className="h-4 w-32" />
