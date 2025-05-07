@@ -4,6 +4,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
+import {
   Form,
   FormControl,
   FormField,
@@ -20,7 +29,7 @@ import {
   checkUsernameAvailability
 } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { PenLine, Save, Trash2, Upload, User } from 'lucide-react';
+import { Save, Trash2, Upload, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -50,7 +59,7 @@ export default function Profile({
   config: Config;
 }) {
   const community = useMemo(() => new CommunityConfig(config), [config]);
-  const [isEditing, setIsEditing] = useState(false);
+  const [isEditing, setIsEditing] = useState(hasAdminRole);
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -74,10 +83,7 @@ export default function Profile({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [debouncedUsername] = useDebounce(form.watch('username'), 300);
   const [isLoading, setIsLoading] = useState(false);
-
-  const handleEdit = () => {
-    setIsEditing(true);
-  };
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
 
   useEffect(() => {
     if (debouncedUsername && usernameEdit && isEditing) {
@@ -126,8 +132,15 @@ export default function Profile({
         setIsLoading(false);
         return;
       }
-      const cidPath = new URL(memberData?.image || '').pathname;
-      let cid = cidPath.slice(1);
+
+      //check memberData.image is URL or not
+      let cid = '';
+      if (isValidURL(memberData?.image || '')) {
+        const cidPath = new URL(memberData?.image || '').pathname;
+        cid = cidPath.slice(1);
+      } else {
+        cid = memberData?.image || '';
+      }
 
       if (userData.avatarUrl != memberData?.image) {
         if (!imageFile) {
@@ -170,41 +183,28 @@ export default function Profile({
   };
 
   //handle the delete profile
-  const handleDelete = () => {
-    toast.custom((t) => (
-      <div className="flex flex-col gap-2 bg-background p-2 rounded-lg border">
-        <h3 className="font-semibold text-base">Delete Profile</h3>
-        <p className="text-sm text-muted-foreground">
-          This will permanently delete this member profile.
-        </p>
-        <div className="flex gap-2 justify-end pt-2">
-          <Button variant="outline" onClick={() => toast.dismiss(t)}>
-            Cancel
-          </Button>
-          <Button
-            variant="destructive"
-            disabled={isLoading}
-            onClick={async () => {
-              setIsLoading(true);
-              await deleteProfileAction(
-                userData.avatarUrl || '',
-                config.community.alias,
-                config,
-                memberData?.account || ''
-              );
-              setIsLoading(false);
-              toast.success('Profile deleted successfully', {
-                onAutoClose: () => {
-                  router.push(`/${config.community.alias}/members`);
-                }
-              });
-            }}
-          >
-            {isLoading ? 'Deleting...' : 'Delete'}
-          </Button>
-        </div>
-      </div>
-    ));
+  const handleDelete = async () => {
+    try {
+      setIsLoading(true);
+      await deleteProfileAction(
+        userData.avatarUrl || '',
+        config.community.alias,
+        config,
+        memberData?.account || ''
+      );
+
+      toast.success('Profile deleted successfully', {
+        onAutoClose: () => {
+          router.push(`/${config.community.alias}/members`);
+        }
+      });
+    } catch (error) {
+      console.error('Error deleting profile:', error);
+      toast.error('Error deleting profile');
+    } finally {
+      setIsLoading(false);
+      setIsDialogOpen(false);
+    }
   };
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -223,6 +223,15 @@ export default function Profile({
     fileInputRef.current?.click();
   };
 
+  const isValidURL = (str: string) => {
+    try {
+      new URL(str);
+      return true;
+    } catch (error) {
+      console.error('Error validating URL:', error);
+      return false;
+    }
+  };
   return (
     <Card className="shadow-lg border-0">
       <CardContent className="pt-6">
@@ -328,7 +337,7 @@ export default function Profile({
       {/* it can access only admin and community owner  */}
       {hasAdminRole && (
         <CardFooter className="flex justify-between pt-6">
-          {isEditing ? (
+          {isEditing && (
             <div className="flex gap-3">
               <Button
                 onClick={form.handleSubmit(onSubmit)}
@@ -338,39 +347,46 @@ export default function Profile({
                 <Save className="h-4 w-4" />
                 {isLoading ? 'Saving...' : 'Save Changes'}
               </Button>
-              <Button
-                variant="outline"
-                onClick={() => {
-                  setIsEditing(false);
-                  setUsernameEdit(false);
-                  form.reset();
-                }}
-                disabled={isLoading}
-              >
-                Cancel
-              </Button>
             </div>
-          ) : (
-            <Button
-              onClick={handleEdit}
-              variant="outline"
-              className="gap-2"
-              disabled={isLoading}
-            >
-              <PenLine className="h-4 w-4" />
-              Edit Profile
-            </Button>
           )}
 
           <Button
             variant="destructive"
-            onClick={handleDelete}
+            onClick={() => {
+              setIsDialogOpen(true);
+            }}
             className="gap-2"
             disabled={isLoading}
           >
             <Trash2 className="h-4 w-4" />
             Delete Account
           </Button>
+
+          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+            <DialogContent className="sm:max-w-md">
+              <DialogHeader>
+                <DialogTitle>Remove Member</DialogTitle>
+                <DialogDescription>
+                  Are you sure you want to remove this member?
+                </DialogDescription>
+              </DialogHeader>
+              <DialogFooter className="sm:justify-start gap-2">
+                <Button
+                  disabled={isLoading}
+                  onClick={handleDelete}
+                  type="button"
+                  variant="destructive"
+                >
+                  {isLoading ? 'Removing...' : 'Remove'}
+                </Button>
+                <DialogClose asChild>
+                  <Button type="button" variant="outline" disabled={isLoading}>
+                    Cancel
+                  </Button>
+                </DialogClose>
+              </DialogFooter>
+            </DialogContent>
+          </Dialog>
         </CardFooter>
       )}
     </Card>
