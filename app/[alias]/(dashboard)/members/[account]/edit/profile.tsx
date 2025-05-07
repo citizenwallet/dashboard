@@ -4,6 +4,15 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import {
+  Dialog,
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogFooter,
+  DialogHeader,
+  DialogTitle
+} from '@/components/ui/dialog';
+import {
   Form,
   FormControl,
   FormField,
@@ -20,7 +29,7 @@ import {
   checkUsernameAvailability
 } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { PenLine, Save, Trash2, Upload, User } from 'lucide-react';
+import { Save, Trash2, Upload, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
@@ -33,15 +42,6 @@ import {
   updateProfileAction,
   updateProfileImageAction
 } from '../action';
-import {
-  Dialog,
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogFooter,
-  DialogHeader,
-  DialogTitle
-} from '@/components/ui/dialog';
 
 const formSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -232,7 +232,8 @@ export default function Profile({
     try {
       new URL(str);
       return true;
-    } catch (_) {
+    } catch (error) {
+      console.error('Error validating URL:', error);
       return false;
     }
   }
