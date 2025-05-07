@@ -109,17 +109,6 @@ export default function RolePage({
     setIsAddDialogOpen(false);
   };
 
-  const revokeAccess = async (account: string) => {
-    setIsLoading(true);
-    const res = await revokeRoleAction({ config, account: account });
-    if (res.success) {
-      toast.success('Access revoked successfully.');
-    } else {
-      toast.error('Failed to revoke access.');
-    }
-    setIsLoading(false);
-  };
-
   const handleGrantAccess = () => {
     if (!hasAdminRole) {
       toast.error('You do not have permission to revoke access.');
@@ -130,40 +119,6 @@ export default function RolePage({
 
   };
 
-  const handleRevokeAccess = (id: string) => {
-    setIsLoading(false);
-    if (!hasAdminRole) {
-      toast.error('You do not have permission to revoke access.');
-      return;
-    }
-
-    toast.custom((t) => (
-      <div>
-        <h3>Are you sure you want to revoke access to this member?</h3>
-        <div className="mt-4 flex justify-end gap-3">
-          <Button
-            className="ml-4 bg-red-600 text-white hover:bg-red-700"
-            onClick={() => {
-              toast.dismiss(t);
-              setIsLoading(false);
-            }}
-          >
-            Cancel
-          </Button>
-          <Button
-            onClick={() => {
-              revokeAccess(id);
-            }}
-          >
-            {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
-            Confirm
-          </Button>
-        </div>
-      </div>
-    ));
-  };
-
-
   const commandListRef = useRef<HTMLDivElement>(null)
   const handleWheel = useCallback((e: React.WheelEvent) => {
     if (commandListRef.current) {
@@ -171,8 +126,6 @@ export default function RolePage({
       commandListRef.current.scrollTop += e.deltaY
     }
   }, [])
-
-
 
 
   return (
@@ -377,20 +330,72 @@ export default function RolePage({
 
                   {
                     header: 'Actions',
-                    cell: ({ row }) => {
+                    cell: function RemoveCell({ row }) {
+                      const [isDialogOpen, setIsDialogOpen] = useState(false);
+                      const [isPending, setIsPending] = useState(false);
+
+
+                      const handleOpenDialog = () => {
+                        setIsDialogOpen(true);
+                      };
+
+
+                      const revokeAccess = async (account: string) => {
+
+                        if (!hasAdminRole) {
+                          toast.error('You do not have permission to revoke access.');
+                          return;
+                        }
+                        setIsPending(true);
+                        const res = await revokeRoleAction({ config, account: account });
+                        if (res.success) {
+                          toast.success('Access revoked successfully.');
+                        } else {
+                          toast.error('Failed to revoke access.');
+                        }
+                        setIsPending(false);
+                        setIsDialogOpen(false);
+                      };
                       return (
-                        <div className="flex items-center gap-2">
-                          <Button
-                            variant="outline"
-                            className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                            onClick={() =>
-                              handleRevokeAccess(row.original.account_address)
-                            }
-                          >
-                            <Trash size={16} />
-                            Revoke Access
-                          </Button>
-                        </div>
+                        <>
+                          <div className="flex items-center gap-2">
+                            <Button
+                              variant="outline"
+                              className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                              disabled={isPending}
+                              onClick={handleOpenDialog}
+                            >
+                              <Trash size={16} />
+                              Revoke Access
+                            </Button>
+                          </div>
+
+                          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                            <DialogContent className="sm:max-w-md">
+                              <DialogHeader>
+                                <DialogTitle>Revoke Access</DialogTitle>
+                                <DialogDescription>
+                                  Are you sure you want to revoke access to this member?
+                                </DialogDescription>
+                              </DialogHeader>
+                              <DialogFooter className="sm:justify-start gap-2">
+                                <Button
+                                  disabled={isPending}
+                                  onClick={() => revokeAccess(row.original.account_address)}
+                                  type="button"
+                                  variant="destructive"
+                                >
+                                  {isPending ? 'Revoking...' : 'Revoke'}
+                                </Button>
+                                <DialogClose asChild>
+                                  <Button type="button" variant="outline" disabled={isPending}>
+                                    Cancel
+                                  </Button>
+                                </DialogClose>
+                              </DialogFooter>
+                            </DialogContent>
+                          </Dialog>
+                        </>
                       );
                     }
                   }
