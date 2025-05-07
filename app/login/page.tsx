@@ -12,7 +12,7 @@ export default function Page() {
   const searchParams = useSearchParams();
 
   const [step, setStep] = useState<'email' | 'otp'>('email'); // toggle between email and otp form
-  const [email, setEmail] = useState(''); // value of email from emai form
+  const [email, setEmail] = useState(''); // value of email from email form
   const [isAutoSigningIn, setIsAutoSigningIn] = useState(false);
   const router = useRouter();
 
