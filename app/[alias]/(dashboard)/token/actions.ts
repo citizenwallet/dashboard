@@ -48,8 +48,7 @@ export const mintTokenToMemberAction = async (args: {
   formData: z.infer<typeof mintTokenFormSchema>;
 }) => {
   const { config, formData } = args;
-  const { chain_id: chainId, address: tokenAddress } =
-    config.community.primary_token;
+  const { address: tokenAddress } = config.community.primary_token;
   const communityConfig = new CommunityConfig(config);
   const bundlerService = new BundlerService(communityConfig);
 
@@ -68,8 +67,7 @@ export const mintTokenToMemberAction = async (args: {
     throw new Error('You are not authorized to mint tokens');
   }
 
-  const serverWalletPrivateKey =
-    process.env[`SERVER_${chainId}_WALLET_PRIVATE_KEY`] ?? '';
+  const serverWalletPrivateKey = process.env['SERVER_PRIVATE_KEY'] ?? '';
 
   if (!serverWalletPrivateKey) {
     throw new Error('Signer cannot be found');
@@ -114,8 +112,7 @@ export const burnTokenFromMemberAction = async (args: {
   formData: z.infer<typeof burnTokenFormSchema>;
 }) => {
   const { config, formData } = args;
-  const { chain_id: chainId, address: tokenAddress } =
-    config.community.primary_token;
+  const { address: tokenAddress } = config.community.primary_token;
   const communityConfig = new CommunityConfig(config);
   const bundlerService = new BundlerService(communityConfig);
 
@@ -134,8 +131,7 @@ export const burnTokenFromMemberAction = async (args: {
     throw new Error('You are not authorized to burn tokens');
   }
 
-  const serverWalletPrivateKey =
-    process.env[`SERVER_${chainId}_WALLET_PRIVATE_KEY`] ?? '';
+  const serverWalletPrivateKey = process.env['SERVER_PRIVATE_KEY'] ?? '';
 
   if (!serverWalletPrivateKey) {
     throw new Error('Signer cannot be found');
