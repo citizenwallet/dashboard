@@ -4,7 +4,7 @@ import { CheckCircle } from "lucide-react";
 import { useEffect, useState } from "react";
 
 
-export default function page() {
+export default function Page() {
     const [animate, setAnimate] = useState(false)
     useEffect(() => {
         const timer = setTimeout(() => setAnimate(true), 100)
