@@ -3,16 +3,34 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { cn } from '@/lib/utils';
+import { ProfileWithTokenId } from '@citizenwallet/sdk';
 import { Loader2 } from 'lucide-react';
 import Image from "next/image";
 import { useState } from 'react';
 
 const PRESET_AMOUNTS = [10, 20, 50, 100];
 
-export default function Onramp({ image }: { image: string }) {
+interface TopUpSelectorProps {
+    connectedAccount?: string;
+    accountOrUsername: string;
+    connectedProfile?: ProfileWithTokenId | null;
+    sigAuthRedirect?: string;
+    image: string;
+}
+
+
+export default function Onramp({
+    image,
+    connectedAccount,
+    accountOrUsername,
+    connectedProfile,
+    sigAuthRedirect
+}:
+    TopUpSelectorProps
+) {
     const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
     const [customAmount, setCustomAmount] = useState("");
-    const [address, setAddress] = useState("");
+    const [address, setAddress] = useState(connectedAccount || "");
     const [loading, setLoading] = useState(false);
     const [addressTouched, setAddressTouched] = useState(false);
 
@@ -71,24 +89,49 @@ export default function Onramp({ image }: { image: string }) {
             <form className="space-y-6">
                 <h2 className="text-2xl font-bold">Top Up Account</h2>
 
-                <div className="space-y-2">
-                    <Label htmlFor="address" className="flex justify-between">
-                        <span>Account Address</span>
-
-                    </Label>
-                    <Input
-                        id="address"
-                        placeholder="Enter address (0x...)"
-                        value={address}
-                        onChange={handleAddressChange}
-                        onBlur={handleAddressBlur}
-                        className={cn(
-                            "w-full",
-                            showAddressError &&
-                            "border-destructive focus-visible:ring-destructive"
+                {connectedAccount && connectedProfile && (
+                    <div className="flex items-center gap-4">
+                        <Image
+                            src={connectedProfile.image}
+                            alt={connectedProfile.name}
+                            width={20}
+                            height={20}
+                            className="rounded-full h-8 w-8 object-cover"
+                        />
+                        {connectedProfile.name ? (
+                            <div className="text-sm">
+                                {connectedProfile.name} (@{connectedProfile.username})
+                            </div>
+                        ) : (
+                            <div className="text-sm">@{connectedProfile.username}</div>
                         )}
-                    />
-                </div>
+                    </div>
+                )}
+
+                {!connectedAccount && (
+                    <div className="space-y-2">
+                        <Label htmlFor="address" className="flex justify-between">
+                            <span>Account Address</span>
+                            {showAddressError && (
+                                <span className="text-sm text-destructive">
+                                    Invalid Ethereum address
+                                </span>
+                            )}
+                        </Label>
+                        <Input
+                            id="address"
+                            placeholder="Enter address (0x...)"
+                            value={address}
+                            onChange={handleAddressChange}
+                            onBlur={handleAddressBlur}
+                            className={cn(
+                                "w-full",
+                                showAddressError &&
+                                "border-destructive focus-visible:ring-destructive"
+                            )}
+                        />
+                    </div>
+                )}
 
                 <div className="space-y-4">
                     <Label>Select Amount</Label>
