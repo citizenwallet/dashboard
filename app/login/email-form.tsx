@@ -19,6 +19,8 @@ import { toast } from 'sonner';
 import { z } from 'zod';
 import { getUserByEmailAction, submitEmailFormAction } from './actions';
 import { emailFormSchema } from './form-schema';
+import { SessionLogic } from 'state/session/action';
+import { useSessionStore } from 'state/session/state';
 
 interface EmailFormProps {
   onSuccess: (email: string) => void;
@@ -26,6 +28,7 @@ interface EmailFormProps {
 
 export default function EmailForm({ onSuccess }: EmailFormProps) {
   const [isPending, startTransition] = useTransition();
+
 
   const form = useForm<z.infer<typeof emailFormSchema>>({
     resolver: zodResolver(emailFormSchema),
@@ -54,6 +57,7 @@ export default function EmailForm({ onSuccess }: EmailFormProps) {
         const alias = user.users_community_access[0].alias;
         const { community } = await getCommunity(alias);
         const communityConfig = new CommunityConfig(community);
+        const sessionLogic = new SessionLogic(useSessionStore.getState(), community);
 
         const result = await submitEmailFormAction({
           formData: values,
@@ -69,7 +73,10 @@ export default function EmailForm({ onSuccess }: EmailFormProps) {
           throw new Error("Failed to confirm transaction");
         }
 
-        console.log(result)
+        sessionLogic.storePrivateKey(result.privateKey);
+        sessionLogic.storeSessionHash(result.hash);
+        sessionLogic.storeSourceValue(values.email);
+        sessionLogic.storeSourceType(values.type);
 
 
         // await sendOTPAction({ email });
@@ -79,6 +86,7 @@ export default function EmailForm({ onSuccess }: EmailFormProps) {
 
       } catch (error) {
         if (error instanceof Error) {
+          console.log(error)
           toast.error(error.message);
         } else {
           toast.error('Could not send login code');
