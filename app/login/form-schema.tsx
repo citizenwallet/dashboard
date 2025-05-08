@@ -10,7 +10,8 @@ export const emailFormSchema = z.object({
     })
     .email({
       message: 'Invalid email address'
-    })
+    }),
+  type: z.enum(["email"]),
 });
 
 export const otpFormSchema = z.object({
