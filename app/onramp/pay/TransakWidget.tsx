@@ -1,15 +1,15 @@
 "use client"
 
 import { Transak, TransakConfig } from "@transak/transak-sdk";
-import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
+import { useEffect, useState } from "react";
 
 export default function TransakWidget(
     { transakConfig }: { transakConfig: TransakConfig }
 ) {
-
     const [transakInstance, setTransakInstance] = useState<Transak | null>(null);
     const router = useRouter();
+
 
     // Clean up on unmount
     useEffect(() => {
@@ -20,8 +20,7 @@ export default function TransakWidget(
         };
     }, [transakInstance]);
 
-    const openTransak = (): void => {
-        // Create a new container for the Transak widget
+    useEffect(() => {
         const containerId = transakConfig.containerId || 'transakMount';
         let container = document.getElementById(containerId);
 
@@ -51,47 +50,45 @@ export default function TransakWidget(
         setTransakInstance(transak);
         transak.init();
 
-
         // This will trigger when the user closed the widget
         Transak.on(Transak.EVENTS.TRANSAK_WIDGET_CLOSE, (eventData) => {
             console.log(eventData);
-            closeTransak();
+            if (transak) {
+                transak.close();
+                setTransakInstance(null);
+            }
+            // Hide the container
+            if (container) {
+                container.style.display = 'none';
+            }
             router.push('/');
-
         });
 
         // This will trigger when the user marks payment is made.
         Transak.on(Transak.EVENTS.TRANSAK_ORDER_SUCCESSFUL, (orderData) => {
             console.log(orderData);
-            closeTransak();
+            if (transak) {
+                transak.close();
+                setTransakInstance(null);
+            }
+            // Hide the container
+            if (container) {
+                container.style.display = 'none';
+            }
             router.push('/onramp/success');
         });
-    }
 
-    const closeTransak = (): void => {
-        if (transakInstance) {
-            transakInstance.close();
-            setTransakInstance(null);
-        }
-
-        // Hide the container
-        const containerId = transakConfig.containerId || 'transakMount';
-        const container = document.getElementById(containerId);
-        if (container) {
-            container.style.display = 'none';
-        }
-
-    }
-
-    useEffect(() => {
-        openTransak();
-    }, [openTransak]);
+        // Cleanup function
+        return () => {
+            if (transak) {
+                transak.close();
+            }
+        };
+    }, [transakConfig, router]);
 
     return (
         <div className="w-full h-full">
-
             <div id="transakMount" className="w-full h-full"></div>
-
         </div>
-    )
+    );
 }
