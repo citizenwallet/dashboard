@@ -3,8 +3,10 @@ import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Suspense } from 'react';
 import Onramp from './onramp';
+import { getCommunity } from '@/services/cw';
 
 const PRESET_AMOUNTS = [10, 20, 50, 100];
+const ALIAS = 'wallet.pay.brussels';
 
 export default function page() {
     return (
@@ -18,9 +20,10 @@ export default function page() {
 }
 
 async function PageLoader() {
-
+    const { community } = await getCommunity(ALIAS);
+    const image = community.community.logo;
     return (
-        <Onramp />
+        <Onramp image={image} />
     );
 }
 
