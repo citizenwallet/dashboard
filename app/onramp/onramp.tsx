@@ -12,9 +12,7 @@ const PRESET_AMOUNTS = [10, 20, 50, 100];
 
 interface TopUpSelectorProps {
     connectedAccount?: string;
-    accountOrUsername: string;
     connectedProfile?: ProfileWithTokenId | null;
-    sigAuthRedirect?: string;
     image: string;
 }
 
@@ -22,9 +20,7 @@ interface TopUpSelectorProps {
 export default function Onramp({
     image,
     connectedAccount,
-    accountOrUsername,
-    connectedProfile,
-    sigAuthRedirect
+    connectedProfile
 }:
     TopUpSelectorProps
 ) {
@@ -64,16 +60,15 @@ export default function Onramp({
 
 
     const handleSubmit = async (e: React.FormEvent) => {
+
         e.preventDefault();
-        if (!isValidEthereumAddress(address) || !finalAmount) return;
 
         try {
             setLoading(true);
 
-            let amount = parseFloat(customAmount) * 100;
-            if (selectedAmount) {
-                amount = selectedAmount * 100;
-            }
+            const amount = selectedAmount ? selectedAmount : parseFloat(customAmount);
+            console.log(amount)
+
             // the pass ontramp
         } catch (error) {
             console.error(error);
@@ -178,17 +173,6 @@ export default function Onramp({
                                 placeholder="Enter amount"
                                 value={customAmount}
                                 onChange={handleCustomAmountChange}
-                                onKeyDown={(e) => {
-                                    if (e.key !== "Enter") {
-                                        return;
-                                    }
-
-                                    if (!isValidEthereumAddress(address) || !finalAmount) {
-                                        return;
-                                    }
-
-                                    handleSubmit(e);
-                                }}
                             />
                         </div>
                     </div>
@@ -196,7 +180,8 @@ export default function Onramp({
 
 
                 <Button
-                    type="submit"
+                    type="button"
+                    onClick={handleSubmit}
                     disabled={!isValidEthereumAddress(address) || !finalAmount}
                     className={cn(
                         "w-full py-4 text-lg h-auto",
