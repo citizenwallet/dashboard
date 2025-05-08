@@ -1,22 +1,24 @@
 'use client';
-import { useTransition } from 'react';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
-import { Input } from '@/components/ui/input';
-import { useForm } from 'react-hook-form';
-import { toast } from 'sonner';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { emailFormSchema } from './form-schema';
-import { z } from 'zod';
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage
 } from '@/components/ui/form';
-import { getUserByEmailAction, sendOTPAction } from './actions';
+import { Input } from '@/components/ui/input';
+import { getCommunity } from '@/services/cw';
+import { CommunityConfig, waitForTxSuccess } from '@citizenwallet/sdk';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useTransition } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
+import { getUserByEmailAction, submitEmailFormAction } from './actions';
+import { emailFormSchema } from './form-schema';
 
 interface EmailFormProps {
   onSuccess: (email: string) => void;
@@ -28,11 +30,13 @@ export default function EmailForm({ onSuccess }: EmailFormProps) {
   const form = useForm<z.infer<typeof emailFormSchema>>({
     resolver: zodResolver(emailFormSchema),
     defaultValues: {
-      email: ''
+      email: "",
+      type: "email",
     }
   });
 
   async function onSubmit(values: z.infer<typeof emailFormSchema>) {
+
     const { email } = values;
     startTransition(async () => {
       try {
@@ -42,9 +46,37 @@ export default function EmailForm({ onSuccess }: EmailFormProps) {
           throw new Error(`User with email ${email} not found`);
         }
 
-        await sendOTPAction({ email });
-        onSuccess(values.email);
-        toast.success(`Login code sent to ${values.email}`);
+        if (user.role === "admin") {
+          console.log("you are admin")
+        }
+
+        //This part not run on admin role
+        const alias = user.users_community_access[0].alias;
+        const { community } = await getCommunity(alias);
+        const communityConfig = new CommunityConfig(community);
+
+        const result = await submitEmailFormAction({
+          formData: values,
+          config: community
+        });
+
+        const successReceipt = await waitForTxSuccess(
+          communityConfig,
+          result.sessionRequestTxHash,
+        );
+
+        if (!successReceipt) {
+          throw new Error("Failed to confirm transaction");
+        }
+
+        console.log(result)
+
+
+        // await sendOTPAction({ email });
+        // onSuccess(values.email);
+        // toast.success(`Login code sent to ${values.email}`);
+
+
       } catch (error) {
         if (error instanceof Error) {
           toast.error(error.message);
