@@ -85,7 +85,7 @@ export default function TransakWidget(
 
     useEffect(() => {
         openTransak();
-    }, []);
+    }, [openTransak]);
 
     return (
         <div className="w-full h-full">
