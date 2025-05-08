@@ -48,7 +48,8 @@ async function getMembersOverview({ alias }: { alias: string }) {
   const { count } = await getMembersAction({
     config,
     query: '',
-    page: 1
+    page: 1,
+    showAllMembers: true
   });
 
   return (
