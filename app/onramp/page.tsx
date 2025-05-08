@@ -10,7 +10,6 @@ const PRESET_AMOUNTS = [10, 20, 50, 100];
 const ALIAS = 'wallet.pay.brussels';
 
 interface OnrampProps {
-    params: Promise<{ accountOrUsername: string }>;
     searchParams: Promise<{
         account?: string;
         sigAuthAccount?: string;
@@ -20,9 +19,8 @@ interface OnrampProps {
     }>;
 }
 
-export default async function page({ params, searchParams }: OnrampProps) {
+export default async function page({ searchParams }: OnrampProps) {
 
-    const { accountOrUsername } = await params;
     const {
         account,
         sigAuthAccount,
@@ -37,7 +35,6 @@ export default async function page({ params, searchParams }: OnrampProps) {
             <Suspense fallback={<Fallback />}>
                 <PageLoader
                     account={account}
-                    accountOrUsername={accountOrUsername}
                     sigAuthAccount={sigAuthAccount}
                     sigAuthExpiry={sigAuthExpiry}
                     sigAuthSignature={sigAuthSignature}
@@ -51,14 +48,12 @@ export default async function page({ params, searchParams }: OnrampProps) {
 async function PageLoader(
     {
         account,
-        accountOrUsername,
         sigAuthAccount,
         sigAuthExpiry,
         sigAuthSignature,
         sigAuthRedirect
     }: {
         account?: string;
-        accountOrUsername: string;
         sigAuthAccount?: string;
         sigAuthExpiry?: string;
         sigAuthSignature?: string;
@@ -97,9 +92,7 @@ async function PageLoader(
         <Onramp
             image={image}
             connectedAccount={connectedAccount}
-            accountOrUsername={accountOrUsername}
             connectedProfile={connectedProfile}
-            sigAuthRedirect={sigAuthRedirect}
 
         />
     );
