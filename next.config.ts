@@ -15,6 +15,11 @@ export default {
         protocol: 'https',
         hostname: 'randomuser.me',
         pathname: '/api/portraits/**'
+      },
+      {
+        protocol: 'https',
+        hostname: 'assets.citizenwallet.xyz',
+        search: ''
       }
     ]
   }
