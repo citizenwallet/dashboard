@@ -2,16 +2,12 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { otpFormSchema } from './form-schema';
-import { z } from 'zod';
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage
 } from '@/components/ui/form';
 import {
@@ -19,11 +15,20 @@ import {
   InputOTPGroup,
   InputOTPSlot
 } from '@/components/ui/input-otp';
-import { useTransition } from 'react';
-import { toast } from 'sonner';
+import { getCommunity } from '@/services/cw';
+import { CommunityConfig, waitForTxSuccess } from '@citizenwallet/sdk';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Mail } from 'lucide-react';
-import { signInWithOTP } from './actions';
 import { useRouter } from 'next/navigation';
+import { useTransition } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { SessionLogic } from 'state/session/action';
+import { useSessionStore } from 'state/session/state';
+import { z } from 'zod';
+import { getUserByEmailAction, signInWithOTP, signInWithOutOTP, submitOtpFormAction } from './actions';
+import { otpFormSchema } from './form-schema';
+
 
 interface OtpFormProps {
   email: string;
@@ -40,30 +45,71 @@ export default function OtpForm({
 }: OtpFormProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const sessionState = useSessionStore.getState();
+
   const form = useForm<z.infer<typeof otpFormSchema>>({
     resolver: zodResolver(otpFormSchema),
     defaultValues: {
-      code: ''
-    }
+      code: "",
+      sessionRequestHash: sessionState.hash ?? "",
+      privateKey: sessionState.privateKey ?? "",
+    },
   });
 
   async function onSubmit(values: z.infer<typeof otpFormSchema>) {
     const { code } = values;
     startTransition(async () => {
       try {
-        const result = await signInWithOTP({ email, code });
-        if (result?.success) {
+
+        const user = await getUserByEmailAction({ email });
+
+        if (!user) {
+          throw new Error(`User with email ${email} not found`);
+        }
+
+        if (user.role === "admin") {
+          const result = await signInWithOTP({ email, code });
+          if (result?.success) {
+            toast.success('Login successful!');
+            router.push('/');
+          }
+        }
+
+        const alias = user.users_community_access[0].alias;
+        const { community } = await getCommunity(alias);
+        const communityConfig = new CommunityConfig(community);
+        const sessionLogic = new SessionLogic(useSessionStore.getState(), community);
+
+        const result = await submitOtpFormAction({
+          formData: values,
+          config: community,
+        });
+
+        const successReceipt = await waitForTxSuccess(
+          communityConfig,
+          result.sessionRequestTxHash,
+        );
+
+        if (!successReceipt) {
+          throw new Error("Failed to confirm transaction");
+        }
+
+        const address = await sessionLogic.getAccountAddress();
+
+        if (!address) {
+          throw new Error("Failed to create account");
+        }
+
+        console.log("accountAddress", address)
+
+        const response = await signInWithOutOTP({ email, address });
+        if (response?.success) {
           toast.success('Login successful!');
           router.push('/');
         }
+
       } catch (error) {
         console.error(error);
-        if (error instanceof Error) {
-          // Display the exact error message from auth.config.ts
-          toast.error(error.message);
-        } else {
-          toast.error('Could not verify login code');
-        }
       }
     });
   }

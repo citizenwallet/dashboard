@@ -19,7 +19,7 @@ import { toast } from 'sonner';
 import { SessionLogic } from 'state/session/action';
 import { useSessionStore } from 'state/session/state';
 import { z } from 'zod';
-import { getUserByEmailAction, submitEmailFormAction } from './actions';
+import { getUserByEmailAction, sendOTPAction, submitEmailFormAction } from './actions';
 import { emailFormSchema } from './form-schema';
 
 interface EmailFormProps {
@@ -51,6 +51,10 @@ export default function EmailForm({ onSuccess }: EmailFormProps) {
 
         if (user.role === "admin") {
           console.log("you are admin")
+          await sendOTPAction({ email });
+          onSuccess(values.email);
+          toast.success(`Login code sent to ${values.email}`);
+          return;
         }
 
         //This part not run on admin role

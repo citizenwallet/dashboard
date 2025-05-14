@@ -62,6 +62,7 @@ export async function signInWithOTP(args: { email: string; code: string }) {
     await signIn('credentials', {
       email,
       code,
+      address: 0,
       redirect: false
     });
 
@@ -80,6 +81,34 @@ export async function signInWithOTP(args: { email: string; code: string }) {
   }
 }
 
+export async function signInWithOutOTP(args: {
+  email: string;
+  address: string;
+}) {
+  const { email, address } = args;
+
+  try {
+    await signIn('credentials', {
+      email,
+      code: 0,
+      address,
+      redirect: false
+    });
+
+    return { success: true };
+  } catch (error) {
+    console.error('error', JSON.stringify(error, null, 2));
+    if (error instanceof CredentialsSignin) {
+      throw new Error(
+        error.message.replace(
+          'Read more at https://errors.authjs.dev#credentialssignin',
+          ''
+        )
+      );
+    }
+    throw new Error('Sign in failed');
+  }
+}
 //This part not run on admin role
 export async function submitEmailFormAction({
   formData,
