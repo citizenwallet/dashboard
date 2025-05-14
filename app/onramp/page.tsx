@@ -7,7 +7,7 @@ import { getCommunity } from '@/services/cw';
 import { CommunityConfig, getProfileFromAddress, ProfileWithTokenId } from '@citizenwallet/sdk';
 
 const PRESET_AMOUNTS = [10, 20, 50, 100];
-const ALIAS = 'wallet.pay.brussels';
+const ALIAS = 'ctzn';
 
 interface OnrampProps {
     searchParams: Promise<{
