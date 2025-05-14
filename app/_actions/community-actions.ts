@@ -89,15 +89,9 @@ const fetchCommunitiesForUserAction = async (args: {
   return { communities, total: communities.length };
 };
 
-const fetchCommunitiesForAdminAction = async (args: {
+export const fetchCommunitiesForAdminAction = async (args: {
   query?: string;
 }): Promise<{ communities: Config[]; total: number }> => {
-  const userRole = await getAuthUserRoleInAppAction();
-
-  if (userRole !== 'admin') {
-    throw new Error('Unauthorized');
-  }
-
   if (!process.env.COMMUNITIES_CONFIG_URL) {
     throw new Error('COMMUNITIES_CONFIG_URL is not set');
   }
