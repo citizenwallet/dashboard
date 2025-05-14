@@ -10,38 +10,21 @@ const authConfig = {
       name: 'OTP Login',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        code: { label: 'Verification Code', type: 'text' }
+        code: { label: 'Verification Code', type: 'text' },
+        address: { label: 'Address', type: 'text' }
       },
       authorize: async (credentials, request) => {
         let user = null;
 
         const email = credentials?.email as string;
         const code = credentials?.code as string;
+        const address = credentials?.address as string;
 
-        if (!email || !code) {
+        if (!email || !code || !address) {
           return null;
         }
 
         const client = getServiceRoleClient();
-        const { data, error } = await getOTPOfSource({ client, source: email });
-
-        if (error) {
-          throw new CredentialsSignin(
-            `Failed to get login code for email ${email}`
-          );
-        }
-
-        if (!data) {
-          throw new CredentialsSignin(`No login code found for email ${email}`);
-        }
-
-        if (data.expires_at < new Date()) {
-          throw new CredentialsSignin(`Login code expired for email ${email}`);
-        }
-
-        if (data.code !== code) {
-          throw new CredentialsSignin(`Invalid login code for email ${email}`);
-        }
 
         const { data: userData, error: userError } = await getUserByEmail({
           client,
@@ -56,13 +39,45 @@ const authConfig = {
           throw new CredentialsSignin(`User not found for email ${email}`);
         }
 
-        deleteOTPOfSource({ client, source: email });
+        if (userData.role === 'admin') {
+          const { data, error } = await getOTPOfSource({
+            client,
+            source: email
+          });
+
+          if (error) {
+            throw new CredentialsSignin(
+              `Failed to get login code for email ${email}`
+            );
+          }
+
+          if (!data) {
+            throw new CredentialsSignin(
+              `No login code found for email ${email}`
+            );
+          }
+
+          if (data.expires_at < new Date()) {
+            throw new CredentialsSignin(
+              `Login code expired for email ${email}`
+            );
+          }
+
+          if (data.code !== code) {
+            throw new CredentialsSignin(
+              `Invalid login code for email ${email}`
+            );
+          }
+
+          deleteOTPOfSource({ client, source: email });
+        }
 
         user = {
           id: userData.id.toString(),
           email: userData.email,
           name: userData.name,
-          avatar: userData.avatar
+          avatar: userData.avatar,
+          address: address
         };
 
         return user;
