@@ -16,11 +16,11 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { SessionLogic } from 'state/session/action';
+import { useSessionStore } from 'state/session/state';
 import { z } from 'zod';
 import { getUserByEmailAction, submitEmailFormAction } from './actions';
 import { emailFormSchema } from './form-schema';
-import { SessionLogic } from 'state/session/action';
-import { useSessionStore } from 'state/session/state';
 
 interface EmailFormProps {
   onSuccess: (email: string) => void;
@@ -80,8 +80,8 @@ export default function EmailForm({ onSuccess }: EmailFormProps) {
 
 
         // await sendOTPAction({ email });
-        // onSuccess(values.email);
-        // toast.success(`Login code sent to ${values.email}`);
+        onSuccess(values.email);
+        toast.success(`Login code sent to ${values.email}`);
 
 
       } catch (error) {
