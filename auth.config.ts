@@ -3,6 +3,8 @@ import { getUserByEmail } from '@/services/top-db/users';
 import { CredentialsSignin, NextAuthConfig, Profile } from 'next-auth';
 import CredentialProvider from 'next-auth/providers/credentials';
 import { getCommunity } from './services/cw';
+import { JWT } from 'next-auth/jwt';
+import { createJWT, verifyJWT } from './lib/jwt';
 
 const authConfig = {
   providers: [
@@ -58,14 +60,36 @@ const authConfig = {
   pages: {
     signIn: '/login'
   },
-
+  session: {
+    strategy: 'jwt'
+  },
+  jwt: {
+    encode: async ({ token, secret }) => {
+      if (!token?.verified) {
+        const jwtToken = await createJWT(
+          {
+            email: token?.email as string,
+            address: token?.address as string,
+            chainId: token?.chainId as number
+          },
+          secret as string
+        );
+        return jwtToken;
+      } else {
+        return token.jwt as unknown as string;
+      }
+    },
+    decode: async ({ token, secret }) => {
+      const decodedToken = await verifyJWT(token as string, secret as string);
+      return decodedToken as unknown as JWT;
+    }
+  },
   callbacks: {
-    jwt: async ({ token, user }) => {
-      const profile = user as Profile;
+    jwt: async ({ token, user, profile }) => {
+      profile = user as Profile;
 
-      if (user) {
-        token.id = user.id;
-        token.email = user.email;
+      if (profile) {
+        token.email = profile.email;
         token.address = profile?.address;
         token.chainId = profile?.chainId;
       }
@@ -75,8 +99,9 @@ const authConfig = {
       return {
         ...session,
         user: {
-          ...session.user,
-          id: `${token.id}`
+          email: token.email,
+          address: token.address,
+          chainId: token.chainId
         }
       };
     },
