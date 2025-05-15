@@ -20,7 +20,7 @@ export default async function DashboardLayout({
   const user = await getAuthUserAction();
 
   if (!user) {
-    redirect('/login');
+    redirect(`/${alias}/login`);
   }
 
   const { role } = user;
