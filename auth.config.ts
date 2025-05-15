@@ -1,8 +1,8 @@
-import { NextAuthConfig, CredentialsSignin } from 'next-auth';
-import CredentialProvider from 'next-auth/providers/credentials';
 import { getServiceRoleClient } from '@/services/top-db';
-import { getOTPOfSource, deleteOTPOfSource } from '@/services/top-db/otp';
 import { getUserByEmail } from '@/services/top-db/users';
+import { CredentialsSignin, NextAuthConfig, Profile } from 'next-auth';
+import CredentialProvider from 'next-auth/providers/credentials';
+import { getCommunity } from './services/cw';
 
 const authConfig = {
   providers: [
@@ -10,17 +10,17 @@ const authConfig = {
       name: 'OTP Login',
       credentials: {
         email: { label: 'Email', type: 'email' },
-        code: { label: 'Verification Code', type: 'text' },
+        alias: { label: 'Alias', type: 'text' },
         address: { label: 'Address', type: 'text' }
       },
       authorize: async (credentials, request) => {
         let user = null;
 
         const email = credentials?.email as string;
-        const code = credentials?.code as string;
+        const alias = credentials?.alias as string;
         const address = credentials?.address as string;
 
-        if (!email || !code || !address) {
+        if (!email || !alias || !address) {
           return null;
         }
 
@@ -39,48 +39,19 @@ const authConfig = {
           throw new CredentialsSignin(`User not found for email ${email}`);
         }
 
-        if (userData.role === 'admin') {
-          const { data, error } = await getOTPOfSource({
-            client,
-            source: email
-          });
+        const { community } = await getCommunity(alias);
+        const chainId = community.community.profile.chain_id;
 
-          if (error) {
-            throw new CredentialsSignin(
-              `Failed to get login code for email ${email}`
-            );
-          }
-
-          if (!data) {
-            throw new CredentialsSignin(
-              `No login code found for email ${email}`
-            );
-          }
-
-          if (data.expires_at < new Date()) {
-            throw new CredentialsSignin(
-              `Login code expired for email ${email}`
-            );
-          }
-
-          if (data.code !== code) {
-            throw new CredentialsSignin(
-              `Invalid login code for email ${email}`
-            );
-          }
-
-          deleteOTPOfSource({ client, source: email });
-        }
-
-        user = {
+        const profile = {
           id: userData.id.toString(),
           email: userData.email,
           name: userData.name,
           avatar: userData.avatar,
-          address: address
+          address: address,
+          chainId: chainId
         };
 
-        return user;
+        return profile;
       }
     })
   ],
@@ -90,8 +61,13 @@ const authConfig = {
 
   callbacks: {
     jwt: async ({ token, user }) => {
+      const profile = user as Profile;
+
       if (user) {
         token.id = user.id;
+        token.email = user.email;
+        token.address = profile?.address;
+        token.chainId = profile?.chainId;
       }
       return token;
     },
