@@ -10,17 +10,20 @@ const WPOL_USDC_PAIR_ADDRESS = '0x6D9e8dbB2779853db00418D4DcF96F3987CFC9D2';
 const USDC_DECIMALS = 6;
 const WPOL_DECIMALS = 18;
 
-// Provider
-const PROVIDER = new ethers.providers.JsonRpcProvider(
-  process.env.POLYGON_RPC_URL
-);
-
 const wpolUsdcPrice = async (): Promise<number> => {
   try {
+    const provider = new ethers.providers.JsonRpcProvider(
+      process.env.POLYGON_RPC_URL || 'https://polygon-rpc.com',
+      {
+        name: 'polygon',
+        chainId: 137
+      }
+    );
+
     const pair = new ethers.Contract(
       WPOL_USDC_PAIR_ADDRESS,
       WPOL_USDC_PAIR_ABI,
-      PROVIDER
+      provider
     );
 
     const [reserve0, reserve1] = await pair.getReserves();
@@ -40,10 +43,18 @@ const wpolUsdcPrice = async (): Promise<number> => {
 
 const ctznWpolPrice = async (): Promise<number> => {
   try {
+    const provider = new ethers.providers.JsonRpcProvider(
+      process.env.POLYGON_RPC_URL || 'https://polygon-rpc.com',
+      {
+        name: 'polygon',
+        chainId: 137
+      }
+    );
+
     const pair = new ethers.Contract(
       CTZN_WPOL_PAIR_ADDRESS,
       CTZN_WPOL_PAIR_ABI,
-      PROVIDER
+      provider
     );
 
     const tickCumulatives = await pair.getTimepoints([3600, 0]);
