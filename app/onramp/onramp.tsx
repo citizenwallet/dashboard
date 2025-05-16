@@ -30,6 +30,8 @@ export default function Onramp({
     const [address, setAddress] = useState(connectedAccount || "");
     const [loading, setLoading] = useState(false);
     const [addressTouched, setAddressTouched] = useState(false);
+    const [cost, setCost] = useState(0);
+    const [costLoading, setCostLoading] = useState(false);
 
     const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setAddress(e.target.value);
@@ -47,6 +49,7 @@ export default function Onramp({
             setCustomAmount(value);
             setSelectedAmount(null);
         }
+
     };
 
     const isValidEthereumAddress = (address: string) => {
@@ -54,10 +57,13 @@ export default function Onramp({
     };
 
     const handlePresetClick = async (amount: number) => {
+        setCostLoading(true);
         setSelectedAmount(amount);
         setCustomAmount("");
         const price = await getTokenPrice(amount)
-        console.log(price)
+        setCost(price);
+        setCostLoading(false);
+
     };
     const finalAmount = selectedAmount || (customAmount ? parseFloat(customAmount) : null);
 
@@ -179,6 +185,23 @@ export default function Onramp({
                             />
                         </div>
                     </div>
+
+                    {costLoading &&
+                        <div className="flex justify-center items-center">
+                            <Loader2 className="animate-spin" />
+                        </div>
+                    }
+
+                    {!costLoading && cost > 0 && (
+                        <div>
+                            You will cost {cost.toFixed(3)} $
+                            <div className="text-sm text-gray-500 mt-2">
+                                This is an estimate of the cost for the requested CTZN. The final cost and amount of CTZN can vary slightly depending on market conditions
+                            </div>
+                        </div>
+                    )}
+
+
                 </div>
 
 
