@@ -7,6 +7,7 @@ import { ProfileWithTokenId } from '@citizenwallet/sdk';
 import { Loader2 } from 'lucide-react';
 import Image from "next/image";
 import { useState } from 'react';
+import { getTokenPrice } from './action';
 
 const PRESET_AMOUNTS = [10, 20, 50, 100];
 
@@ -52,9 +53,11 @@ export default function Onramp({
         return /^0x[a-fA-F0-9]{40}$/.test(address);
     };
 
-    const handlePresetClick = (amount: number) => {
+    const handlePresetClick = async (amount: number) => {
         setSelectedAmount(amount);
         setCustomAmount("");
+        const price = await getTokenPrice(amount)
+        console.log(price)
     };
     const finalAmount = selectedAmount || (customAmount ? parseFloat(customAmount) : null);
 
