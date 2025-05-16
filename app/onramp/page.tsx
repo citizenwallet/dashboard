@@ -8,6 +8,7 @@ import { CommunityConfig, getProfileFromAddress, ProfileWithTokenId } from '@cit
 
 const PRESET_AMOUNTS = [10, 20, 50, 100];
 const ALIAS = 'ctzn';
+// const ALIAS = 'wallet.pay.brussels'
 
 interface OnrampProps {
     searchParams: Promise<{
