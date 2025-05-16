@@ -7,7 +7,8 @@ import { ProfileWithTokenId } from '@citizenwallet/sdk';
 import { Loader2 } from 'lucide-react';
 import Image from "next/image";
 import { useState } from 'react';
-import { getTokenPrice } from './action';
+import { getTokenPriceAction } from './action';
+import { useDebouncedCallback } from 'use-debounce';
 
 const PRESET_AMOUNTS = [10, 20, 50, 100];
 
@@ -33,6 +34,15 @@ export default function Onramp({
     const [cost, setCost] = useState(0);
     const [costLoading, setCostLoading] = useState(false);
 
+    const debouncedEstimateCost = useDebouncedCallback(
+        (value: string) => {
+            if (value) {
+                estimateCost(parseFloat(value));
+            }
+        },
+        500
+    );
+
     const handleAddressChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setAddress(e.target.value);
         if (!addressTouched) setAddressTouched(true);
@@ -48,8 +58,8 @@ export default function Onramp({
         if (value === "" || /^\d*\.?\d{0,2}$/.test(value)) {
             setCustomAmount(value);
             setSelectedAmount(null);
+            debouncedEstimateCost(value);
         }
-
     };
 
     const isValidEthereumAddress = (address: string) => {
@@ -57,12 +67,10 @@ export default function Onramp({
     };
 
     const handlePresetClick = async (amount: number) => {
-        setCostLoading(true);
         setSelectedAmount(amount);
         setCustomAmount("");
-        const price = await getTokenPrice(amount)
-        setCost(price);
-        setCostLoading(false);
+        await estimateCost(amount)
+
 
     };
     const finalAmount = selectedAmount || (customAmount ? parseFloat(customAmount) : null);
@@ -85,6 +93,13 @@ export default function Onramp({
             setLoading(false);
         }
     };
+
+    const estimateCost = async (finalAmount: number) => {
+        setCostLoading(true);
+        const price = await getTokenPriceAction(finalAmount);
+        setCost(price);
+        setCostLoading(false);
+    }
 
     const showAddressError = addressTouched && !isValidEthereumAddress(address);
 
