@@ -9,6 +9,7 @@ import Image from "next/image";
 import { useState } from 'react';
 import { getTokenPriceAction } from './action';
 import { useDebouncedCallback } from 'use-debounce';
+import { useRouter } from 'next/navigation';
 
 const PRESET_AMOUNTS = [10, 20, 50, 100];
 
@@ -33,6 +34,7 @@ export default function Onramp({
     const [addressTouched, setAddressTouched] = useState(false);
     const [cost, setCost] = useState(0);
     const [costLoading, setCostLoading] = useState(false);
+    const router = useRouter();
 
     const debouncedEstimateCost = useDebouncedCallback(
         (value: string) => {
@@ -84,7 +86,7 @@ export default function Onramp({
             setLoading(true);
 
             const amount = selectedAmount ? selectedAmount : parseFloat(customAmount);
-            console.log(amount)
+            router.push(`/onramp/pay?account=${address}&amount=${amount}`)
 
             // the pass ontramp
         } catch (error) {
