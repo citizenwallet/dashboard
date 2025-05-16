@@ -1,4 +1,6 @@
-import { ethers } from 'ethers';
+'use server';
+
+import { Contract, formatUnits, JsonRpcProvider, toBigInt } from 'ethers';
 import CTZN_WPOL_PAIR_ABI from './_abi/ctzn.json';
 import WPOL_USDC_PAIR_ABI from './_abi/wpol.json';
 
@@ -10,9 +12,9 @@ const WPOL_USDC_PAIR_ADDRESS = '0x6D9e8dbB2779853db00418D4DcF96F3987CFC9D2';
 const USDC_DECIMALS = 6;
 const WPOL_DECIMALS = 18;
 
-const wpolUsdcPrice = async (): Promise<number> => {
+const wpolUsdcPriceAction = async (): Promise<number> => {
   try {
-    const provider = new ethers.providers.JsonRpcProvider(
+    const provider = new JsonRpcProvider(
       process.env.POLYGON_RPC_URL || 'https://polygon-rpc.com',
       {
         name: 'polygon',
@@ -20,7 +22,7 @@ const wpolUsdcPrice = async (): Promise<number> => {
       }
     );
 
-    const pair = new ethers.Contract(
+    const pair = new Contract(
       WPOL_USDC_PAIR_ADDRESS,
       WPOL_USDC_PAIR_ABI,
       provider
@@ -28,8 +30,8 @@ const wpolUsdcPrice = async (): Promise<number> => {
 
     const [reserve0, reserve1] = await pair.getReserves();
 
-    const tick1 = Number(ethers.utils.formatUnits(reserve0, WPOL_DECIMALS));
-    const tick2 = Number(ethers.utils.formatUnits(reserve1, USDC_DECIMALS));
+    const tick1 = Number(formatUnits(reserve0, WPOL_DECIMALS));
+    const tick2 = Number(formatUnits(reserve1, USDC_DECIMALS));
     const price = tick1 / tick2;
 
     const priceInWpol = 1 / price;
@@ -41,9 +43,9 @@ const wpolUsdcPrice = async (): Promise<number> => {
   }
 };
 
-const ctznWpolPrice = async (): Promise<number> => {
+const ctznWpolPriceAction = async (): Promise<number> => {
   try {
-    const provider = new ethers.providers.JsonRpcProvider(
+    const provider = new JsonRpcProvider(
       process.env.POLYGON_RPC_URL || 'https://polygon-rpc.com',
       {
         name: 'polygon',
@@ -51,7 +53,7 @@ const ctznWpolPrice = async (): Promise<number> => {
       }
     );
 
-    const pair = new ethers.Contract(
+    const pair = new Contract(
       CTZN_WPOL_PAIR_ADDRESS,
       CTZN_WPOL_PAIR_ABI,
       provider
@@ -59,12 +61,8 @@ const ctznWpolPrice = async (): Promise<number> => {
 
     const tickCumulatives = await pair.getTimepoints([3600, 0]);
 
-    const tick1 = ethers.BigNumber.from(
-      tickCumulatives.tickCumulatives[0]
-    ).toNumber();
-    const tick2 = ethers.BigNumber.from(
-      tickCumulatives.tickCumulatives[1]
-    ).toNumber();
+    const tick1 = Number(toBigInt(tickCumulatives.tickCumulatives[0]));
+    const tick2 = Number(toBigInt(tickCumulatives.tickCumulatives[1]));
 
     const delta = tick1 - tick2;
     const avgTick = delta / 3600;
@@ -77,11 +75,11 @@ const ctznWpolPrice = async (): Promise<number> => {
   }
 };
 
-export const getTokenPrice = async (price: number) => {
+export const getTokenPriceAction = async (price: number) => {
   console.log(`Getting price ${price} to USDT....`);
-  const wpolUsdc_Price = Number((await wpolUsdcPrice()).toFixed(3));
+  const wpolUsdc_Price = Number((await wpolUsdcPriceAction()).toFixed(3));
   console.log('WPOL/USDC price: ', wpolUsdc_Price);
-  const ctznWpol_Price = Number((await ctznWpolPrice()).toFixed(3));
+  const ctznWpol_Price = Number((await ctznWpolPriceAction()).toFixed(3));
   console.log('CTZN/WPOL price: ', ctznWpol_Price);
   const usdPrice = price * wpolUsdc_Price * ctznWpol_Price;
   return usdPrice;
