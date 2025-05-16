@@ -2,17 +2,19 @@ import { Suspense } from "react";
 import TransakWidget from "./TransakWidget";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TransakConfig, Transak } from '@transak/transak-sdk';
+import { getTokenPriceAction } from "../action";
 
 interface Props {
     params: Promise<{ alias: string }>;
     searchParams: Promise<{
         account: string;
+        amount: number;
     }>;
 }
 
 export default async function page(props: Props) {
 
-    const { account } = await props.searchParams;
+    const { account, amount } = await props.searchParams;
 
     return (
         <>
@@ -20,22 +22,25 @@ export default async function page(props: Props) {
             <Suspense
                 fallback={<Skeleton className="h-[125px] w-full rounded-xl" />}
             >
-                <AsyncPage account={account} />
+                <AsyncPage account={account} amount={amount} />
             </Suspense>
 
         </>
     )
 }
 
-async function AsyncPage({ account }: { account: string }) {
+async function AsyncPage({ account, amount }: { account: string, amount: number }) {
+
+
+    const price = await getTokenPriceAction(amount);
 
     const transakConfig: TransakConfig = {
         apiKey: process.env.TRANSAK_API_KEY || '',
         environment: Transak.ENVIRONMENTS.STAGING,
         walletAddress: account,
         fiatCurrency: 'USD',
-        fiatAmount: 10,
-        network: 'polygon-amoy',
+        fiatAmount: price,
+        network: 'polygon',
         colorMode: 'LIGHT',
         backgroundColors: "#ffffff",
         hideMenu: true,
