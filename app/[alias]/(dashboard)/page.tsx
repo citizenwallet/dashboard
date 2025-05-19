@@ -1,15 +1,15 @@
-import { CreditCard, Users } from 'lucide-react';
-import {
-  MetricCard,
-  MetricCardSkeleton
-} from '@/components/custom/metric-card';
-import { Suspense } from 'react';
 import { getMembersAction } from '@/app/[alias]/(dashboard)/members/action';
 import { getTransfersOfTokenAction } from '@/app/[alias]/(dashboard)/transfers/actions';
 import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 import { getAuthUserAction } from '@/app/_actions/user-actions';
-import { redirect } from 'next/navigation';
+import {
+  MetricCard,
+  MetricCardSkeleton
+} from '@/components/custom/metric-card';
 import { getCommunity } from '@/services/cw';
+import { CreditCard, Users } from 'lucide-react';
+import { redirect } from 'next/navigation';
+import { Suspense } from 'react';
 
 export default async function Page(props: {
   params: Promise<{ alias: string }>;
@@ -25,7 +25,7 @@ export default async function Page(props: {
     redirect(`/${alias}/login`);
   }
 
-  const { data: user, session } = response;
+  const { data: user } = response;
   const accessList = user?.users_community_access.map((access) => access) ?? [];
   let hasAccess = false;
 

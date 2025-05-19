@@ -1,8 +1,4 @@
-import User from './user';
 import UrlSearch from '@/components/custom/url-search';
-import { redirect } from 'next/navigation';
-import { getAuthUserAction } from '@/app/_actions/user-actions';
-import { cookies } from 'next/headers';
 
 export default async function Layout({
   children
