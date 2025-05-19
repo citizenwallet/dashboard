@@ -1,10 +1,8 @@
 'use server';
 
+import { auth, signOut } from '@/auth';
 import { getServiceRoleClient } from '@/services/top-db';
 import { getUserByEmail } from '@/services/top-db/users';
-import { signOut } from '@/auth';
-import { auth } from '@/auth';
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 
 export async function getAuthUserAction({ chain_id }: { chain_id: number }) {
   const session = await auth();

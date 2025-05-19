@@ -26,7 +26,7 @@ import { toast } from 'sonner';
 import { SessionLogic } from 'state/session/action';
 import { useSessionStore } from 'state/session/state';
 import { z } from 'zod';
-import { getUserByEmailAction, signInWithOTP, signInWithOutOTP, submitOtpFormAction } from './actions';
+import { getUserByEmailAction, signInWithOutOTP, submitOtpFormAction } from './actions';
 import { otpFormSchema } from './form-schema';
 
 
@@ -59,7 +59,7 @@ export default function OtpForm({
   });
 
   async function onSubmit(values: z.infer<typeof otpFormSchema>) {
-    const { code } = values;
+
     startTransition(async () => {
       try {
 
