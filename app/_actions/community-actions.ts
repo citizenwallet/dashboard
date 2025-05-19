@@ -6,9 +6,11 @@ import { getAuthUserAction, getAuthUserRoleInAppAction } from './user-actions';
 const typedEureGnosisCommunity = eureGnosisCommunity as Config;
 
 export const fetchCommunitiesAction = async (args: {
+  alias: string;
   query?: string;
 }): Promise<{ communities: Config[]; total: number }> => {
-  const user = await getAuthUserAction();
+  const { alias } = args;
+  const user = await getAuthUserAction({ alias });
 
   if (!user) {
     return {

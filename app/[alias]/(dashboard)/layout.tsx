@@ -17,7 +17,7 @@ export default async function DashboardLayout({
 }) {
   const { alias } = await params;
 
-  const user = await getAuthUserAction();
+  const user = await getAuthUserAction({ alias });
 
   if (!user) {
     redirect(`/${alias}/login`);
@@ -36,7 +36,7 @@ export default async function DashboardLayout({
     redirect(`/${alias}`);
   }
 
-  const { communities } = await fetchCommunitiesAction({});
+  const { communities } = await fetchCommunitiesAction({ alias });
 
   return (
     <SidebarProvider>
