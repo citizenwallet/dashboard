@@ -8,7 +8,7 @@ import { User } from 'next-auth';
 
 declare module 'next-auth/jwt' {
   interface JWT {
-    chainIds?: string[];
+    chainIds?: number[];
     email?: string;
     address?: string;
   }
@@ -17,10 +17,19 @@ declare module 'next-auth/jwt' {
 declare module 'next-auth' {
   interface Session {
     user: {
-      chainIds?: string[];
+      chainIds?: number[];
       email?: string;
       address?: string;
     };
+  }
+
+  interface User {
+    id: string;
+    email: string;
+    name: string;
+    avatar: string | null;
+    address: string;
+    chainId: number[];
   }
 }
 
@@ -31,7 +40,8 @@ const authConfig = {
       credentials: {
         email: { label: 'Email', type: 'email' },
         alias: { label: 'Alias', type: 'text' },
-        address: { label: 'Address', type: 'text' }
+        address: { label: 'Address', type: 'text' },
+        chainIds: { label: 'Chain IDs', type: 'string' }
       },
       authorize: async (credentials, request) => {
         let user = null;
@@ -39,6 +49,7 @@ const authConfig = {
         const email = credentials?.email as string;
         const alias = credentials?.alias as string;
         const address = credentials?.address as string;
+        const chainIds = credentials?.chainIds as string | number[] | undefined;
 
         if (!email || !alias || !address) {
           return null;
@@ -60,8 +71,35 @@ const authConfig = {
         }
 
         const { community } = await getCommunity(alias);
-        const chainId = community.community.profile.chain_id;
-        // const chainId = 137;
+        // const chainId = community.community.profile.chain_id;
+        const chainId = 42220 as number;
+
+        let parsedChainIds: number[] = [];
+
+        console.log('coming chainids--->', chainIds);
+
+        if (typeof chainIds === 'string') {
+          try {
+            parsedChainIds = JSON.parse(chainIds.trim());
+          } catch {
+            parsedChainIds = chainIds
+              .replace(/[\[\]\s]/g, '')
+              .split(',')
+              .map((n: string) => Number(n))
+              .filter((n: number) => !isNaN(n));
+          }
+        }
+
+        let newChainIds: number[] = [];
+
+        console.log('parsedChainIds--->', parsedChainIds);
+
+        if (parsedChainIds.length > 0) {
+          newChainIds = [...parsedChainIds, chainId];
+          console.log('newChainIds--->', newChainIds);
+        } else {
+          newChainIds = [chainId];
+        }
 
         const profile = {
           id: userData.id.toString(),
@@ -69,7 +107,7 @@ const authConfig = {
           name: userData.name,
           avatar: userData.avatar,
           address: address,
-          chainId: chainId
+          chainId: newChainIds
         };
 
         return profile;
@@ -84,30 +122,13 @@ const authConfig = {
   },
 
   callbacks: {
-    jwt: async ({ token, user }) => {
-      const profile = user as Profile;
-      console.log('old token--->', token);
-
-      if (profile) {
-        if (profile?.chainId) {
-          // Initialize chainIds array if needed
-          if (!Array.isArray(token.chainIds)) {
-            token.chainIds = [];
-          }
-
-          const newChainId = String(profile.chainId);
-          console.log('newChainId--->', newChainId);
-          const exists = token.chainIds.includes(newChainId);
-
-          if (!exists) {
-            token.chainIds.push(newChainId);
-          }
-        }
-        token.email = profile.email as string;
-        token.address = profile.address as string;
+    jwt: async ({ token, user }: { token: JWT; user: User }) => {
+      if (user) {
+        token.email = user.email;
+        token.address = user.address;
+        token.chainIds = user.chainId;
       }
 
-      console.log('all finished new token out-->', token);
       return token;
     },
     session: async ({ session, token }) => {
