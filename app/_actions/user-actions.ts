@@ -4,9 +4,18 @@ import { getServiceRoleClient } from '@/services/top-db';
 import { getUserByEmail } from '@/services/top-db/users';
 import { signOut } from '@/auth';
 import { auth } from '@/auth';
+import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 
-export async function getAuthUserAction() {
+export async function getAuthUserAction({ alias }: { alias: string }) {
   const session = await auth();
+  const { community: config } = await fetchCommunityByAliasAction(alias);
+  const chain_id = config.community.primary_token.chain_id.toString();
+  console.log('session--->', session?.user);
+
+  if (!session?.user.chainIds?.includes(chain_id)) {
+    console.error('You are not authorized to access this community');
+    return null;
+  }
 
   if (!session?.user) {
     return null;
