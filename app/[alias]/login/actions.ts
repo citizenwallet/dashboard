@@ -16,6 +16,7 @@ import { Wallet, getBytes } from 'ethers';
 import { CredentialsSignin } from 'next-auth';
 import { z } from 'zod';
 import { emailFormSchema, otpFormSchema } from './form-schema';
+import { auth } from '@/auth';
 
 export async function getUserByEmailAction(args: { email: string }) {
   const { email } = args;
@@ -89,10 +90,14 @@ export async function signInWithOutOTP(args: {
   const { email, address, alias } = args;
 
   try {
+    const session = await auth();
+    const chainIds = session?.user?.chainIds || [];
+
     await signIn('credentials', {
       email,
       address,
       alias,
+      chainIds,
       redirect: false
     });
 
