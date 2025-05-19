@@ -4,7 +4,25 @@ import { CredentialsSignin, NextAuthConfig, Profile } from 'next-auth';
 import CredentialProvider from 'next-auth/providers/credentials';
 import { getCommunity } from './services/cw';
 import { JWT } from 'next-auth/jwt';
-import { createJWT, verifyJWT } from './lib/jwt';
+import { User } from 'next-auth';
+
+declare module 'next-auth/jwt' {
+  interface JWT {
+    chainIds?: string[];
+    email?: string;
+    address?: string;
+  }
+}
+
+declare module 'next-auth' {
+  interface Session {
+    user: {
+      chainIds?: string[];
+      email?: string;
+      address?: string;
+    };
+  }
+}
 
 const authConfig = {
   providers: [
@@ -43,6 +61,7 @@ const authConfig = {
 
         const { community } = await getCommunity(alias);
         const chainId = community.community.profile.chain_id;
+        // const chainId = 137;
 
         const profile = {
           id: userData.id.toString(),
@@ -63,36 +82,32 @@ const authConfig = {
   session: {
     strategy: 'jwt'
   },
-  jwt: {
-    encode: async ({ token, secret }) => {
-      if (!token?.verified) {
-        const jwtToken = await createJWT(
-          {
-            email: token?.email as string,
-            address: token?.address as string,
-            chainId: token?.chainId as number
-          },
-          secret as string
-        );
-        return jwtToken;
-      } else {
-        return token.jwt as unknown as string;
-      }
-    },
-    decode: async ({ token, secret }) => {
-      const decodedToken = await verifyJWT(token as string, secret as string);
-      return decodedToken as unknown as JWT;
-    }
-  },
+
   callbacks: {
-    jwt: async ({ token, user, profile }) => {
-      profile = user as Profile;
+    jwt: async ({ token, user }) => {
+      const profile = user as Profile;
+      console.log('old token--->', token);
 
       if (profile) {
-        token.email = profile.email;
-        token.address = profile?.address;
-        token.chainId = profile?.chainId;
+        if (profile?.chainId) {
+          // Initialize chainIds array if needed
+          if (!Array.isArray(token.chainIds)) {
+            token.chainIds = [];
+          }
+
+          const newChainId = String(profile.chainId);
+          console.log('newChainId--->', newChainId);
+          const exists = token.chainIds.includes(newChainId);
+
+          if (!exists) {
+            token.chainIds.push(newChainId);
+          }
+        }
+        token.email = profile.email as string;
+        token.address = profile.address as string;
       }
+
+      console.log('all finished new token out-->', token);
       return token;
     },
     session: async ({ session, token }) => {
@@ -101,7 +116,7 @@ const authConfig = {
         user: {
           email: token.email,
           address: token.address,
-          chainId: token.chainId
+          chainIds: token.chainIds || []
         }
       };
     },
