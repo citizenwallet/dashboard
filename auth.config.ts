@@ -71,13 +71,11 @@ const authConfig = {
         }
 
         const { community } = await getCommunity(alias);
-        // const chainId = community.community.profile.chain_id;
-        const chainId = 42220 as number;
+        const chainId = community.community.profile.chain_id;
 
         let parsedChainIds: number[] = [];
 
-        console.log('coming chainids--->', chainIds);
-
+        //if chainIds is a string, parse it
         if (typeof chainIds === 'string') {
           try {
             parsedChainIds = JSON.parse(chainIds.trim());
@@ -92,11 +90,9 @@ const authConfig = {
 
         let newChainIds: number[] = [];
 
-        console.log('parsedChainIds--->', parsedChainIds);
-
+        //if parsedChainIds is an array, add the chainId to it
         if (parsedChainIds.length > 0) {
           newChainIds = [...parsedChainIds, chainId];
-          console.log('newChainIds--->', newChainIds);
         } else {
           newChainIds = [chainId];
         }
@@ -118,7 +114,8 @@ const authConfig = {
     signIn: '/login'
   },
   session: {
-    strategy: 'jwt'
+    strategy: 'jwt',
+    maxAge: 60 * 60 * 24 * 365 //session expires in 365 days
   },
 
   callbacks: {
