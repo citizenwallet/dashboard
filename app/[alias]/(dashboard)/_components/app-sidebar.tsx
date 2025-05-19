@@ -30,12 +30,14 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   communities: Config[];
   selectedAlias: string;
   user: UserT | null;
+  hasAccess: boolean;
 }
 
 export function AppSidebar({
   communities,
   selectedAlias,
   user,
+  hasAccess,
   ...props
 }: AppSidebarProps) {
   const selectedCommunity = communities.find(
@@ -60,15 +62,15 @@ export function AppSidebar({
         icon: Users
       },
       {
+        name: 'Members',
+        url: `/${selectedCommunity?.community.alias}/members`,
+        icon: Users
+      },
+      {
         name: 'Transfers',
         url: `/${selectedCommunity?.community.alias}/transfers`,
         icon: LucideLineChart
       },
-      // {
-      //   name: 'Marketplace',
-      //   url: `/${selectedCommunity?.community.alias}/marketplace`,
-      //   icon: HandHeartIcon
-      // },
       {
         name: 'Treasury',
         url: `/${selectedCommunity?.community.alias}/treasury`,
@@ -104,7 +106,9 @@ export function AppSidebar({
         />
       </SidebarHeader>
       <SidebarContent>
-        <NavProjects projects={data.projects} />
+        <NavProjects projects={
+          hasAccess ? data.projects : data.projects.filter(project => project.name == 'Overview')
+        } />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} />
