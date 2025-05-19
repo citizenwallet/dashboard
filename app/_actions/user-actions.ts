@@ -6,14 +6,11 @@ import { signOut } from '@/auth';
 import { auth } from '@/auth';
 import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 
-export async function getAuthUserAction({ alias }: { alias: string }) {
+export async function getAuthUserAction({ chain_id }: { chain_id: number }) {
   const session = await auth();
-  const { community: config } = await fetchCommunityByAliasAction(alias);
-  const chain_id = config.community.primary_token.chain_id.toString();
-  console.log('session--->', session?.user);
 
   if (!session?.user.chainIds?.includes(chain_id)) {
-    console.error('You are not authorized to access this community');
+    console.error('You session does not have chain id of this community');
     return null;
   }
 
@@ -31,7 +28,7 @@ export async function getAuthUserAction({ alias }: { alias: string }) {
     throw new Error('Could not find user by email');
   }
 
-  return data;
+  return { data, session: session.user };
 }
 
 export async function getAuthUserRoleInAppAction() {
