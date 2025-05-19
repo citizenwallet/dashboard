@@ -3,6 +3,7 @@
 import { Config } from '@citizenwallet/sdk';
 import eureGnosisCommunity from './eure_gnosis_community.json' assert { type: 'json' };
 import { getAuthUserAction, getAuthUserRoleInAppAction } from './user-actions';
+import { getCommunity } from '@/services/cw';
 const typedEureGnosisCommunity = eureGnosisCommunity as Config;
 
 export const fetchCommunitiesAction = async (args: {
@@ -10,24 +11,28 @@ export const fetchCommunitiesAction = async (args: {
   query?: string;
 }): Promise<{ communities: Config[]; total: number }> => {
   const { alias } = args;
-  const user = await getAuthUserAction({ alias });
 
-  if (!user) {
+  const { community } = await getCommunity(alias);
+  const chain_id = community.community.primary_token.chain_id;
+
+  const response = await getAuthUserAction({ chain_id });
+
+  if (!response?.data) {
     return {
       communities: [],
       total: 0
     };
   }
 
-  const { role } = user;
+  const { data: user } = response;
 
-  if (role === 'admin') {
+  if (user.role === 'admin') {
     return await fetchCommunitiesForAdminAction({
       query: args.query
     });
   }
 
-  if (role === 'user') {
+  if (user.role === 'user') {
     const accessList = user.users_community_access.map(
       (access) => access.alias
     );
