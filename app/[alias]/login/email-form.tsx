@@ -10,26 +10,24 @@ import {
   FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { getCommunity } from '@/services/cw';
-import { CommunityConfig, waitForTxSuccess } from '@citizenwallet/sdk';
+import { CommunityConfig, Config, waitForTxSuccess } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { SessionLogic } from 'state/session/action';
-import { useSessionStore } from 'state/session/state';
+import { useSession } from 'state/session/action';
 import { z } from 'zod';
 import { getUserByEmailAction, submitEmailFormAction } from './actions';
 import { emailFormSchema } from './form-schema';
 
 interface EmailFormProps {
-  alias: string;
+  config: Config;
   onSuccess: (email: string) => void;
 }
 
-export default function EmailForm({ alias, onSuccess }: EmailFormProps) {
+export default function EmailForm({ config, onSuccess }: EmailFormProps) {
   const [isPending, startTransition] = useTransition();
-
+  const [sessionState, sessionActions] = useSession(config);
 
   const form = useForm<z.infer<typeof emailFormSchema>>({
     resolver: zodResolver(emailFormSchema),
@@ -50,13 +48,11 @@ export default function EmailForm({ alias, onSuccess }: EmailFormProps) {
           throw new Error(`User with email ${email} not found`);
         }
 
-        const { community } = await getCommunity(alias);
-        const communityConfig = new CommunityConfig(community);
-        const sessionLogic = new SessionLogic(useSessionStore.getState(), community);
+        const communityConfig = new CommunityConfig(config);
 
         const result = await submitEmailFormAction({
           formData: values,
-          config: community
+          config
         });
 
         const successReceipt = await waitForTxSuccess(
@@ -68,11 +64,10 @@ export default function EmailForm({ alias, onSuccess }: EmailFormProps) {
           throw new Error("Failed to confirm transaction");
         }
 
-        sessionLogic.storePrivateKey(result.privateKey);
-        sessionLogic.storeSessionHash(result.hash);
-        sessionLogic.storeSourceValue(values.email);
-        sessionLogic.storeSourceType(values.type);
-
+        sessionActions.storePrivateKey(result.privateKey);
+        sessionActions.storeSessionHash(result.hash);
+        sessionActions.storeSourceValue(values.email);
+        sessionActions.storeSourceType(values.type);
 
         // await sendOTPAction({ email });
         onSuccess(values.email);
