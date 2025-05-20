@@ -8,7 +8,6 @@ export async function getAuthUserAction({ chain_id }: { chain_id: number }) {
   const session = await auth();
 
   if (!session?.user.chainIds?.includes(chain_id)) {
-    console.error('You session does not have chain id of this community');
     return null;
   }
 
