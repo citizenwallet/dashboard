@@ -1,6 +1,5 @@
 'use client';
 
-import { ChevronsUpDown, LogOut } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -16,18 +15,28 @@ import {
   SidebarMenuItem,
   useSidebar
 } from '@/components/ui/sidebar';
-import { signOutAction } from '@/app/_actions/user-actions';
+import { StorageKeys, StorageService } from '@/services/storage';
+import { Config } from '@citizenwallet/sdk';
+import { ChevronsUpDown, LogOut } from 'lucide-react';
+import { useSession } from "next-auth/react";
+import { useRouter } from 'next/navigation';
+import { SessionLogic } from 'state/session/action';
+import { useSessionStore } from 'state/session/state';
 
 export function NavUser({
-  user
+  user,
+  config
 }: {
   user: {
     name: string;
     email: string;
     avatar: string;
   };
+  config?: Config;
 }) {
   const { isMobile } = useSidebar();
+  const { data: session, update } = useSession();
+  const router = useRouter();
 
   return (
     <SidebarMenu>
@@ -71,33 +80,43 @@ export function NavUser({
                 </div>
               </div>
             </DropdownMenuLabel>
-            {/* <DropdownMenuSeparator /> */}
-            {/* <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup> */}
-            {/* <DropdownMenuSeparator /> */}
-            {/* <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem>
-            </DropdownMenuGroup> */}
+
             <DropdownMenuSeparator />
             <DropdownMenuItem>
               <form
                 action={async () => {
-                  await signOutAction();
+                  try {
+                    if (config) {
+
+                      // clear state
+                      const data = useSessionStore.getState();
+                      const sessionLogic = new SessionLogic(data, config);
+                      sessionLogic.clear();
+
+                      // clear localstorage
+                      const alias = config.community.alias
+                      const storage = new StorageService(alias);
+                      storage.deleteKey(StorageKeys.session_private_key);
+                      storage.deleteKey(StorageKeys.session_hash);
+                      storage.deleteKey(StorageKeys.session_source_value);
+                      storage.deleteKey(StorageKeys.session_source_type);
+
+                      const removeChainIds = config?.community.profile.chain_id;
+                      const updateChainIds = session?.user.chainIds?.filter((chainId: number) => chainId !== removeChainIds);
+
+                      //remove chainId from session
+                      await update({
+                        chainIds: updateChainIds
+                      });
+
+                    }
+                  } catch (error) {
+                    console.error(error);
+                  } finally {
+                    router.push('/');
+                  }
+
+
                 }}
               >
                 <button className="flex items-center gap-2" type="submit">
