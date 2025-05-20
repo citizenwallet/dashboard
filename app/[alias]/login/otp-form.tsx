@@ -15,16 +15,14 @@ import {
   InputOTPGroup,
   InputOTPSlot
 } from '@/components/ui/input-otp';
-import { getCommunity } from '@/services/cw';
-import { CommunityConfig, waitForTxSuccess } from '@citizenwallet/sdk';
+import { CommunityConfig, Config, waitForTxSuccess } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Mail } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { SessionLogic } from 'state/session/action';
-import { useSessionStore } from 'state/session/state';
+import { useSession } from 'state/session/action';
 import { z } from 'zod';
 import { getUserByEmailAction, signInWithOutOTP, submitOtpFormAction } from './actions';
 import { otpFormSchema } from './form-schema';
@@ -32,7 +30,7 @@ import { otpFormSchema } from './form-schema';
 
 interface OtpFormProps {
   email: string;
-  alias: string;
+  config: Config;
   onBack: () => void;
   resendCountDown: number;
   onResend: (email: string) => void;
@@ -40,21 +38,21 @@ interface OtpFormProps {
 
 export default function OtpForm({
   email,
-  alias,
+  config,
   onBack,
   resendCountDown,
   onResend
 }: OtpFormProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
-  const sessionState = useSessionStore.getState();
+  const [sessionState, sessionActions] = useSession(config);
 
   const form = useForm<z.infer<typeof otpFormSchema>>({
     resolver: zodResolver(otpFormSchema),
     defaultValues: {
       code: "",
-      sessionRequestHash: sessionState.hash ?? "",
-      privateKey: sessionState.privateKey ?? "",
+      sessionRequestHash: sessionState((state) => state.hash) ?? "",
+      privateKey: sessionState((state) => state.privateKey) ?? "",
     },
   });
 
@@ -69,13 +67,12 @@ export default function OtpForm({
           throw new Error(`User with email ${email} not found`);
         }
 
-        const { community } = await getCommunity(alias);
-        const communityConfig = new CommunityConfig(community);
-        const sessionLogic = new SessionLogic(useSessionStore.getState(), community);
+
+        const communityConfig = new CommunityConfig(config);
 
         const result = await submitOtpFormAction({
           formData: values,
-          config: community,
+          config,
         });
 
         const successReceipt = await waitForTxSuccess(
@@ -87,7 +84,7 @@ export default function OtpForm({
           throw new Error("Failed to confirm transaction");
         }
 
-        const address = await sessionLogic.getAccountAddress();
+        const address = await sessionActions.getAccountAddress();
 
         if (!address) {
           throw new Error("Failed to create account");
@@ -95,7 +92,7 @@ export default function OtpForm({
 
         console.log("accountAddress", address)
 
-
+        const alias = config.community.alias;
         const response = await signInWithOutOTP({ email, address, alias });
         if (response?.success) {
           toast.success('Login successful!');
