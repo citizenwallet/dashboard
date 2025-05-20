@@ -49,7 +49,7 @@ const authConfig = {
         const email = credentials?.email as string;
         const alias = credentials?.alias as string;
         const address = credentials?.address as string;
-        const chainIds = credentials?.chainIds as string | number[] | undefined;
+        const chainIds = credentials?.chainIds as string;
 
         if (!email || !alias || !address) {
           return null;
@@ -73,29 +73,27 @@ const authConfig = {
         const { community } = await getCommunity(alias);
         const chainId = community.community.profile.chain_id;
 
-        let parsedChainIds: number[] = [];
+        let parsedChainIds: number[];
 
-        //if chainIds is a string, parse it
-        if (typeof chainIds === 'string') {
-          try {
-            parsedChainIds = JSON.parse(chainIds.trim());
-          } catch {
-            parsedChainIds = chainIds
-              .replace(/[\[\]\s]/g, '')
-              .split(',')
-              .map((n: string) => Number(n))
-              .filter((n: number) => !isNaN(n));
-          }
+        //convert the chainIds string to an array of numbers
+        try {
+          const parsed = JSON.parse(chainIds);
+          parsedChainIds = Array.isArray(parsed)
+            ? parsed
+            : typeof parsed === 'number'
+              ? [parsed]
+              : [];
+        } catch (e) {
+          parsedChainIds = chainIds
+            ? chainIds
+                .split(',')
+                .map((num: string) => parseInt(num.trim(), 10))
+                .filter((num: number) => !isNaN(num))
+            : [];
         }
 
-        let newChainIds: number[] = [];
-
-        //if parsedChainIds is an array, add the chainId to it
-        if (parsedChainIds.length > 0) {
-          newChainIds = [...parsedChainIds, chainId];
-        } else {
-          newChainIds = [chainId];
-        }
+        //add the chainId to the OldChainIds array
+        parsedChainIds.push(chainId);
 
         const profile = {
           id: userData.id.toString(),
@@ -103,7 +101,7 @@ const authConfig = {
           name: userData.name,
           avatar: userData.avatar,
           address: address,
-          chainId: newChainIds
+          chainId: parsedChainIds
         };
 
         return profile;
