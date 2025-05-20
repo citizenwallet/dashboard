@@ -26,6 +26,7 @@ import { CommunitySwitcher } from './community-switcher';
 import { NavProjects } from './nav-projects';
 import { NavUser } from './nav-user';
 
+
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   communities: Config[];
   selectedAlias: string;
@@ -43,6 +44,7 @@ export function AppSidebar({
   const selectedCommunity = communities.find(
     (community) => community.community.alias === selectedAlias
   );
+
 
   const data = {
     user: {
@@ -111,7 +113,7 @@ export function AppSidebar({
         } />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={data.user} config={selectedCommunity} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>
