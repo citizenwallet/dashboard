@@ -1,7 +1,9 @@
 import { StorageService } from '@/services/storage';
 import * as cwSDK from '@citizenwallet/sdk';
 import { Wallet } from 'ethers';
-import { SessionState } from './state';
+import { useMemo } from 'react';
+import { StoreApi, UseBoundStore } from 'zustand';
+import { SessionState, useSessionStore } from './state';
 
 export class SessionLogic {
   state: SessionState;
@@ -87,3 +89,16 @@ export class SessionLogic {
     this.state.clear();
   }
 }
+
+export const useSession = (
+  config: cwSDK.Config
+): [UseBoundStore<StoreApi<SessionState>>, SessionLogic] => {
+  const sessionStore = useSessionStore;
+
+  const actions = useMemo(
+    () => new SessionLogic(sessionStore.getState(), config),
+    [sessionStore, config]
+  );
+
+  return [sessionStore, actions];
+};
