@@ -101,11 +101,15 @@
         "chain_id": 100
       },
       "primary_account_factory": {
-        "address": "0xBABCf159c4e3186cf48e4a48bC0AeC17CF9d90FE",
+        "address": "0x940Cbb155161dc0C4aade27a4826a16Ed8ca0cb2",
         "chain_id": 100
       },
       "primary_card_manager": {
         "address": "0x1EaF6B6A6967608aF6c77224f087b042095891EB",
+        "chain_id": 100
+      },
+      "primary_session_manager": {
+        "address": "0xE2F3DC3E638113b9496060349e5332963d9C1152",
         "chain_id": 100
       }
     },
@@ -144,6 +148,14 @@
         "chain_id": 100,
         "address": "0x1EaF6B6A6967608aF6c77224f087b042095891EB",
         "type": "classic"
+      }
+    },
+    "sessions": {
+      "100:0xE2F3DC3E638113b9496060349e5332963d9C1152": {
+        "chain_id": 100,
+        "module_address": "0xE2F3DC3E638113b9496060349e5332963d9C1152",
+        "factory_address": "0xEd0cD3886b84369A0e29Db9a4480ADF5051c76C9",
+        "provider_address": "0xF3004A1690f97Cf5d307eDc5958a7F76b62f9FC9"
       }
     },
     "chains": {
@@ -195,6 +207,10 @@
       "primary_card_manager": {
         "address": "0x1EaF6B6A6967608aF6c77224f087b042095891EB",
         "chain_id": 42220
+      },
+      "primary_session_manager": {
+        "address": "0xE2F3DC3E638113b9496060349e5332963d9C1152",
+        "chain_id": 42220
       }
     },
     "tokens": {
@@ -232,6 +248,14 @@
         "chain_id": 42220,
         "address": "0x1EaF6B6A6967608aF6c77224f087b042095891EB",
         "type": "classic"
+      }
+    },
+    "sessions": {
+      "42220:0xE2F3DC3E638113b9496060349e5332963d9C1152": {
+        "chain_id": 42220,
+        "module_address": "0xE2F3DC3E638113b9496060349e5332963d9C1152",
+        "factory_address": "0xEd0cD3886b84369A0e29Db9a4480ADF5051c76C9",
+        "provider_address": "0xF3004A1690f97Cf5d307eDc5958a7F76b62f9FC9"
       }
     },
     "chains": {
@@ -272,6 +296,10 @@
       "primary_account_factory": {
         "address": "0x5e987a6c4bb4239d498E78c34e986acf29c81E8e",
         "chain_id": 137
+      },
+      "primary_session_manager": {
+        "address": "0xE2F3DC3E638113b9496060349e5332963d9C1152",
+        "chain_id": 137
       }
     },
     "tokens": {
@@ -295,6 +323,14 @@
         "paymaster_address": "0x7FC98D0a2bd7f766bAca37388eB0F6Db37666B33",
         "account_factory_address": "0x5e987a6c4bb4239d498E78c34e986acf29c81E8e",
         "paymaster_type": "cw"
+      }
+    },
+    "sessions": {
+      "137:0xE2F3DC3E638113b9496060349e5332963d9C1152": {
+        "chain_id": 137,
+        "module_address": "0xE2F3DC3E638113b9496060349e5332963d9C1152",
+        "factory_address": "0xEd0cD3886b84369A0e29Db9a4480ADF5051c76C9",
+        "provider_address": "0xF3004A1690f97Cf5d307eDc5958a7F76b62f9FC9"
       }
     },
     "chains": {
@@ -343,6 +379,10 @@
       "primary_account_factory": {
         "address": "0x940Cbb155161dc0C4aade27a4826a16Ed8ca0cb2",
         "chain_id": 137
+      },
+      "primary_session_manager": {
+        "address": "0xE2F3DC3E638113b9496060349e5332963d9C1152",
+        "chain_id": 137
       }
     },
     "tokens": {
@@ -366,6 +406,14 @@
         "paymaster_address": "0x9a81Bd50D56485Cc863Ecb169812c7a821996C8c",
         "account_factory_address": "0x940Cbb155161dc0C4aade27a4826a16Ed8ca0cb2",
         "paymaster_type": "cw-safe"
+      }
+    },
+    "sessions": {
+      "137:0xE2F3DC3E638113b9496060349e5332963d9C1152": {
+        "chain_id": 137,
+        "module_address": "0xE2F3DC3E638113b9496060349e5332963d9C1152",
+        "factory_address": "0xEd0cD3886b84369A0e29Db9a4480ADF5051c76C9",
+        "provider_address": "0xF3004A1690f97Cf5d307eDc5958a7F76b62f9FC9"
       }
     },
     "chains": {
@@ -399,7 +447,11 @@
         "chain_id": 100
       },
       "primary_account_factory": {
-        "address": "0xAE76B1C6818c1DD81E20ccefD3e72B773068ABc9",
+        "address": "0x940Cbb155161dc0C4aade27a4826a16Ed8ca0cb2",
+        "chain_id": 100
+      },
+      "primary_session_manager": {
+        "address": "0xE2F3DC3E638113b9496060349e5332963d9C1152",
         "chain_id": 100
       }
     },
@@ -431,6 +483,14 @@
         "paymaster_address": "0x5C41F1114AB13aF5d66bac485924D03556d0cd51",
         "account_factory_address": "0x940Cbb155161dc0C4aade27a4826a16Ed8ca0cb2",
         "paymaster_type": "cw-safe"
+      }
+    },
+    "sessions": {
+      "100:0xE2F3DC3E638113b9496060349e5332963d9C1152": {
+        "chain_id": 100,
+        "module_address": "0xE2F3DC3E638113b9496060349e5332963d9C1152",
+        "factory_address": "0xEd0cD3886b84369A0e29Db9a4480ADF5051c76C9",
+        "provider_address": "0xF3004A1690f97Cf5d307eDc5958a7F76b62f9FC9"
       }
     },
     "chains": {
@@ -476,7 +536,11 @@
         "chain_id": 42220
       },
       "primary_account_factory": {
-        "address": "0x307A9456C4057F7C7438a174EFf3f25fc0eA6e87",
+        "address": "0x940Cbb155161dc0C4aade27a4826a16Ed8ca0cb2",
+        "chain_id": 42220
+      },
+      "primary_session_manager": {
+        "address": "0xE2F3DC3E638113b9496060349e5332963d9C1152",
         "chain_id": 42220
       }
     },
@@ -501,6 +565,28 @@
         "paymaster_address": "0x4E127A1DAa66568B4a91E8c5615120a6Ea5442E3",
         "account_factory_address": "0x307A9456C4057F7C7438a174EFf3f25fc0eA6e87",
         "paymaster_type": "cw"
+      },
+      "42220:0x940Cbb155161dc0C4aade27a4826a16Ed8ca0cb2": {
+        "chain_id": 42220,
+        "entrypoint_address": "0x7079253c0358eF9Fd87E16488299Ef6e06F403B6",
+        "paymaster_address": "0xe5Eb4fB0F3312649Eb7b62fba66C9E26579D7208",
+        "account_factory_address": "0x940Cbb155161dc0C4aade27a4826a16Ed8ca0cb2",
+        "paymaster_type": "cw-safe"
+      }
+    },
+    "cards": {
+      "42220:0xc0F9e0907C8de79fd5902b61e463dFEdc5dc8570": {
+        "chain_id": 42220,
+        "address": "0xc0F9e0907C8de79fd5902b61e463dFEdc5dc8570",
+        "type": "classic"
+      }
+    },
+    "sessions": {
+      "42220:0xE2F3DC3E638113b9496060349e5332963d9C1152": {
+        "chain_id": 42220,
+        "module_address": "0xE2F3DC3E638113b9496060349e5332963d9C1152",
+        "factory_address": "0xEd0cD3886b84369A0e29Db9a4480ADF5051c76C9",
+        "provider_address": "0xF3004A1690f97Cf5d307eDc5958a7F76b62f9FC9"
       }
     },
     "chains": {
@@ -514,13 +600,6 @@
     },
     "ipfs": {
       "url": "https://ipfs.internal.citizenwallet.xyz"
-    },
-    "cards": {
-      "42220:0xc0F9e0907C8de79fd5902b61e463dFEdc5dc8570": {
-        "chain_id": 42220,
-        "address": "0xc0F9e0907C8de79fd5902b61e463dFEdc5dc8570",
-        "type": "classic"
-      }
     },
     "plugins": [
       {
@@ -558,6 +637,10 @@
       "primary_card_manager": {
         "address": "0xBA861e2DABd8316cf11Ae7CdA101d110CF581f28",
         "chain_id": 42220
+      },
+      "primary_session_manager": {
+        "address": "0xE2F3DC3E638113b9496060349e5332963d9C1152",
+        "chain_id": 42220
       }
     },
     "tokens": {
@@ -583,6 +666,22 @@
         "paymaster_type": "cw-safe"
       }
     },
+    "cards": {
+      "42220:0xBA861e2DABd8316cf11Ae7CdA101d110CF581f28": {
+        "chain_id": 42220,
+        "instance_id": "cw-seldesalm",
+        "address": "0xBA861e2DABd8316cf11Ae7CdA101d110CF581f28",
+        "type": "safe"
+      }
+    },
+    "sessions": {
+      "42220:0xE2F3DC3E638113b9496060349e5332963d9C1152": {
+        "chain_id": 42220,
+        "module_address": "0xE2F3DC3E638113b9496060349e5332963d9C1152",
+        "factory_address": "0xEd0cD3886b84369A0e29Db9a4480ADF5051c76C9",
+        "provider_address": "0xF3004A1690f97Cf5d307eDc5958a7F76b62f9FC9"
+      }
+    },
     "chains": {
       "42220": {
         "id": 42220,
@@ -590,14 +689,6 @@
           "url": "https://42220.engine.citizenwallet.xyz",
           "ws_url": "wss://42220.engine.citizenwallet.xyz"
         }
-      }
-    },
-    "cards": {
-      "42220:0xBA861e2DABd8316cf11Ae7CdA101d110CF581f28": {
-        "chain_id": 42220,
-        "instance_id": "cw-seldesalm",
-        "address": "0xBA861e2DABd8316cf11Ae7CdA101d110CF581f28",
-        "type": "safe"
       }
     },
     "ipfs": {
@@ -646,6 +737,10 @@
       "primary_card_manager": {
         "address": "0x1EaF6B6A6967608aF6c77224f087b042095891EB",
         "chain_id": 100
+      },
+      "primary_session_manager": {
+        "address": "0xE2F3DC3E638113b9496060349e5332963d9C1152",
+        "chain_id": 100
       }
     },
     "tokens": {
@@ -669,6 +764,14 @@
         "paymaster_address": "0x68c5a20f233264DB124a3c95a200bbD20b3b9762",
         "account_factory_address": "0x940Cbb155161dc0C4aade27a4826a16Ed8ca0cb2",
         "paymaster_type": "cw-safe"
+      }
+    },
+    "sessions": {
+      "100:0xE2F3DC3E638113b9496060349e5332963d9C1152": {
+        "chain_id": 100,
+        "module_address": "0xE2F3DC3E638113b9496060349e5332963d9C1152",
+        "factory_address": "0xEd0cD3886b84369A0e29Db9a4480ADF5051c76C9",
+        "provider_address": "0xF3004A1690f97Cf5d307eDc5958a7F76b62f9FC9"
       }
     },
     "chains": {
@@ -1783,6 +1886,10 @@
       "primary_card_manager": {
         "address": "0x1EaF6B6A6967608aF6c77224f087b042095891EB",
         "chain_id": 42220
+      },
+      "primary_session_manager": {
+        "address": "0xE2F3DC3E638113b9496060349e5332963d9C1152",
+        "chain_id": 42220
       }
     },
     "tokens": {
@@ -1806,6 +1913,14 @@
         "paymaster_address": "0x02BDA8370d9497A5C808B2db237cfaA8f0733F36",
         "account_factory_address": "0x940Cbb155161dc0C4aade27a4826a16Ed8ca0cb2",
         "paymaster_type": "cw-safe"
+      }
+    },
+    "sessions": {
+      "42220:0xE2F3DC3E638113b9496060349e5332963d9C1152": {
+        "chain_id": 42220,
+        "module_address": "0xE2F3DC3E638113b9496060349e5332963d9C1152",
+        "factory_address": "0xEd0cD3886b84369A0e29Db9a4480ADF5051c76C9",
+        "provider_address": "0xF3004A1690f97Cf5d307eDc5958a7F76b62f9FC9"
       }
     },
     "chains": {
