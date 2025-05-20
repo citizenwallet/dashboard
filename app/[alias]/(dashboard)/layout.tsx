@@ -46,7 +46,7 @@ export default async function DashboardLayout({
   if (role === 'user' && accessList.length > 0) {
     const chain_id = accessList[0].chain_id;
 
-    if (chain_id == community_chain_id) {
+    if (chain_id == community_chain_id && accessList[0].alias == alias) {
       hasAccess = true;
     }
   }

@@ -30,12 +30,8 @@ export default async function Page(props: {
   let hasAccess = false;
 
   if (user.role === 'user' && accessList.length > 0) {
-    const chain_id = accessList[0].chain_id;
 
-    const { community } = await getCommunity(alias);
-    const community_chain_id = community.community.primary_token.chain_id;
-
-    if (chain_id == community_chain_id) {
+    if (accessList[0].alias == alias) {
       hasAccess = true;
     }
   }
