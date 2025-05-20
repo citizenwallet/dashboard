@@ -117,11 +117,25 @@ const authConfig = {
   },
 
   callbacks: {
-    jwt: async ({ token, user }: { token: JWT; user: User }) => {
+    jwt: async ({
+      token,
+      user,
+      trigger,
+      session
+    }: {
+      token: JWT;
+      user: User;
+      trigger?: 'signIn' | 'signUp' | 'update';
+      session?: any;
+    }) => {
       if (user) {
         token.email = user.email;
         token.address = user.address;
         token.chainIds = user.chainId;
+      }
+
+      if (trigger === 'update') {
+        token.chainIds = session.chainIds;
       }
 
       return token;
