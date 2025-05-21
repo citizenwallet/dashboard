@@ -29,22 +29,18 @@ import { NavUser } from './nav-user';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   communities: Config[];
-  selectedAlias: string;
+  config: Config;
   user: UserT | null;
   hasAccess: boolean;
 }
 
 export function AppSidebar({
   communities,
-  selectedAlias,
+  config,
   user,
   hasAccess,
   ...props
 }: AppSidebarProps) {
-  const selectedCommunity = communities.find(
-    (community) => community.community.alias === selectedAlias
-  );
-
 
   const data = {
     user: {
@@ -55,44 +51,44 @@ export function AppSidebar({
     projects: [
       {
         name: 'Overview',
-        url: `/${selectedCommunity?.community.alias}`,
+        url: `/${config?.community.alias}`,
         icon: Home
       },
       {
         name: 'Members',
-        url: `/${selectedCommunity?.community.alias}/members`,
+        url: `/${config?.community.alias}/members`,
         icon: Users
       },
       {
         name: 'Members',
-        url: `/${selectedCommunity?.community.alias}/members`,
+        url: `/${config?.community.alias}/members`,
         icon: Users
       },
       {
         name: 'Transfers',
-        url: `/${selectedCommunity?.community.alias}/transfers`,
+        url: `/${config?.community.alias}/transfers`,
         icon: LucideLineChart
       },
       {
         name: 'Treasury',
-        url: `/${selectedCommunity?.community.alias}/treasury`,
+        url: `/${config?.community.alias}/treasury`,
         icon: Landmark,
         items: [
           {
             name: 'History',
-            url: `/${selectedCommunity?.community.alias}/treasury`,
+            url: `/${config?.community.alias}/treasury`,
             icon: List
           },
           {
             name: 'Minters',
-            url: `/${selectedCommunity?.community.alias}/roles`,
+            url: `/${config?.community.alias}/roles`,
             icon: Hammer
           }
         ]
       },
       {
         name: 'Admins',
-        url: `/${selectedCommunity?.community.alias}/admins`,
+        url: `/${config?.community.alias}/admins`,
         icon: Shield
       }
     ]
@@ -104,7 +100,7 @@ export function AppSidebar({
         <BackToAllCommunities />
         <CommunitySwitcher
           communities={communities}
-          selectedCommunity={selectedCommunity}
+          selectedCommunity={config}
         />
       </SidebarHeader>
       <SidebarContent>
@@ -113,7 +109,7 @@ export function AppSidebar({
         } />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} config={selectedCommunity} />
+        <NavUser user={data.user} config={config} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

@@ -37,11 +37,6 @@ export default async function DashboardLayout({
     redirect('/');
   }
 
-  // if (role === 'user' && accessList.length > 0 && !accessList.includes(alias)) {
-  //   const alias = accessList[0];
-  //   redirect(`/${alias}`);
-  // }
-
 
   if (role === 'user' && accessList.length > 0) {
     const chain_id = accessList[0].chain_id;
@@ -60,7 +55,7 @@ export default async function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <AppSidebar user={user} communities={communities} selectedAlias={alias} hasAccess={hasAccess} />
+      <AppSidebar user={user} communities={communities} config={community} hasAccess={hasAccess} />
       <SidebarInset className="flex flex-col h-screen overflow-hidden">
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
