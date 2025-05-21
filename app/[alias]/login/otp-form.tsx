@@ -100,7 +100,21 @@ export default function OtpForm({
         }
 
       } catch (error) {
-        console.error(error);
+        if (error instanceof Error) {
+          console.log(error)
+          if (error.message.includes('500')) {
+            toast.error('Could not verify login code now, please try again later', {
+              onAutoClose: () => {
+                const alias = config.community.alias;
+                router.push(`/${alias}`);
+              }
+            });
+          } else {
+            toast.error(error.message);
+          }
+        } else {
+          toast.error('Could not verify login code');
+        }
       }
     });
   }
