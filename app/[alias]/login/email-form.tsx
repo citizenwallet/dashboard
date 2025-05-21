@@ -27,7 +27,8 @@ interface EmailFormProps {
 
 export default function EmailForm({ config, onSuccess }: EmailFormProps) {
   const [isPending, startTransition] = useTransition();
-  const [sessionState, sessionActions] = useSession(config);
+
+  const sessionActions = useSession(config);
 
   const form = useForm<z.infer<typeof emailFormSchema>>({
     resolver: zodResolver(emailFormSchema),
@@ -64,10 +65,10 @@ export default function EmailForm({ config, onSuccess }: EmailFormProps) {
           throw new Error("Failed to confirm transaction");
         }
 
-        sessionActions.storePrivateKey(result.privateKey);
-        sessionActions.storeSessionHash(result.hash);
-        sessionActions.storeSourceValue(values.email);
-        sessionActions.storeSourceType(values.type);
+        sessionActions[1].storePrivateKey(result.privateKey);
+        sessionActions[1].storeSessionHash(result.hash);
+        sessionActions[1].storeSourceValue(values.email);
+        sessionActions[1].storeSourceType(values.type);
 
         // await sendOTPAction({ email });
         onSuccess(values.email);

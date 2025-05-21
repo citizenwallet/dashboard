@@ -1,23 +1,18 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
-import { useSearchParams } from 'next/navigation';
+import { Config } from '@citizenwallet/sdk';
+import { useRouter, useSearchParams } from 'next/navigation';
+import { useCallback, useEffect, useState } from 'react';
+import { toast } from 'sonner';
+import { sendOTPAction, signInWithOTP } from './actions';
 import EmailForm from './email-form';
 import OtpForm from './otp-form';
-import { sendOTPAction, signInWithOTP } from './actions';
-import { toast } from 'sonner';
-import { useRouter, useParams } from 'next/navigation';
-import { } from 'next/navigation';
-import { Config } from '@citizenwallet/sdk';
 
 export default function FormPage({
     config
 }: {
     config: Config;
 }) {
-    const params = useParams();
-    const alias = params.alias as string;
-
 
     const searchParams = useSearchParams();
 
