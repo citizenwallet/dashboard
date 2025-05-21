@@ -1,10 +1,11 @@
 'use client';
 
-import { Config } from '@citizenwallet/sdk';
+import { CommunityConfig, Config, waitForTxSuccess } from '@citizenwallet/sdk';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { useCallback, useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { sendOTPAction, signInWithOTP } from './actions';
+import { useSession } from 'state/session/action';
+import { signInWithOTP, submitEmailFormAction } from './actions';
 import EmailForm from './email-form';
 import OtpForm from './otp-form';
 
@@ -15,6 +16,7 @@ export default function FormPage({
 }) {
 
     const searchParams = useSearchParams();
+    const sessionActions = useSession(config);
 
     const [step, setStep] = useState<'email' | 'otp'>('email'); // toggle between email and otp form
     const [email, setEmail] = useState(''); // value of email from emai form
@@ -111,11 +113,42 @@ export default function FormPage({
 
     async function resendLoginCode(email: string) {
         try {
-            startTimer();
-            await sendOTPAction({ email });
+
+
+            const communityConfig = new CommunityConfig(config);
+
+            const result = await submitEmailFormAction({
+                formData: {
+                    email,
+                    type: 'email'
+                },
+                config
+            });
+
+            const successReceipt = await waitForTxSuccess(
+                communityConfig,
+                result.sessionRequestTxHash,
+            );
+
+            if (!successReceipt) {
+                throw new Error("Failed to confirm transaction");
+            }
+
+            sessionActions[1].storePrivateKey(result.privateKey);
+            sessionActions[1].storeSessionHash(result.hash);
+            sessionActions[1].storeSourceValue(email);
+            sessionActions[1].storeSourceType('email');
+
             toast.success(`New login code sent to ${email}`);
+            startTimer();
+
         } catch {
-            toast.error('Could not send login code');
+            toast.error('Could not send login code', {
+                onAutoClose: () => {
+                    const alias = config.community.alias;
+                    router.push(`/${alias}`);
+                }
+            });
         }
     }
 
