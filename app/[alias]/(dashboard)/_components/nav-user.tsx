@@ -15,13 +15,14 @@ import {
   SidebarMenuItem,
   useSidebar
 } from '@/components/ui/sidebar';
-import { StorageKeys, StorageService } from '@/services/storage';
-import { Config } from '@citizenwallet/sdk';
+import { StorageService } from '@/services/storage';
+import { CommunityConfig, Config, revokeSession } from '@citizenwallet/sdk';
+import { Wallet } from "ethers";
 import { ChevronsUpDown, LogOut } from 'lucide-react';
-import { useSession } from "next-auth/react";
+import { useSession as useNextAuthSession } from "next-auth/react";
 import { useRouter } from 'next/navigation';
-import { SessionLogic } from 'state/session/action';
-import { useSessionStore } from 'state/session/state';
+import { toast } from 'sonner';
+import { useSession } from 'state/session/action';
 
 export function NavUser({
   user,
@@ -35,8 +36,67 @@ export function NavUser({
   config?: Config;
 }) {
   const { isMobile } = useSidebar();
-  const { data: session, update } = useSession();
+  const { data: session, update } = useNextAuthSession();
   const router = useRouter();
+  const sessionActions = useSession(config as Config);
+
+
+  const removeSession = async () => {
+
+    try {
+
+      if (!config) {
+        return;
+      }
+
+      const privateKey = sessionActions[1].storage.getKey("session_private_key");
+      const account = await sessionActions[1].getAccountAddress();
+      const communityConfig = new CommunityConfig(config);
+      const storageService = new StorageService(config.community.alias);
+
+      if (!privateKey || !account) {
+        return;
+      }
+
+      const signer = new Wallet(privateKey);
+
+      const tx = await revokeSession({
+        community: communityConfig,
+        signer,
+        account,
+      });
+
+
+      if (!tx) {
+        toast.error("Signout failed");
+        return;
+      }
+      sessionActions[1].clear();
+      storageService.deleteKey("session_private_key");
+      storageService.deleteKey("session_source_type");
+      storageService.deleteKey("session_source_value");
+      storageService.deleteKey("session_hash");
+
+      const removeChainIds = config?.community.profile.chain_id;
+      const updateChainIds = session?.user.chainIds?.filter((chainId: number) => chainId !== removeChainIds);
+
+      //remove chainId from session
+      await update({
+        chainIds: updateChainIds
+      });
+
+      toast.success("Signout successful");
+
+    } catch (error) {
+      console.error(error);
+      toast.error("Signout failed");
+
+    } finally {
+      router.push("/");
+    }
+
+
+  }
 
   return (
     <SidebarMenu>
@@ -83,47 +143,14 @@ export function NavUser({
 
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <form
-                action={async () => {
-                  try {
-                    if (config) {
 
-                      // clear state
-                      const data = useSessionStore.getState();
-                      const sessionLogic = new SessionLogic(data, config);
-                      sessionLogic.clear();
+              <button className="flex items-center gap-2" onClick={
+                removeSession
+              }>
+                <LogOut className="" />
+                Sign Out
+              </button>
 
-                      // clear localstorage
-                      const alias = config.community.alias
-                      const storage = new StorageService(alias);
-                      storage.deleteKey(StorageKeys.session_private_key);
-                      storage.deleteKey(StorageKeys.session_hash);
-                      storage.deleteKey(StorageKeys.session_source_value);
-                      storage.deleteKey(StorageKeys.session_source_type);
-
-                      const removeChainIds = config?.community.profile.chain_id;
-                      const updateChainIds = session?.user.chainIds?.filter((chainId: number) => chainId !== removeChainIds);
-
-                      //remove chainId from session
-                      await update({
-                        chainIds: updateChainIds
-                      });
-
-                    }
-                  } catch (error) {
-                    console.error(error);
-                  } finally {
-                    router.push('/');
-                  }
-
-
-                }}
-              >
-                <button className="flex items-center gap-2" type="submit">
-                  <LogOut className="" />
-                  Sign Out
-                </button>
-              </form>
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
