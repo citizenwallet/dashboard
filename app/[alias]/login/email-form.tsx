@@ -80,7 +80,11 @@ export default function EmailForm({ config, onSuccess }: EmailFormProps) {
           console.log(error)
           if (error.message.includes('500')) {
             toast.error('Could not send login code now, please try again later');
-          } else {
+          }
+          else if (error.message.includes('429')) {
+            toast.error('Too many requests, please try again later');
+          }
+          else {
             toast.error(error.message);
           }
         } else {

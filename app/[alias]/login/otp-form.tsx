@@ -103,13 +103,10 @@ export default function OtpForm({
         if (error instanceof Error) {
           console.log(error)
           if (error.message.includes('500')) {
-            toast.error('Could not verify login code now, please try again later', {
-              onAutoClose: () => {
-                const alias = config.community.alias;
-                router.push(`/${alias}`);
-              }
-            });
-          } else {
+            toast.error('Your login code is wrong, please try again');
+          }
+
+          else {
             toast.error(error.message);
           }
         } else {
