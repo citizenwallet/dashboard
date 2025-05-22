@@ -105,7 +105,7 @@
         "chain_id": 100
       },
       "primary_card_manager": {
-        "address": "0x1EaF6B6A6967608aF6c77224f087b042095891EB",
+        "address": "0xBA861e2DABd8316cf11Ae7CdA101d110CF581f28",
         "chain_id": 100
       },
       "primary_session_manager": {
@@ -138,7 +138,7 @@
       "100:0x940Cbb155161dc0C4aade27a4826a16Ed8ca0cb2": {
         "chain_id": 100,
         "entrypoint_address": "0x7079253c0358eF9Fd87E16488299Ef6e06F403B6",
-        "paymaster_address": "0x8fc2e97671C691e7Ff7B42e5c7cCbDD38fC8B729",
+        "paymaster_address": "0xE69C843898E21C0E95eA7DD310cD850AAc0aB897",
         "account_factory_address": "0x940Cbb155161dc0C4aade27a4826a16Ed8ca0cb2",
         "paymaster_type": "cw-safe"
       }
@@ -148,6 +148,12 @@
         "chain_id": 100,
         "address": "0x1EaF6B6A6967608aF6c77224f087b042095891EB",
         "type": "classic"
+      },
+      "100:0xBA861e2DABd8316cf11Ae7CdA101d110CF581f28": {
+        "chain_id": 100,
+        "instance_id": "brussels-pay",
+        "address": "0xBA861e2DABd8316cf11Ae7CdA101d110CF581f28",
+        "type": "safe"
       }
     },
     "sessions": {
