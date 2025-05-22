@@ -1,5 +1,5 @@
 'use server';
-import { signIn } from '@/auth';
+import { auth, signIn } from '@/auth';
 import { generateOTP } from '@/lib/utils';
 import { sendOtpEmail } from '@/services/brevo';
 import { getServiceRoleClient } from '@/services/top-db';
@@ -16,7 +16,6 @@ import { Wallet, getBytes } from 'ethers';
 import { CredentialsSignin } from 'next-auth';
 import { z } from 'zod';
 import { emailFormSchema, otpFormSchema } from './form-schema';
-import { auth } from '@/auth';
 
 export async function getUserByEmailAction(args: { email: string }) {
   const { email } = args;
@@ -115,12 +114,14 @@ export async function signInWithOutOTP(args: {
     throw new Error('Sign in failed');
   }
 }
-//This part not run on admin role
-export async function submitEmailFormAction({
+
+export async function generateEmailFormHashAction({
   formData,
+  sessionOwner,
   config
 }: {
   formData: z.infer<typeof emailFormSchema>;
+  sessionOwner: string;
   config: Config;
 }) {
   // Validate form data
@@ -130,13 +131,7 @@ export async function submitEmailFormAction({
     throw new Error('Invalid form data');
   }
 
-  // Initialize configuration
   const communityConfig = new CommunityConfig(config);
-  const provider = communityConfig.primarySessionConfig.provider_address;
-
-  // Generate session parameters
-  const signer = Wallet.createRandom();
-  const sessionOwner = signer.address;
 
   // Calculate expiry time
   const SECONDS_PER_DAY = 60 * 60 * 24;
@@ -157,10 +152,24 @@ export async function submitEmailFormAction({
     expiry
   });
 
-  const hashInBytes = getBytes(hash);
-  const signature = await signer.signMessage(hashInBytes);
+  return { hash, expiry };
+}
 
-  // Prepare request payload
+export async function sendEmailFormRequestAction({
+  provider,
+  sessionOwner,
+  formData,
+  expiry,
+  signature,
+  config
+}: {
+  provider: string;
+  sessionOwner: string;
+  formData: z.infer<typeof emailFormSchema>;
+  expiry: number;
+  signature: string;
+  config: Config;
+}) {
   const requestBody = {
     provider,
     owner: sessionOwner,
@@ -191,13 +200,10 @@ export async function submitEmailFormAction({
   } = await response.json();
 
   return {
-    sessionRequestTxHash: responseBody.sessionRequestTxHash,
-    hash,
-    privateKey: signer.privateKey
+    sessionRequestTxHash: responseBody.sessionRequestTxHash
   };
 }
 
-//This part not run on admin role
 export async function submitOtpFormAction({
   formData,
   config

@@ -12,12 +12,13 @@ import {
 import { Input } from '@/components/ui/input';
 import { CommunityConfig, Config, waitForTxSuccess } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { getBytes, Wallet } from 'ethers';
 import { useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useSession } from 'state/session/action';
 import { z } from 'zod';
-import { getUserByEmailAction, submitEmailFormAction } from './actions';
+import { generateEmailFormHashAction, getUserByEmailAction, sendEmailFormRequestAction } from './actions';
 import { emailFormSchema } from './form-schema';
 
 interface EmailFormProps {
@@ -50,11 +51,28 @@ export default function EmailForm({ config, onSuccess }: EmailFormProps) {
         }
 
         const communityConfig = new CommunityConfig(config);
+        const signer = Wallet.createRandom();
+        const sessionOwner = signer.address;
+        const privateKey = signer.privateKey;
 
-        const result = await submitEmailFormAction({
+        const { hash, expiry } = await generateEmailFormHashAction({
           formData: values,
+          sessionOwner,
           config
         });
+
+        const hashInBytes = getBytes(hash);
+        const signature = await signer.signMessage(hashInBytes);
+
+        const result = await sendEmailFormRequestAction({
+          provider: communityConfig.primarySessionConfig.provider_address,
+          sessionOwner,
+          formData: values,
+          expiry,
+          signature,
+          config
+        });
+
 
         const successReceipt = await waitForTxSuccess(
           communityConfig,
@@ -65,8 +83,8 @@ export default function EmailForm({ config, onSuccess }: EmailFormProps) {
           throw new Error("Failed to confirm transaction");
         }
 
-        sessionActions[1].storePrivateKey(result.privateKey);
-        sessionActions[1].storeSessionHash(result.hash);
+        sessionActions[1].storePrivateKey(privateKey);
+        sessionActions[1].storeSessionHash(hash);
         sessionActions[1].storeSourceValue(values.email);
         sessionActions[1].storeSourceType(values.type);
 
