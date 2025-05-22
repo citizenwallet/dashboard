@@ -12,7 +12,6 @@ import {
   generateSessionRequestHash,
   generateSessionSalt
 } from '@citizenwallet/sdk';
-import { Wallet, getBytes } from 'ethers';
 import { CredentialsSignin } from 'next-auth';
 import { z } from 'zod';
 import { emailFormSchema, otpFormSchema } from './form-schema';
