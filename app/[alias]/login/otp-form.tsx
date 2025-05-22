@@ -24,8 +24,9 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useSession } from 'state/session/action';
 import { z } from 'zod';
-import { getUserByEmailAction, signInWithOutOTP, submitOtpFormAction } from './actions';
+import { generateOtpFormHashAction, getUserByEmailAction, signInWithOutOTP, submitOtpFormAction } from './actions';
 import { otpFormSchema } from './form-schema';
+import { getBytes, Wallet } from 'ethers';
 
 
 interface OtpFormProps {
@@ -70,9 +71,22 @@ export default function OtpForm({
 
         const communityConfig = new CommunityConfig(config);
 
+        const sessionHash = await generateOtpFormHashAction({
+          formData: values,
+        });
+
+        const signer = new Wallet(values.privateKey);
+        const sessionOwner = signer.address;
+
+        const sessionHashInBytes = getBytes(sessionHash);
+        const signature = await signer.signMessage(sessionHashInBytes);
+
         const result = await submitOtpFormAction({
           formData: values,
           config,
+          sessionOwner,
+          sessionHash,
+          signature
         });
 
         const successReceipt = await waitForTxSuccess(
