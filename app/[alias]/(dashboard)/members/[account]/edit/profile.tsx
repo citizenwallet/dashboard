@@ -44,6 +44,7 @@ import type { Profile } from '../action';
 import {
   deleteProfileAction,
   pinJsonToIPFSAction,
+  unpinAction,
   updateProfileAction,
   updateProfileImageAction
 } from '../action';
@@ -84,6 +85,16 @@ export default function Profile({
   });
 
 
+  const [imageFile, setImageFile] = useState<File | null>(null);
+  const [isAvailable, setIsAvailable] = useState(true);
+  const [usernameEdit, setUsernameEdit] = useState(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [debouncedUsername] = useDebounce(form.watch('username'), 300);
+  const [isLoading, setIsLoading] = useState(false);
+  const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const sessionActions = useSession(config);
+
+
   //check if the user is can edit that profile
   useEffect(() => {
     const checkAdminRole = async () => {
@@ -96,16 +107,7 @@ export default function Profile({
     }
 
     checkAdminRole();
-  }, [memberData?.account])
-
-  const [imageFile, setImageFile] = useState<File | null>(null);
-  const [isAvailable, setIsAvailable] = useState(true);
-  const [usernameEdit, setUsernameEdit] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const [debouncedUsername] = useDebounce(form.watch('username'), 300);
-  const [isLoading, setIsLoading] = useState(false);
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const sessionActions = useSession(config);
+  }, [memberData?.account, sessionActions])
 
   useEffect(() => {
     if (debouncedUsername && usernameEdit && isEditing) {
@@ -235,18 +237,42 @@ export default function Profile({
   const handleDelete = async () => {
     try {
       setIsLoading(true);
-      await deleteProfileAction(
-        userData.avatarUrl || '',
-        config.community.alias,
-        config,
+
+      if (userData.avatarUrl) {
+        await unpinAction(userData.avatarUrl);
+      }
+
+
+      const community = new CommunityConfig(config);
+      const bundler = new BundlerService(community);
+
+      const privateKey = sessionActions[1].storage.getKey('session_private_key');
+      const signerAccountAddress = await sessionActions[1].getAccountAddress();
+
+      const signer = new Wallet(privateKey as string);
+
+      const txHash = await bundler.burnProfile(
+        signer,
+        signerAccountAddress || '',
         memberData?.account || ''
       );
 
-      toast.success('Profile deleted successfully', {
-        onAutoClose: () => {
-          router.push(`/${config.community.alias}/members`);
-        }
-      });
+      const isSuccess = await waitForTxSuccess(community, txHash);
+
+      if (isSuccess) {
+        await deleteProfileAction(
+          config.community.alias,
+          config,
+          memberData?.account || ''
+        );
+
+        toast.success('Profile deleted successfully', {
+          onAutoClose: () => {
+            router.push(`/${config.community.alias}/members`);
+          }
+        });
+      }
+
     } catch (error) {
       console.error('Error deleting profile:', error);
       toast.error('Error deleting profile');

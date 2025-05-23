@@ -6,6 +6,7 @@ import { placeholderData, skeletonColumns } from './_table/columns';
 import MembersTable from './_table/members-table';
 import SwitcherButton from './_components/switcher-button';
 import AddMember from './_components/add-member';
+import { getCommunity } from '@/services/cw';
 
 export default async function Page(props: {
   params: Promise<{ alias: string }>;
@@ -16,7 +17,7 @@ export default async function Page(props: {
   }>;
 }) {
   const { alias } = await props.params;
-  const { community: config } = await fetchCommunityByAliasAction(alias);
+  const { community: config } = await getCommunity(alias);
 
   const {
     query: queryParam,
