@@ -83,6 +83,21 @@ export default function Profile({
     avatarUrl: memberData?.image
   });
 
+
+  //check if the user is can edit that profile
+  useEffect(() => {
+    const checkAdminRole = async () => {
+      const signerAccountAddress = await sessionActions[1].getAccountAddress();
+      if (signerAccountAddress === memberData?.account) {
+        setIsEditing(true);
+      } else {
+        setIsEditing(false);
+      }
+    }
+
+    checkAdminRole();
+  }, [memberData?.account])
+
   const [imageFile, setImageFile] = useState<File | null>(null);
   const [isAvailable, setIsAvailable] = useState(true);
   const [usernameEdit, setUsernameEdit] = useState(false);
@@ -369,20 +384,19 @@ export default function Profile({
       </CardContent>
 
       {/* it can access only admin and community owner  */}
-      {hasAdminRole && (
+      {isEditing && (
         <CardFooter className="flex justify-between pt-6">
-          {isEditing && (
-            <div className="flex gap-3">
-              <Button
-                onClick={form.handleSubmit(onSubmit)}
-                className="gap-2"
-                disabled={!isAvailable || isLoading}
-              >
-                <Save className="h-4 w-4" />
-                {isLoading ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </div>
-          )}
+
+          <div className="flex gap-3">
+            <Button
+              onClick={form.handleSubmit(onSubmit)}
+              className="gap-2"
+              disabled={!isAvailable || isLoading}
+            >
+              <Save className="h-4 w-4" />
+              {isLoading ? 'Saving...' : 'Save Changes'}
+            </Button>
+          </div>
 
           <Button
             variant="destructive"
