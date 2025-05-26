@@ -410,15 +410,17 @@ export default function RolePage({
                       return (
                         <>
                           <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                              disabled={isPending}
-                              onClick={handleOpenDialog}
-                            >
-                              <Trash size={16} />
-                              Revoke Access
-                            </Button>
+                            {hasAdminRole && (
+                              <Button
+                                variant="outline"
+                                className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                                disabled={isPending}
+                                onClick={handleOpenDialog}
+                              >
+                                <Trash size={16} />
+                                Revoke Access
+                              </Button>
+                            )}
                           </div>
 
                           <Dialog
