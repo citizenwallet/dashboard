@@ -64,7 +64,9 @@ const IDRow = ({ account }: { account: string }) => {
 
 export const createColumns = (
   communityConfig: CommunityConfig,
-  config: Config
+  config: Config,
+  roleInCommunity: string | null,
+  signerAccountAddress: string | null
 ): ColumnDef<MemberT>[] => [
     {
       header: 'ID',
@@ -233,7 +235,18 @@ export const createColumns = (
       cell: function RemoveCell({ row }) {
         const [isDialogOpen, setIsDialogOpen] = useState(false);
         const [isPending, setIsPending] = useState(false);
+        const [ableToRemove, setAbleToRemove] = useState(false);
         const sessionActions = useSession(config);
+
+        useEffect(() => {
+          if (!roleInCommunity) {
+            if (signerAccountAddress === row.original.account) {
+              setAbleToRemove(true);
+            }
+          } else {
+            setAbleToRemove(true);
+          }
+        }, [roleInCommunity, signerAccountAddress, row.original.account]);
 
         const { image, account } = row.original;
 
@@ -296,15 +309,17 @@ export const createColumns = (
         return (
           <>
             <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                disabled={isPending}
-                onClick={handleOpenDialog}
-              >
-                <Trash size={16} />
-                Remove
-              </Button>
+              {ableToRemove && (
+                <Button
+                  variant="outline"
+                  className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                  disabled={isPending}
+                  onClick={handleOpenDialog}
+                >
+                  <Trash size={16} />
+                  Remove
+                </Button>
+              )}
             </div>
 
             <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>

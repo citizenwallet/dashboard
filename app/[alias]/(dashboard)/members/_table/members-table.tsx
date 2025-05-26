@@ -1,3 +1,5 @@
+import { getAuthUserRoleInCommunityAction } from '@/app/_actions/user-actions';
+import { auth } from '@/auth';
 import UrlPagination from '@/components/custom/pagination-via-url';
 import { Separator } from '@/components/ui/separator';
 import { PAGE_SIZE } from '@/services/chain-db/members';
@@ -26,12 +28,23 @@ export default async function MembersTable({
   });
 
   const totalPages = Math.ceil(Number(totalCount) / PAGE_SIZE);
+  const roleInCommunity = await getAuthUserRoleInCommunityAction({
+    alias: config.community.alias
+  });
+
+  const session = await auth();
+  const signerAccountAddress = session?.user.address;
 
   return (
     <>
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto rounded-md border">
-          <MembersClientTable data={data ?? []} config={config} />
+          <MembersClientTable
+            data={data ?? []}
+            config={config}
+            roleInCommunity={roleInCommunity ?? null}
+            signerAccountAddress={signerAccountAddress ?? null}
+          />
         </div>
       </div>
 
