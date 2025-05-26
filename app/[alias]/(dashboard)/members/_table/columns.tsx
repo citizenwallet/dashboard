@@ -239,14 +239,12 @@ export const createColumns = (
         const sessionActions = useSession(config);
 
         useEffect(() => {
-          if (!roleInCommunity) {
-            if (signerAccountAddress === row.original.account) {
-              setAbleToRemove(true);
-            }
-          } else {
-            setAbleToRemove(true);
-          }
-        }, [roleInCommunity, signerAccountAddress, row.original.account]);
+          const canRemove = !roleInCommunity
+            ? signerAccountAddress === row.original.account
+            : true;
+
+          setAbleToRemove(canRemove);
+        }, [row.original.account]);
 
         const { image, account } = row.original;
 
