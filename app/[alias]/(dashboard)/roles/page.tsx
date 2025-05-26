@@ -1,6 +1,5 @@
 import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 import {
-  getAuthUserRoleInAppAction,
   getAuthUserRoleInCommunityAction
 } from '@/app/_actions/user-actions';
 import { DataTable } from '@/components/ui/data-table';
@@ -62,12 +61,11 @@ async function PageLoader({
     page: parseInt(page || '1')
   });
 
-  //check admin role
-  const roleInApp = await getAuthUserRoleInAppAction();
+  //check community owner role
   const roleResult = await getAuthUserRoleInCommunityAction({ alias });
   let hasAdminRole = false;
 
-  if (roleInApp == 'admin' || roleResult == 'owner') {
+  if (roleResult == 'owner') {
     hasAdminRole = true;
   }
 
