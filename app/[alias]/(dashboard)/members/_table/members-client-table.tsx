@@ -1,8 +1,8 @@
 'use client';
 
 import { DataTable } from '@/components/ui/data-table';
-import { Config, CommunityConfig } from '@citizenwallet/sdk';
 import { MemberT } from '@/services/chain-db/members';
+import { CommunityConfig, Config } from '@citizenwallet/sdk';
 import { createColumns } from './columns';
 
 interface MembersClientTableProps {
@@ -13,7 +13,7 @@ interface MembersClientTableProps {
 export function MembersClientTable({ data, config }: MembersClientTableProps) {
   const communityConfig = new CommunityConfig(config);
 
-  const columns = createColumns(communityConfig);
+  const columns = createColumns(communityConfig, config);
 
   return <DataTable columns={columns} data={data} />;
 }

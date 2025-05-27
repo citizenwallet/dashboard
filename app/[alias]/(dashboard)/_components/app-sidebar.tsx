@@ -12,8 +12,10 @@ import { UserT } from '@/services/top-db/users';
 import { Config } from '@citizenwallet/sdk';
 import {
   ArrowLeft,
+  Hammer,
   Home,
   Landmark,
+  List,
   LucideLineChart,
   Shield,
   Users,
@@ -72,7 +74,19 @@ export function AppSidebar({
       {
         name: 'Treasury',
         url: `/${selectedCommunity?.community.alias}/treasury`,
-        icon: Landmark
+        icon: Landmark,
+        items: [
+          {
+            name: 'History',
+            url: `/${selectedCommunity?.community.alias}/treasury`,
+            icon: List
+          },
+          {
+            name: 'Minters',
+            url: `/${selectedCommunity?.community.alias}/roles`,
+            icon: Hammer
+          }
+        ]
       },
       {
         name: 'Admins',
