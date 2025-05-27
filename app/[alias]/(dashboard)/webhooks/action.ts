@@ -1,5 +1,9 @@
 'use server';
 
+import {
+  getAuthUserRoleInAppAction,
+  getAuthUserRoleInCommunityAction
+} from '@/app/_actions/user-actions';
 import { getServiceRoleClient } from '@/services/chain-db';
 import {
   createWebhook,
@@ -17,6 +21,20 @@ export const createWebhookAction = async (args: {
 }) => {
   const { config, webhook } = args;
 
+  const roleInCommunity = await getAuthUserRoleInCommunityAction({
+    alias: config.community.alias
+  });
+
+  const roleInApp = await getAuthUserRoleInAppAction();
+
+  if (!roleInApp) {
+    throw new Error('Unauthenticated user');
+  }
+
+  if (roleInApp === 'user' && !roleInCommunity) {
+    throw new Error('You are not a member of this community');
+  }
+
   const { chain_id: chainId } = config.community.profile;
 
   const supabase = getServiceRoleClient(chainId);
@@ -31,6 +49,20 @@ export const deleteWebhookAction = async (args: {
   const { config, id } = args;
   const { chain_id: chainId } = config.community.profile;
 
+  const roleInCommunity = await getAuthUserRoleInCommunityAction({
+    alias: config.community.alias
+  });
+
+  const roleInApp = await getAuthUserRoleInAppAction();
+
+  if (!roleInApp) {
+    throw new Error('Unauthenticated user');
+  }
+
+  if (roleInApp === 'user' && !roleInCommunity) {
+    throw new Error('You are not a member of this community');
+  }
+
   const supabase = getServiceRoleClient(chainId);
   revalidatePath(`/${config.community.alias}/webhooks`);
   return await deleteWebhook({ client: supabase, id });
@@ -43,6 +75,20 @@ export const updateWebhookAction = async (args: {
 }) => {
   const { config, id, webhook } = args;
   const { chain_id: chainId } = config.community.profile;
+
+  const roleInCommunity = await getAuthUserRoleInCommunityAction({
+    alias: config.community.alias
+  });
+
+  const roleInApp = await getAuthUserRoleInAppAction();
+
+  if (!roleInApp) {
+    throw new Error('Unauthenticated user');
+  }
+
+  if (roleInApp === 'user' && !roleInCommunity) {
+    throw new Error('You are not a member of this community');
+  }
 
   const supabase = getServiceRoleClient(chainId);
 
