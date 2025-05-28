@@ -1,7 +1,7 @@
 import { columns } from './columns';
 import { DataTable } from '@/components/ui/data-table';
 import { Config } from '@citizenwallet/sdk';
-import { fetchCommunitiesAction } from '@/app/_actions/community-actions';
+import { fetchCommunitiesForAdminAction } from '@/app/_actions/community-actions';
 import { Separator } from '@/components/ui/separator';
 
 interface CommunitiesTableProps {
@@ -14,7 +14,7 @@ export async function CommunitiesTable({ query }: CommunitiesTableProps) {
   let total: number = 0;
 
   try {
-    const result = await fetchCommunitiesAction({
+    const result = await fetchCommunitiesForAdminAction({
       query: query
     });
 
