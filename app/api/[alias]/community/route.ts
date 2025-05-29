@@ -3,7 +3,7 @@ import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
   request: NextRequest,
-  { params }: { params: { alias: string } }
+  { params }: { params: Promise<{ alias: string }> }
 ) {
   const client = getServiceRoleClient();
   const { alias } = await params;
