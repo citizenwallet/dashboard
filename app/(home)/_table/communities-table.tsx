@@ -9,13 +9,14 @@ interface CommunitiesTableProps {
   page: number;
 }
 
-export async function CommunitiesTable({ query }: CommunitiesTableProps) {
+export async function CommunitiesTable({ query, page }: CommunitiesTableProps) {
   let communities: Config[] = [];
   let total: number = 0;
 
   try {
     const result = await fetchCommunitiesAction({
-      query: query
+      query: query,
+      page: page
     });
 
     communities = result.communities;
