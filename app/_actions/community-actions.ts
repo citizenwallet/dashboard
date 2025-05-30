@@ -1,12 +1,17 @@
 'use server';
 
+import { getServiceRoleClient } from '@/services/top-db';
+import {
+  getCommunities,
+  getCommunityByAlias,
+  getCommunityByAliasList
+} from '@/services/top-db/community';
 import { Config } from '@citizenwallet/sdk';
-import eureGnosisCommunity from './eure_gnosis_community.json' assert { type: 'json' };
 import { getAuthUserAction, getAuthUserRoleInAppAction } from './user-actions';
-const typedEureGnosisCommunity = eureGnosisCommunity as Config;
 
 export const fetchCommunitiesAction = async (args: {
   query?: string;
+  page?: number;
 }): Promise<{ communities: Config[]; total: number }> => {
   const user = await getAuthUserAction();
 
@@ -21,7 +26,8 @@ export const fetchCommunitiesAction = async (args: {
 
   if (role === 'admin') {
     return await fetchCommunitiesForAdminAction({
-      query: args.query
+      query: args.query,
+      page: args.page
     });
   }
 
@@ -32,7 +38,8 @@ export const fetchCommunitiesAction = async (args: {
 
     return await fetchCommunitiesForUserAction({
       accessList,
-      query: args.query
+      query: args.query,
+      page: args.page
     });
   }
 
@@ -45,6 +52,7 @@ export const fetchCommunitiesAction = async (args: {
 const fetchCommunitiesForUserAction = async (args: {
   accessList: string[];
   query?: string;
+  page?: number;
 }): Promise<{ communities: Config[]; total: number }> => {
   const userRole = await getAuthUserRoleInAppAction();
 
@@ -52,45 +60,28 @@ const fetchCommunitiesForUserAction = async (args: {
     throw new Error('Unauthorized');
   }
 
-  if (!process.env.COMMUNITIES_CONFIG_URL) {
-    throw new Error('COMMUNITIES_CONFIG_URL is not set');
+  const { accessList, query, page } = args;
+
+  const client = getServiceRoleClient();
+  const { data, count } = await getCommunityByAliasList(
+    client,
+    accessList,
+    query,
+    page
+  );
+
+  const communities = data?.map((data) => data?.json);
+
+  if (!communities) {
+    return { communities: [], total: 0 };
   }
 
-  const { accessList, query } = args;
-
-  const response = await fetch(process.env.COMMUNITIES_CONFIG_URL);
-  const data = (await response.json()) as Config[];
-  data.push(typedEureGnosisCommunity);
-
-  const communities = data.filter((community) => {
-    const { hidden, name, alias, description } = community.community;
-
-    const isHidden = hidden || false;
-
-    const isMatchAccessList = accessList.includes(alias);
-
-    const isMatchName = name
-      .toLowerCase()
-      .includes(query?.toLowerCase().trim() || '');
-    const isMatchAlias = alias
-      .toLowerCase()
-      .includes(query?.toLowerCase().trim() || '');
-    const isMatchDescription = description
-      .toLowerCase()
-      .includes(query?.toLowerCase().trim() || '');
-
-    return (
-      !isHidden &&
-      (isMatchName || isMatchAlias || isMatchDescription) &&
-      isMatchAccessList
-    );
-  });
-
-  return { communities, total: communities.length };
+  return { communities, total: count ?? 0 };
 };
 
 const fetchCommunitiesForAdminAction = async (args: {
   query?: string;
+  page?: number;
 }): Promise<{ communities: Config[]; total: number }> => {
   const userRole = await getAuthUserRoleInAppAction();
 
@@ -98,58 +89,36 @@ const fetchCommunitiesForAdminAction = async (args: {
     throw new Error('Unauthorized');
   }
 
-  if (!process.env.COMMUNITIES_CONFIG_URL) {
-    throw new Error('COMMUNITIES_CONFIG_URL is not set');
+  const { query, page } = args;
+
+  const client = getServiceRoleClient();
+  const { data: datas, count } = await getCommunities(client, query, page);
+
+  if (!datas && !count) {
+    return {
+      communities: [],
+      total: 0
+    };
   }
 
-  const { query } = args;
+  const communities = datas?.map((data) => data?.json);
 
-  const response = await fetch(process.env.COMMUNITIES_CONFIG_URL);
-  const data = (await response.json()) as Config[];
-  data.push(typedEureGnosisCommunity);
-  const communities = data.filter((community) => {
-    const { hidden, name, alias, description } = community.community;
-
-    const isHidden = hidden || false;
-
-    const isMatchName = name
-      .toLowerCase()
-      .includes(query?.toLowerCase().trim() || '');
-    const isMatchAlias = alias
-      .toLowerCase()
-      .includes(query?.toLowerCase().trim() || '');
-    const isMatchDescription = description
-      .toLowerCase()
-      .includes(query?.toLowerCase().trim() || '');
-
-    return !isHidden && (isMatchName || isMatchAlias || isMatchDescription);
-  });
-
-  return { communities, total: communities.length };
+  return { communities, total: count ?? 0 };
 };
 
 export const fetchCommunityByAliasAction = async (
   alias: string
 ): Promise<{ community: Config }> => {
-  if (!process.env.COMMUNITIES_CONFIG_URL) {
-    throw new Error('COMMUNITIES_CONFIG_URL is not set');
+  const client = getServiceRoleClient();
+  const { data, error } = await getCommunityByAlias(client, alias);
+
+  if (error) {
+    throw new Error(error.message);
   }
 
-  const response = await fetch(process.env.COMMUNITIES_CONFIG_URL);
-  const data = (await response.json()) as Config[];
-  data.push(typedEureGnosisCommunity);
-
-  const community = data.filter((community) => {
-    const { alias: aliasFromConfig } = community.community;
-
-    const isMatchAlias = aliasFromConfig.trim() === alias.trim();
-
-    return isMatchAlias;
-  });
-
-  if (community.length === 0) {
+  if (!data) {
     throw new Error('Community not found');
   }
 
-  return { community: community[0] };
+  return { community: data?.json };
 };
