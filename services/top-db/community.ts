@@ -18,6 +18,23 @@ export interface CommunityT {
 
 const LIMIT = 15;
 
+export const getCommunitiesByChainId = async (
+  client: SupabaseClient,
+  chainId?: number
+): Promise<PostgrestResponse<CommunityT>> => {
+  let query = client
+    .from('communities')
+    .select('*')
+    .eq('active', true)
+    .order('created_at', { ascending: false });
+
+  if (chainId) {
+    query = query.eq('chain_id', chainId);
+  }
+
+  return await query;
+};
+
 export const getCommunityByAlias = async (
   client: SupabaseClient,
   alias: string
