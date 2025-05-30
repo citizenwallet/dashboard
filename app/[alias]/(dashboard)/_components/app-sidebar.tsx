@@ -18,6 +18,7 @@ import {
   List,
   LucideLineChart,
   Shield,
+  University,
   Users
 } from 'lucide-react';
 import Link from 'next/link';
@@ -85,6 +86,11 @@ export function AppSidebar({
             icon: Hammer
           }
         ]
+      },
+      {
+        name: 'Profile',
+        url: `/${selectedCommunity?.community.alias}/profile`,
+        icon: University
       },
       {
         name: 'Admins',
