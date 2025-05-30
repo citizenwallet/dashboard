@@ -1,4 +1,5 @@
 import { getServiceRoleClient } from '@/services/top-db';
+import { getCommunityByAlias } from '@/services/top-db/community';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(
@@ -12,12 +13,7 @@ export async function GET(
     return NextResponse.json({ error: 'Missing alias' }, { status: 400 });
   }
 
-  const { data, error } = await client
-    .from('communities')
-    .select('*')
-    .eq('alias', alias)
-    .eq('active', true)
-    .single();
+  const { data, error } = await getCommunityByAlias(client, alias);
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 404 });
