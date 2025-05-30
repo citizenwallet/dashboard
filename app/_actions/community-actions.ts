@@ -3,8 +3,7 @@
 import { getServiceRoleClient } from '@/services/top-db';
 import {
   getCommunities,
-  getCommunityByAlias,
-  getCommunityByAliasList
+  getCommunityByAlias
 } from '@/services/top-db/community';
 import { Config } from '@citizenwallet/sdk';
 import { getAuthUserAction, getAuthUserRoleInAppAction } from './user-actions';
@@ -63,14 +62,20 @@ const fetchCommunitiesForUserAction = async (args: {
   const { accessList, query, page } = args;
 
   const client = getServiceRoleClient();
-  const { data, count } = await getCommunityByAliasList(
-    client,
-    accessList,
-    query,
-    page
-  );
 
-  const communities = data?.map((data) => data?.json);
+  const { data, count } = await getCommunities(client, query, page);
+
+  if (!data || data.length < 1) {
+    return {
+      communities: [],
+      total: 0
+    };
+  }
+
+  const communitieData = data?.filter((data) =>
+    accessList.includes(data.alias)
+  );
+  const communities = communitieData?.map((data) => data.json);
 
   if (!communities) {
     return { communities: [], total: 0 };
@@ -94,7 +99,7 @@ const fetchCommunitiesForAdminAction = async (args: {
   const client = getServiceRoleClient();
   const { data: datas, count } = await getCommunities(client, query, page);
 
-  if (!datas && !count) {
+  if (!datas || datas.length < 1) {
     return {
       communities: [],
       total: 0
