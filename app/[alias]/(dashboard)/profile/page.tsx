@@ -1,8 +1,8 @@
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card'
-import React, { Suspense } from 'react'
-import ProfilePage from './profile';
-import Fallback from './_components/fallback';
 import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Suspense } from 'react';
+import Fallback from './_components/fallback';
+import ProfilePage from './profile';
 
 export default async function page(props: {
     params: Promise<{ alias: string }>;
@@ -36,6 +36,6 @@ export default async function page(props: {
 async function asyncForm({ alias }: { alias: string }) {
     const { community: config } = await fetchCommunityByAliasAction(alias);
     return (
-        <ProfilePage alias={config.community.alias} />
+        <ProfilePage config={config} />
     );
 }
