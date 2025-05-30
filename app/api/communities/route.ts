@@ -1,4 +1,5 @@
 import { getServiceRoleClient } from '@/services/top-db';
+import { getCommunitiesByChainId } from '@/services/top-db/community';
 import { NextRequest, NextResponse } from 'next/server';
 
 export async function GET(request: NextRequest) {
@@ -7,17 +8,10 @@ export async function GET(request: NextRequest) {
 
   const client = getServiceRoleClient();
 
-  let query = client
-    .from('communities')
-    .select('*')
-    .eq('active', true)
-    .order('created_at', { ascending: false });
-
-  if (chainId) {
-    query = query.eq('chain_id', chainId);
-  }
-
-  const { data, error } = await query;
+  const { data, error } = await getCommunitiesByChainId(
+    client,
+    Number(chainId)
+  );
 
   if (error) {
     return NextResponse.json({ error: error.message }, { status: 500 });
