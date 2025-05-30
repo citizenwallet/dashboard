@@ -1,3 +1,4 @@
+import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 import {
   getAuthUserRoleInAppAction,
   getAuthUserRoleInCommunityAction
@@ -5,7 +6,6 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { getServiceRoleClient } from '@/services/chain-db';
 import { getMemberByAccount } from '@/services/chain-db/members';
-import { getCommunity } from '@/services/cw';
 import { Config } from '@citizenwallet/sdk';
 import { Suspense } from 'react';
 import Profile from './profile';
@@ -19,7 +19,9 @@ interface PageProps {
 
 export default async function page(props: PageProps) {
   const { account, alias } = await props.params;
-  const { community: config } = await getCommunity(alias);
+
+  const { community: config } = await fetchCommunityByAliasAction(alias);
+
 
   return (
     <div className="flex flex-1 w-full flex-col h-full">
