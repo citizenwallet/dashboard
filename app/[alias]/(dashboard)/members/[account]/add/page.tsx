@@ -1,5 +1,6 @@
 import { Skeleton } from '@/components/ui/skeleton';
-import { getCommunity } from '@/services/cw';
+import { getServiceRoleClient } from '@/services/top-db';
+import { getCommunityByAlias } from '@/services/top-db/community';
 import { Config } from '@citizenwallet/sdk';
 import { Suspense } from 'react';
 import Profile from './profile';
@@ -13,7 +14,18 @@ interface PageProps {
 
 export default async function page(props: PageProps) {
   const { account, alias } = await props.params;
-  const { community: config } = await getCommunity(alias);
+  const client = getServiceRoleClient();
+  const { data, error } = await getCommunityByAlias(client, alias);
+
+  if (error) {
+    throw new Error(error.message);
+  }
+
+  if (!data) {
+    throw new Error('Community not found');
+  }
+
+  const config = data?.json;
 
   return (
     <div className="flex flex-1 w-full flex-col h-full">
