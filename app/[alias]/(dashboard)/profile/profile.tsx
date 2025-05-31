@@ -7,13 +7,13 @@ import { Textarea } from '@/components/ui/textarea';
 import { Config } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2, Palette } from 'lucide-react';
+import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { ColorPicker } from './_components/colorPicker';
 import { LogoUpload } from './_components/logoUpload';
-import { uploadItemImageAction } from './action';
-import { useState } from 'react';
+import { updateProfileAction, uploadItemImageAction } from './action';
 
 // Form validation schema
 const profileFormSchema = z.object({
@@ -81,30 +81,28 @@ export default function ProfilePage({ config }: { config: Config }) {
                 ...config.community,
                 name: profileData.name,
                 description: profileData.description,
-                url: profileData.url,
+                url: profileData.url || config.community.url,
                 logo: profileData.logo,
                 theme: {
                     ...config.community.theme,
                     primary: profileData.color
-                }
+                },
+                // Only set custom_domain if it's different from the default
+                ...(profileData.custom_domain && profileData.custom_domain !== defaultDomain && {
+                    custom_domain: profileData.custom_domain
+                })
             };
 
-            // Only set custom_domain if it's different from the default
-            if (profileData.custom_domain && profileData.custom_domain !== defaultDomain) {
-                updatedCommunity.custom_domain = profileData.custom_domain;
-            }
-
-            const updatedConfig = {
+            const updatedConfig: Config = {
                 ...config,
                 community: updatedCommunity
             };
 
-            console.log("updatedConfig-->", updatedConfig);
-
-
+            // Update the profile in the database
+            await updateProfileAction(updatedConfig, config.community.alias);
 
             // Show success message
-            toast.success(`Profile updated successfully! `);
+            toast.success(`Profile updated successfully!`);
         } catch (error) {
             console.error('Error updating profile:', error);
             toast.error('Failed to update profile. Please try again.');
