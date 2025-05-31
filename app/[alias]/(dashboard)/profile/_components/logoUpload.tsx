@@ -3,6 +3,7 @@
 import { Button } from "@/components/ui/button";
 import { Upload, X } from "lucide-react";
 import { useEffect, useState } from "react";
+import { toast } from "sonner";
 
 
 export const LogoUpload = ({ value, onChange }: { value?: File | string; onChange: (file?: File | string) => void }) => {
@@ -20,13 +21,13 @@ export const LogoUpload = ({ value, onChange }: { value?: File | string; onChang
         if (file) {
             // Validate file type
             if (!file.type.match(/^image\/(svg\+xml|png)$/)) {
-                alert('Please select a .svg or .png file');
+                toast.error('Please select a .svg or .png file');
                 return;
             }
 
             // Validate file size (max 5MB)
             if (file.size > 5 * 1024 * 1024) {
-                alert('File size must be less than 5MB');
+                toast.error('File size must be less than 5MB');
                 return;
             }
 

@@ -9,7 +9,7 @@ export default function Fallback() {
                 <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                     Name
                 </label>
-                <Skeleton className="h-10 w-full" /> {/* Input */}
+                <Skeleton className="h-10 w-full" />
             </div>
 
             {/* Description Field Skeleton */}
@@ -17,7 +17,7 @@ export default function Fallback() {
                 <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                     Description
                 </label>
-                <Skeleton className="h-[100px] w-full" /> {/* Textarea */}
+                <Skeleton className="h-[100px] w-full" />
                 <p className="text-sm text-muted-foreground">
                     Brief description that will be displayed on your profile.
                 </p>
@@ -28,7 +28,7 @@ export default function Fallback() {
                 <label className="text-sm font-medium leading-none peer-disabled:cursor-not-allowed peer-disabled:opacity-70">
                     Website URL
                 </label>
-                <Skeleton className="h-10 w-full" /> {/* Input */}
+                <Skeleton className="h-10 w-full" />
                 <p className="text-sm text-muted-foreground">
                     Your website or social media profile URL.
                 </p>
@@ -40,8 +40,8 @@ export default function Fallback() {
                     Custom Domain
                 </label>
                 <div className="flex space-x-2">
-                    <Skeleton className="h-10 flex-1" /> {/* Input */}
-                    <Skeleton className="h-10 w-10" /> {/* Clear button */}
+                    <Skeleton className="h-10 flex-1" />
+                    <Skeleton className="h-10 w-10" />
                 </div>
                 <p className="text-sm text-muted-foreground">
                     Your profile will be accessible at: <strong>loading...</strong>
@@ -54,7 +54,7 @@ export default function Fallback() {
                     Logo
                 </label>
                 <div className="space-y-4">
-                    <Skeleton className="h-32 w-full rounded-lg" /> {/* Upload area */}
+                    <Skeleton className="h-32 w-full rounded-lg" />
                     <p className="text-sm text-muted-foreground">
                         Upload your logo in SVG or PNG format. It will be stored securely in our storage.
                     </p>
@@ -68,8 +68,8 @@ export default function Fallback() {
                     <span>Brand Color</span>
                 </label>
                 <div className="flex items-center space-x-2">
-                    <Skeleton className="h-10 w-12" /> {/* Color box */}
-                    <Skeleton className="h-10 flex-1" /> {/* Input */}
+                    <Skeleton className="h-10 w-12" />
+                    <Skeleton className="h-10 flex-1" />
                 </div>
                 <p className="text-sm text-muted-foreground">
                     Choose your brand color. Click the color box to open the color picker.
@@ -78,7 +78,7 @@ export default function Fallback() {
 
             {/* Submit Button Skeleton */}
             <div className="pt-4">
-                <Skeleton className="h-11 w-full" /> {/* Submit button */}
+                <Skeleton className="h-11 w-full" />
             </div>
         </div>
     );

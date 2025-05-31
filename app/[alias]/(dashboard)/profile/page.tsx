@@ -21,6 +21,7 @@ export default async function page(props: {
                     </CardHeader>
                     <CardContent className="flex-1 overflow-y-auto px-6 pb-8">
                         <Suspense
+                            key={alias}
                             fallback={<Fallback />}
                         >
                             {asyncForm({ alias })}
