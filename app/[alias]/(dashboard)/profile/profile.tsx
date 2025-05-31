@@ -6,11 +6,14 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Config } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Palette } from 'lucide-react';
+import { Loader2, Palette } from 'lucide-react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { z } from 'zod';
 import { ColorPicker } from './_components/colorPicker';
 import { LogoUpload } from './_components/logoUpload';
+import { uploadItemImageAction } from './action';
+import { useState } from 'react';
 
 // Form validation schema
 const profileFormSchema = z.object({
@@ -38,25 +41,75 @@ export default function ProfilePage({ config }: { config: Config }) {
         },
     });
 
-
+    const [isLoading, setIsLoading] = useState(false);
     const onSubmit = async (data: ProfileFormValues) => {
         try {
-            console.log('Form submitted:', data);
+            setIsLoading(true);
 
-            // Handle logo upload to Supabase bucket
-            if (data.logo) {
-                // TODO: Implement Supabase storage upload
-                console.log('Uploading logo to Supabase bucket...');
+            // Handle logo upload to Supabase bucket or keep existing logo
+            let logoUrl = config.community.logo;
+            let logoChanged = false;
+
+            if (data.logo && data.logo instanceof File) {
+                logoUrl = await uploadItemImageAction(data.logo, config.community.alias);
+                logoChanged = true;
             }
 
-            // TODO: Save profile data
-            console.log('Saving profile data...');
+            // Prepare the profile data with the correct logo URL
+            const profileData = {
+                ...data,
+                logo: logoUrl
+            };
+
+            // Check if any data has changed compared to original config
+            const hasChanges =
+                data.name !== config.community.name ||
+                data.description !== config.community.description ||
+                data.url !== config.community.url ||
+                data.custom_domain !== (config.community.custom_domain || `${config.community.alias}.citizenwallet.xyz`) ||
+                data.color !== config.community.theme?.primary ||
+                logoChanged;
+
+            if (!hasChanges) {
+                toast.error('No changes were made to save.');
+                return;
+            }
+
+            // Create updated config with new community data
+            const defaultDomain = `${config.community.alias}.citizenwallet.xyz`;
+            const updatedCommunity = {
+                ...config.community,
+                name: profileData.name,
+                description: profileData.description,
+                url: profileData.url,
+                logo: profileData.logo,
+                theme: {
+                    ...config.community.theme,
+                    primary: profileData.color
+                }
+            };
+
+            // Only set custom_domain if it's different from the default
+            if (profileData.custom_domain && profileData.custom_domain !== defaultDomain) {
+                updatedCommunity.custom_domain = profileData.custom_domain;
+            }
+
+            const updatedConfig = {
+                ...config,
+                community: updatedCommunity
+            };
+
+            console.log("updatedConfig-->", updatedConfig);
+
+
 
             // Show success message
-            alert('Profile updated successfully!');
+            toast.success(`Profile updated successfully! `);
         } catch (error) {
             console.error('Error updating profile:', error);
-            alert('Failed to update profile. Please try again.');
+            toast.error('Failed to update profile. Please try again.');
+        } finally {
+            setIsLoading(false);
         }
     };
 
@@ -187,8 +240,15 @@ export default function ProfilePage({ config }: { config: Config }) {
 
                 {/* Submit Button */}
                 <div className="pt-4 flex justify-end items-end">
-                    <Button type="submit" className="w-full md:w-96">
-                        Update Profile
+                    <Button type="submit" className="w-full md:w-96" disabled={isLoading}>
+                        {isLoading ? (
+                            <>
+                                <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                                Uploading...
+                            </>
+                        ) : (
+                            'Update Profile'
+                        )}
                     </Button>
                 </div>
             </form>
