@@ -4,6 +4,7 @@ import { Button } from "@/components/ui/button";
 import { Upload, X } from "lucide-react";
 import { useEffect, useState } from "react";
 import { toast } from "sonner";
+import Image from "next/image";
 
 
 export const LogoUpload = ({ value, onChange }: { value?: File | string; onChange: (file?: File | string) => void }) => {
@@ -53,7 +54,14 @@ export const LogoUpload = ({ value, onChange }: { value?: File | string; onChang
                 <label htmlFor="logo-upload" className="flex flex-col items-center justify-center w-full h-32 border-2 border-gray-300 border-dashed rounded-lg cursor-pointer bg-gray-50 hover:bg-gray-100">
                     {preview ? (
                         <div className="relative w-full h-full flex items-center justify-center">
-                            <img src={preview} alt="Logo preview" className="max-w-full max-h-full object-contain" />
+                            <Image
+                                src={preview}
+                                alt="Logo preview"
+                                className="max-w-full max-h-full object-contain"
+                                width={100}
+                                height={100}
+                                priority
+                            />
                             <Button
                                 type="button"
                                 variant="destructive"
