@@ -79,3 +79,10 @@ export const uniqueSlugCommunity = async (
 ): Promise<PostgrestMaybeSingleResponse<CommunityT>> => {
   return await client.from(TABLE_NAME).select('*').eq('alias', alias).single();
 };
+
+export const createCommunity = async (
+  client: SupabaseClient,
+  community: CommunityT
+): Promise<PostgrestResponse<CommunityT>> => {
+  return await client.from(TABLE_NAME).insert(community).select();
+};
