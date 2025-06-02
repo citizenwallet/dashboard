@@ -36,9 +36,14 @@ export function CommunitySwitcher({
     return null;
   }
 
+
   const communityConfig = new CommunityConfig(activeCommunity);
+
+
   const primaryToken: ConfigToken = communityConfig.primaryToken;
   const logo: string = communityConfig.community.logo;
+
+
 
   return (
     <SidebarMenu>
@@ -52,7 +57,7 @@ export function CommunitySwitcher({
               <div className="flex aspect-square size-8 items-center justify-center rounded-lg text-sidebar-primary-foreground">
                 <CommunityLogo
                   logoUrl={logo}
-                  tokenSymbol={primaryToken.symbol}
+                  tokenSymbol={primaryToken?.symbol || "ETH"}
                 />
               </div>
               <div className="grid flex-1 text-left text-sm leading-tight">
@@ -70,10 +75,6 @@ export function CommunitySwitcher({
               )}
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
-
-
-
-
 
           </DropdownMenuTrigger>
           <DropdownMenuContent

@@ -46,6 +46,10 @@ export default async function DashboardLayout({
     redirect('/');
   }
 
+  if (selectedCommunity.active === false) {
+    redirect(`/${selectedCommunity.alias}/profile`);
+  }
+
   return (
     <SidebarProvider>
       <AppSidebar user={user} communities={communities} selectedCommunity={selectedCommunity} />
