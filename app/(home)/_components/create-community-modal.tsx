@@ -28,8 +28,12 @@ import {
 } from '@/components/ui/select';
 import { AlertCircle, Plus } from 'lucide-react';
 import Image from 'next/image';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { useDebounce } from 'use-debounce';
+import { checkAliasAction, generateUniqueSlugAction } from '../action';
+
+
 
 interface CreateCommunityFormData {
     chainId: string;
@@ -44,10 +48,12 @@ const chains = [
     { id: '137', name: 'Polygon', logo: '/chainLogo/Polygon.png' }
 ];
 
-export function CreateCommunityModal() {
+export default function CreateCommunityModal() {
+
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
+    const [isAvailable, setIsAvailable] = useState<boolean>(false);
 
     const form = useForm<CreateCommunityFormData>({
         defaultValues: {
@@ -73,10 +79,40 @@ export function CreateCommunityModal() {
     const handleOpenChange = (open: boolean) => {
         setIsOpen(open);
         if (!open) {
-            // Reset form and messages when closing
             form.reset();
+            setError(null);
         }
     };
+
+    const [debouncedName] = useDebounce(form.watch('name'), 1000);
+    const [debouncedAlias] = useDebounce(form.watch('alias'), 1000);
+
+
+    useEffect(() => {
+        if (debouncedName) {
+            const generateAlias = async () => {
+                const alias = await generateUniqueSlugAction(debouncedName);
+                form.setValue('alias', alias);
+            };
+            generateAlias();
+        }
+    }, [debouncedName]);
+
+
+    useEffect(() => {
+        if (debouncedAlias) {
+            const checkAlias = async () => {
+                const isAvailable = await checkAliasAction(debouncedAlias);
+                if (isAvailable) {
+                    setIsAvailable(false);
+                } else {
+                    setError('Alias is already taken');
+                    setIsAvailable(true);
+                }
+            };
+            checkAlias();
+        }
+    }, [debouncedAlias]);
 
     return (
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -100,8 +136,6 @@ export function CreateCommunityModal() {
                         <span>{error}</span>
                     </div>
                 )}
-
-
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -186,7 +220,7 @@ export function CreateCommunityModal() {
                             >
                                 Cancel
                             </Button>
-                            <Button type="submit" disabled={isLoading}>
+                            <Button type="submit" disabled={isLoading || isAvailable}>
                                 {isLoading ? 'Creating...' : 'Create Community'}
                             </Button>
                         </DialogFooter>
