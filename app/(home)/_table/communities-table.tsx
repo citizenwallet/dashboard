@@ -1,9 +1,9 @@
-import { columns } from './columns';
-import { DataTable } from '@/components/ui/data-table';
-import { Config } from '@citizenwallet/sdk';
 import { fetchCommunitiesAction } from '@/app/_actions/community-actions';
+import { DataTable } from '@/components/ui/data-table';
 import { Separator } from '@/components/ui/separator';
-import { CreateCommunityModal } from '../_components/create-community-modal';
+import { Config } from '@citizenwallet/sdk';
+import CreateCommunityModal from '../_components/create-community-modal';
+import { columns } from './columns';
 
 interface CommunitiesTableProps {
   query: string;
