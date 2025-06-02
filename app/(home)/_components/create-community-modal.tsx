@@ -28,10 +28,12 @@ import {
 } from '@/components/ui/select';
 import { AlertCircle, Plus } from 'lucide-react';
 import Image from 'next/image';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
 import { useDebounce } from 'use-debounce';
-import { checkAliasAction, generateUniqueSlugAction } from '../action';
+import { checkAliasAction, createCommunityAction, generateUniqueSlugAction } from '../action';
 
 
 
@@ -49,7 +51,7 @@ const chains = [
 ];
 
 export default function CreateCommunityModal() {
-
+    const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
@@ -68,7 +70,16 @@ export default function CreateCommunityModal() {
         setError(null);
 
         try {
-            console.log(data);
+            await createCommunityAction(data.chainId, data.name, data.alias);
+            setIsOpen(false);
+            toast.success('Community created successfully', {
+                onAutoClose: () => {
+                    router.push(`/community/${data.alias}`);
+                },
+                onDismiss: () => {
+                    router.push(`/community/${data.alias}`);
+                }
+            });
         } catch (error) {
             setError(error instanceof Error ? error.message : 'An unexpected error occurred');
         } finally {
