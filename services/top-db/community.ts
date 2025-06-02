@@ -68,6 +68,14 @@ export const getCommunities = async (
     .range(offset, offset + limit);
 };
 
+export const updateCommunityJson = async (
+  client: SupabaseClient,
+  alias: string,
+  json: Config
+): Promise<PostgrestMaybeSingleResponse<CommunityT>> => {
+  return await client.from(TABLE_NAME).update({ json }).eq('alias', alias);
+};
+
 export const createCommunity = async (
   client: SupabaseClient,
   community: CommunityT

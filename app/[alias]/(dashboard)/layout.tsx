@@ -1,12 +1,14 @@
+import { fetchCommunitiesAction } from '@/app/_actions/community-actions';
+import { getAuthUserAction } from '@/app/_actions/user-actions';
 import {
   SidebarInset,
   SidebarProvider,
   SidebarTrigger
 } from '@/components/ui/sidebar';
-import { AppSidebar } from './_components/app-sidebar';
-import { fetchCommunitiesAction } from '@/app/_actions/community-actions';
+import { getServiceRoleClient } from '@/services/top-db';
+import { getCommunityByAlias } from '@/services/top-db/community';
 import { redirect } from 'next/navigation';
-import { getAuthUserAction } from '@/app/_actions/user-actions';
+import { AppSidebar } from './_components/app-sidebar';
 
 export default async function DashboardLayout({
   children,
@@ -37,10 +39,16 @@ export default async function DashboardLayout({
   }
 
   const { communities } = await fetchCommunitiesAction({});
+  const client = getServiceRoleClient();
+  const { data: selectedCommunity } = await getCommunityByAlias(client, alias);
+
+  if (!selectedCommunity) {
+    redirect('/');
+  }
 
   return (
     <SidebarProvider>
-      <AppSidebar user={user} communities={communities} selectedAlias={alias} />
+      <AppSidebar user={user} communities={communities} selectedCommunity={selectedCommunity} />
       <SidebarInset className="flex flex-col h-screen overflow-hidden">
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
