@@ -72,3 +72,10 @@ export const getCommunities = async (
     .eq('active', true)
     .range(offset, offset + limit);
 };
+
+export const uniqueSlugCommunity = async (
+  client: SupabaseClient,
+  alias: string
+): Promise<PostgrestMaybeSingleResponse<CommunityT>> => {
+  return await client.from(TABLE_NAME).select('*').eq('alias', alias).single();
+};
