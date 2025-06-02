@@ -3,6 +3,7 @@ import { DataTable } from '@/components/ui/data-table';
 import { Config } from '@citizenwallet/sdk';
 import { fetchCommunitiesAction } from '@/app/_actions/community-actions';
 import { Separator } from '@/components/ui/separator';
+import { CreateCommunityModal } from '../_components/create-community-modal';
 
 interface CommunitiesTableProps {
   query: string;
@@ -33,6 +34,8 @@ export async function CommunitiesTable({ query, page }: CommunitiesTableProps) {
           <p className="text-sm text-gray-500">Browse communities</p>
         </div>
       </div>
+
+      <CreateCommunityModal />
 
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto rounded-md border">

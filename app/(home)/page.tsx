@@ -3,6 +3,9 @@ import { skeletonColumns } from './_table/columns';
 import { DataTable } from '@/components/ui/data-table';
 import { CommunitiesTable } from './_table/communities-table';
 import { placeholderData } from './_table/columns';
+import { Button } from '@/components/ui/button';
+import { Plus } from 'lucide-react';
+
 
 export default async function Page(props: {
   searchParams: Promise<{ query?: string; page?: string }>;
@@ -26,6 +29,11 @@ function Fallback() {
           <h1 className="text-2xl font-bold">Communities</h1>
         </div>
       </div>
+
+      <Button className="flex items-center gap-2 w-40 mb-4">
+        <Plus size={16} />
+        Create Community
+      </Button>
 
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto rounded-md border">
