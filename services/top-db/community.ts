@@ -40,12 +40,7 @@ export const getCommunityByAlias = async (
   client: SupabaseClient,
   alias: string
 ): Promise<PostgrestMaybeSingleResponse<CommunityT>> => {
-  return await client
-    .from(TABLE_NAME)
-    .select('*')
-    .eq('alias', alias)
-    .eq('active', true)
-    .single();
+  return await client.from(TABLE_NAME).select('*').eq('alias', alias).single();
 };
 
 //it uses for the table
@@ -71,13 +66,6 @@ export const getCommunities = async (
     .select('*', { count: 'exact' })
     .eq('active', true)
     .range(offset, offset + limit);
-};
-
-export const uniqueSlugCommunity = async (
-  client: SupabaseClient,
-  alias: string
-): Promise<PostgrestMaybeSingleResponse<CommunityT>> => {
-  return await client.from(TABLE_NAME).select('*').eq('alias', alias).single();
 };
 
 export const createCommunity = async (

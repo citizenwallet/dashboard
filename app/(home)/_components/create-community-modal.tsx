@@ -74,10 +74,10 @@ export default function CreateCommunityModal() {
             setIsOpen(false);
             toast.success('Community created successfully', {
                 onAutoClose: () => {
-                    router.push(`/community/${data.alias}`);
+                    router.push(`/${data.alias}`);
                 },
                 onDismiss: () => {
-                    router.push(`/community/${data.alias}`);
+                    router.push(`/${data.alias}`);
                 }
             });
         } catch (error) {
@@ -107,7 +107,7 @@ export default function CreateCommunityModal() {
             };
             generateAlias();
         }
-    }, [debouncedName]);
+    }, [debouncedName, form]);
 
 
     useEffect(() => {
