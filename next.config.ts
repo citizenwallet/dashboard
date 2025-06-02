@@ -15,6 +15,16 @@ export default {
         protocol: 'https',
         hostname: 'randomuser.me',
         pathname: '/api/portraits/**'
+      },
+      {
+        protocol: 'https',
+        hostname: 'assets.citizenwallet.xyz',
+        pathname: '/**'
+      },
+      {
+        protocol: 'https',
+        hostname: 'etvujlqieidfoqsetrqd.supabase.co',
+        pathname: '/storage/v1/object/public/uploads/**'
       }
     ]
   }
