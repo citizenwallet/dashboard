@@ -8,6 +8,7 @@ import {
   SidebarMenuButton,
   SidebarRail
 } from '@/components/ui/sidebar';
+import { CommunityT } from '@/services/top-db/community';
 import { UserT } from '@/services/top-db/users';
 import { Config } from '@citizenwallet/sdk';
 import {
@@ -28,19 +29,16 @@ import { NavUser } from './nav-user';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   communities: Config[];
-  selectedAlias: string;
+  selectedCommunity: CommunityT;
   user: UserT | null;
 }
 
 export function AppSidebar({
   communities,
-  selectedAlias,
+  selectedCommunity,
   user,
   ...props
 }: AppSidebarProps) {
-  const selectedCommunity = communities.find(
-    (community) => community.community.alias === selectedAlias
-  );
 
   const data = {
     user: {
@@ -51,44 +49,39 @@ export function AppSidebar({
     projects: [
       {
         name: 'Overview',
-        url: `/${selectedCommunity?.community.alias}`,
+        url: `/${selectedCommunity.alias}`,
         icon: Home
       },
       {
         name: 'Members',
-        url: `/${selectedCommunity?.community.alias}/members`,
+        url: `/${selectedCommunity.alias}/members`,
         icon: Users
       },
       {
         name: 'Transfers',
-        url: `/${selectedCommunity?.community.alias}/transfers`,
+        url: `/${selectedCommunity.alias}/transfers`,
         icon: LucideLineChart
       },
-      // {
-      //   name: 'Marketplace',
-      //   url: `/${selectedCommunity?.community.alias}/marketplace`,
-      //   icon: HandHeartIcon
-      // },
       {
         name: 'Treasury',
-        url: `/${selectedCommunity?.community.alias}/treasury`,
+        url: `/${selectedCommunity.alias}/treasury`,
         icon: Landmark,
         items: [
           {
             name: 'History',
-            url: `/${selectedCommunity?.community.alias}/treasury`,
+            url: `/${selectedCommunity.alias}/treasury`,
             icon: List
           },
           {
             name: 'Minters',
-            url: `/${selectedCommunity?.community.alias}/roles`,
+            url: `/${selectedCommunity.alias}/roles`,
             icon: Hammer
           }
         ]
       },
       {
         name: 'Admins',
-        url: `/${selectedCommunity?.community.alias}/admins`,
+        url: `/${selectedCommunity.alias}/admins`,
         icon: Shield
       }
     ]

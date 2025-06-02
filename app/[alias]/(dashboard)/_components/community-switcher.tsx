@@ -1,8 +1,7 @@
 'use client';
 
-import * as React from 'react';
-import { ChevronsUpDown } from 'lucide-react';
-
+import { CommunityLogo } from '@/components/icons';
+import { Badge } from '@/components/ui/badge';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -16,20 +15,21 @@ import {
   SidebarMenuItem,
   useSidebar
 } from '@/components/ui/sidebar';
-import { Config, CommunityConfig, ConfigToken } from '@citizenwallet/sdk';
-import { CommunityLogo } from '@/components/icons';
+import { CommunityT } from '@/services/top-db/community';
+import { CommunityConfig, Config, ConfigToken } from '@citizenwallet/sdk';
+import { ChevronsUpDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import { useState } from 'react';
 
 export function CommunitySwitcher({
   communities,
   selectedCommunity
 }: {
   communities: Config[];
-  selectedCommunity?: Config;
+  selectedCommunity?: CommunityT;
 }) {
   const { isMobile } = useSidebar();
-  const [activeCommunity, setActiveCommunity] =
-    React.useState(selectedCommunity);
+  const [activeCommunity, setActiveCommunity] = useState(selectedCommunity?.json);
   const router = useRouter();
 
   if (!activeCommunity) {
@@ -63,8 +63,18 @@ export function CommunitySwitcher({
                   {activeCommunity.community.alias}
                 </span>
               </div>
+              {selectedCommunity?.active == true ? (
+                <Badge variant="default" className="bg-green-500">Public</Badge>
+              ) : (
+                <Badge variant="destructive">Private</Badge>
+              )}
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
+
+
+
+
+
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg max-h-[300px] overflow-y-auto"
