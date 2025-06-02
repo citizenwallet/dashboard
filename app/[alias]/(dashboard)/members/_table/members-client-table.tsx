@@ -8,12 +8,14 @@ import { createColumns } from './columns';
 interface MembersClientTableProps {
   data: MemberT[];
   config: Config;
+  roleInCommunity: string | null;
+  signerAccountAddress: string | null;
 }
 
-export function MembersClientTable({ data, config }: MembersClientTableProps) {
+export function MembersClientTable({ data, config, roleInCommunity, signerAccountAddress }: MembersClientTableProps) {
   const communityConfig = new CommunityConfig(config);
 
-  const columns = createColumns(communityConfig, config);
+  const columns = createColumns(communityConfig, config, roleInCommunity, signerAccountAddress);
 
   return <DataTable columns={columns} data={data} />;
 }
