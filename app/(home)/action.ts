@@ -4,7 +4,7 @@ import { generateRandomString } from '@/helpers/formatting';
 import { getServiceRoleClient } from '@/services/top-db';
 import {
   createCommunity,
-  uniqueSlugCommunity
+  getCommunityByAlias
 } from '@/services/top-db/community';
 
 export const generateUniqueSlugAction = async (baseSlug: string) => {
@@ -15,7 +15,7 @@ export const generateUniqueSlugAction = async (baseSlug: string) => {
   while (attempts < maxAttempts) {
     const client = getServiceRoleClient();
 
-    const { data, error } = await uniqueSlugCommunity(client, slug);
+    const { data, error } = await getCommunityByAlias(client, slug);
 
     if (error && error.code !== 'PGRST116') {
       throw new Error('Error checking slug uniqueness');
@@ -35,7 +35,7 @@ export const generateUniqueSlugAction = async (baseSlug: string) => {
 export const checkAliasAction = async (alias: string) => {
   const client = getServiceRoleClient();
 
-  const { data, error } = await uniqueSlugCommunity(client, alias);
+  const { data, error } = await getCommunityByAlias(client, alias);
 
   if (error && error.code !== 'PGRST116') {
     throw new Error('Error checking alias availability');
