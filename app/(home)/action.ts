@@ -6,6 +6,9 @@ import {
   createCommunity,
   getCommunityByAlias
 } from '@/services/top-db/community';
+import { addUserToCommunity } from '@/services/top-db/users';
+import { getAuthUserAction } from '../_actions/user-actions';
+import { number } from 'zod';
 
 export const generateUniqueSlugAction = async (baseSlug: string) => {
   let slug = baseSlug;
@@ -104,5 +107,26 @@ export const createCommunityAction = async (
   if (error) {
     throw new Error('Error creating community');
   }
+
+  const user = await getAuthUserAction();
+
+  if (!user) {
+    throw new Error('User not found');
+  }
+
+  const { error: userError } = await addUserToCommunity({
+    client,
+    data: {
+      user_id: Number(user.id),
+      chain_id: parseInt(chainId),
+      alias: alias,
+      role: 'owner'
+    }
+  });
+
+  if (userError) {
+    throw new Error('Error adding user to community');
+  }
+
   return data;
 };
