@@ -24,16 +24,15 @@ export default async function Page(props: {
 function Fallback() {
   return (
     <div className="flex flex-1 w-full flex-col h-full">
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="flex justify-between items-start mb-4">
         <div className="flex flex-col">
           <h1 className="text-2xl font-bold">Communities</h1>
         </div>
+        <Button className="flex items-center gap-2 w-40 mb-4">
+          <Plus size={16} />
+          Create Community
+        </Button>
       </div>
-
-      <Button className="flex items-center gap-2 w-40 mb-4">
-        <Plus size={16} />
-        Create Community
-      </Button>
 
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto rounded-md border">
