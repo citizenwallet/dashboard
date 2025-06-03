@@ -29,10 +29,9 @@ import {
 import { AlertCircle, Plus } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useEffect, useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
-import { useDebounce } from 'use-debounce';
 import { checkAliasAction, createCommunityAction, generateUniqueSlugAction } from '../action';
 
 
@@ -56,6 +55,8 @@ export default function CreateCommunityModal() {
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState<string | null>(null);
     const [isAvailable, setIsAvailable] = useState<boolean>(false);
+    const [isGeneratingAlias, startGeneratingAlias] = useTransition();
+    const [isCheckingAlias, startCheckingAlias] = useTransition();
 
     const form = useForm<CreateCommunityFormData>({
         defaultValues: {
@@ -95,35 +96,40 @@ export default function CreateCommunityModal() {
         }
     };
 
-    const [debouncedName] = useDebounce(form.watch('name'), 1000);
-    const [debouncedAlias] = useDebounce(form.watch('alias'), 1000);
 
 
     useEffect(() => {
-        if (debouncedName) {
-            const generateAlias = async () => {
-                const alias = await generateUniqueSlugAction(debouncedName);
+        startGeneratingAlias(async () => {
+            try {
+                const alias = await generateUniqueSlugAction(form.getValues('name'));
                 form.setValue('alias', alias);
-            };
-            generateAlias();
-        }
-    }, [debouncedName, form]);
+            } catch (error) {
+                console.error('Error generating alias:', error);
+            }
+        });
+
+    }, [form]);
 
 
     useEffect(() => {
-        if (debouncedAlias) {
-            const checkAlias = async () => {
-                const isAvailable = await checkAliasAction(debouncedAlias);
+
+        startCheckingAlias(async () => {
+            try {
+                const isAvailable = await checkAliasAction(form.getValues('alias'));
                 if (isAvailable) {
                     setIsAvailable(false);
+                    setError(null);
                 } else {
                     setError('Alias is already taken');
                     setIsAvailable(true);
                 }
-            };
-            checkAlias();
-        }
-    }, [debouncedAlias]);
+            } catch (error) {
+                console.error('Error checking alias:', error);
+                setError('Error checking alias availability');
+            }
+        });
+
+    }, []);
 
     return (
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -210,11 +216,19 @@ export default function CreateCommunityModal() {
                             }}
                             render={({ field }) => (
                                 <FormItem>
-                                    <FormLabel>Community Alias</FormLabel>
+                                    <FormLabel>
+                                        Community Alias
+                                        {(isGeneratingAlias || isCheckingAlias) && (
+                                            <span className="ml-2 text-sm text-gray-500">
+                                                {isGeneratingAlias ? 'Generating...' : 'Checking...'}
+                                            </span>
+                                        )}
+                                    </FormLabel>
                                     <FormControl>
                                         <Input
                                             placeholder="Enter community alias (e.g., my-community)"
                                             {...field}
+                                            disabled={isGeneratingAlias}
                                         />
                                     </FormControl>
                                     <FormMessage />
