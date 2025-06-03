@@ -102,38 +102,33 @@ export const createCommunityAction = async (
     config_location: ''
   };
 
-  const { data, error } = await createCommunity(client, {
-    chain_id: parseInt(chainId),
-    alias: alias,
-    active: false,
-    created_at: new Date(),
-    updated_at: new Date(),
-    json: communityConfig
-  });
-
-  if (error) {
-    throw new Error('Error creating community');
-  }
-
   const user = await getAuthUserAction();
-
   if (!user) {
     throw new Error('User not found');
   }
 
-  const { error: userError } = await addUserToCommunity({
-    client,
-    data: {
-      user_id: Number(user.id),
+  const [communityResult] = await Promise.allSettled([
+    createCommunity(client, {
       chain_id: parseInt(chainId),
       alias: alias,
-      role: 'owner'
-    }
-  });
+      active: false,
+      created_at: new Date(),
+      updated_at: new Date(),
+      json: communityConfig
+    }),
+    addUserToCommunity({
+      client,
+      data: {
+        user_id: Number(user.id),
+        chain_id: parseInt(chainId),
+        alias: alias,
+        role: 'owner'
+      }
+    })
+  ]);
 
-  if (userError) {
-    throw new Error('Error adding user to community');
-  }
+  const data =
+    communityResult.status === 'fulfilled' ? communityResult.value.data : [];
 
   return data;
 };
