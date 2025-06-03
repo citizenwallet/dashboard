@@ -57,7 +57,15 @@ export const createCommunityAction = async (
     ipfs: { url: '' },
     scan: { url: '', name: '' },
     cards: {},
-    chains: {},
+    chains: {
+      [chainId]: {
+        id: parseInt(chainId),
+        node: {
+          url: `https://${chainId}.engine.citizenwallet.xyz`,
+          ws_url: `wss://${chainId}.engine.citizenwallet.xyz`
+        }
+      }
+    },
     tokens: {},
     plugins: [],
     version: 4,
