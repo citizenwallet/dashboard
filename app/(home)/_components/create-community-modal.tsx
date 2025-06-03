@@ -32,6 +32,7 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { useDebounce } from 'use-debounce';
 import { checkAliasAction, createCommunityAction, generateUniqueSlugAction } from '../action';
 
 
@@ -96,40 +97,43 @@ export default function CreateCommunityModal() {
         }
     };
 
+    const [debouncedName] = useDebounce(form.watch('name'), 1000);
+    const [debouncedAlias] = useDebounce(form.watch('alias'), 1000);
 
 
     useEffect(() => {
-        startGeneratingAlias(async () => {
-            try {
-                const alias = await generateUniqueSlugAction(form.getValues('name'));
-                form.setValue('alias', alias);
-            } catch (error) {
-                console.error('Error generating alias:', error);
-            }
-        });
-
-    }, [form]);
-
-
-    useEffect(() => {
-
-        startCheckingAlias(async () => {
-            try {
-                const isAvailable = await checkAliasAction(form.getValues('alias'));
-                if (isAvailable) {
-                    setIsAvailable(false);
-                    setError(null);
-                } else {
-                    setError('Alias is already taken');
-                    setIsAvailable(true);
+        if (debouncedName) {
+            startGeneratingAlias(async () => {
+                try {
+                    const alias = await generateUniqueSlugAction(debouncedName);
+                    form.setValue('alias', alias);
+                } catch (error) {
+                    console.error('Error generating alias:', error);
                 }
-            } catch (error) {
-                console.error('Error checking alias:', error);
-                setError('Error checking alias availability');
-            }
-        });
+            });
+        }
+    }, [debouncedName, form]);
 
-    }, []);
+
+    useEffect(() => {
+        if (debouncedAlias) {
+            startCheckingAlias(async () => {
+                try {
+                    const isAvailable = await checkAliasAction(debouncedAlias);
+                    if (isAvailable) {
+                        setIsAvailable(false);
+                        setError(null);
+                    } else {
+                        setError('Alias is already taken');
+                        setIsAvailable(true);
+                    }
+                } catch (error) {
+                    console.error('Error checking alias:', error);
+                    setError('Error checking alias availability');
+                }
+            });
+        }
+    }, [debouncedAlias]);
 
     return (
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
