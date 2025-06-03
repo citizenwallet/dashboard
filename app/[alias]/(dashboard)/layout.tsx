@@ -46,9 +46,6 @@ export default async function DashboardLayout({
     redirect('/');
   }
 
-  if (selectedCommunity.active === false) {
-    redirect(`/${selectedCommunity.alias}/profile`);
-  }
 
   return (
     <SidebarProvider>
