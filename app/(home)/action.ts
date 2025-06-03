@@ -8,7 +8,6 @@ import {
 } from '@/services/top-db/community';
 import { addUserToCommunity } from '@/services/top-db/users';
 import { getAuthUserAction } from '../_actions/user-actions';
-import { number } from 'zod';
 
 export const generateUniqueSlugAction = async (baseSlug: string) => {
   let slug = baseSlug;
