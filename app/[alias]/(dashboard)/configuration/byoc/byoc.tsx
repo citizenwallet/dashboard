@@ -5,12 +5,15 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { isAddress } from 'ethers';
 import { Loader2 } from 'lucide-react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { useDebounce } from 'use-debounce';
 import { z } from 'zod';
 import { IconUpload } from '../_components/iconUpload';
+
 
 // Form validation schema
 const byocFormSchema = z.object({
@@ -23,6 +26,7 @@ const byocFormSchema = z.object({
 type BYOCFormValues = z.infer<typeof byocFormSchema>;
 
 export default function BYOCForm({ alias }: { alias: string }) {
+
     const [isLoading, setIsLoading] = useState(false);
 
     const form = useForm<BYOCFormValues>({
@@ -32,6 +36,20 @@ export default function BYOCForm({ alias }: { alias: string }) {
             icon: undefined,
         },
     });
+
+    const [debouncedTokenAddress] = useDebounce(form.watch('tokenAddress'), 1000);
+
+    useEffect(() => {
+        if (debouncedTokenAddress) {
+            const isValid = isAddress(debouncedTokenAddress);
+            if (isValid) {
+                console.log('Valid token address:', debouncedTokenAddress);
+                form.clearErrors('tokenAddress');
+            } else {
+                form.setError('tokenAddress', { message: 'Invalid token address' });
+            }
+        }
+    }, [debouncedTokenAddress]);
 
     const onSubmit = async (data: BYOCFormValues) => {
         try {
