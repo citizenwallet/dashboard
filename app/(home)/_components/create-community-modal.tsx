@@ -1,5 +1,6 @@
 'use client';
 
+import { aliasSchema, isValidAlias } from '@/app/(home)/_components/alias-utils';
 import { Button } from '@/components/ui/button';
 import {
     Dialog,
@@ -13,11 +14,11 @@ import {
 import {
     Form,
     FormControl,
+    FormDescription,
     FormField,
     FormItem,
     FormLabel,
-    FormMessage,
-    FormDescription
+    FormMessage
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import {
@@ -27,9 +28,8 @@ import {
     SelectTrigger,
     SelectValue
 } from '@/components/ui/select';
-import { aliasSchema, isValidAlias } from '@/app/(home)/_components/alias-utils';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { AlertCircle, Plus } from 'lucide-react';
+import { Plus } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
@@ -69,7 +69,6 @@ export default function CreateCommunityModal() {
     const router = useRouter();
     const [isOpen, setIsOpen] = useState(false);
     const [isLoading, setIsLoading] = useState(false);
-    const [error, setError] = useState<string | null>(null);
     const [isAvailable, setIsAvailable] = useState<boolean>(false);
     const [isGeneratingAlias, startGeneratingAlias] = useTransition();
     const [isCheckingAlias, startCheckingAlias] = useTransition();
@@ -85,7 +84,6 @@ export default function CreateCommunityModal() {
 
     const onSubmit = async (data: CreateCommunityFormData) => {
         setIsLoading(true);
-        setError(null);
 
         try {
             await createCommunityAction(data.chainId, data.name, data.alias);
@@ -99,7 +97,10 @@ export default function CreateCommunityModal() {
                 }
             });
         } catch (error) {
-            setError(error instanceof Error ? error.message : 'An unexpected error occurred');
+            form.setError("root", {
+                type: "manual",
+                message: error instanceof Error ? error.message : 'An unexpected error occurred'
+            });
         } finally {
             setIsLoading(false);
         }
@@ -109,7 +110,6 @@ export default function CreateCommunityModal() {
         setIsOpen(open);
         if (!open) {
             form.reset();
-            setError(null);
         }
     };
 
@@ -139,22 +139,31 @@ export default function CreateCommunityModal() {
                         const isAvailable = await checkAliasAction(debouncedAlias);
                         if (isAvailable) {
                             setIsAvailable(false);
-                            setError(null);
+                            form.clearErrors("alias");
                         } else {
-                            setError('Alias is already taken');
+                            form.setError("alias", {
+                                type: "manual",
+                                message: "Alias is already taken"
+                            });
                             setIsAvailable(true);
                         }
                     } else {
-                        setError('Invalid alias format. Alias must contain only lowercase letters, numbers, and hyphens.');
+                        form.setError("alias", {
+                            type: "manual",
+                            message: "Invalid alias format. Alias must contain only lowercase letters, numbers, and hyphens."
+                        });
                         setIsAvailable(true);
                     }
                 } catch (error) {
                     console.error('Error checking alias:', error);
-                    setError(error instanceof Error ? error.message : 'Error checking alias availability');
+                    form.setError("alias", {
+                        type: "manual",
+                        message: error instanceof Error ? error.message : 'Error checking alias availability'
+                    });
                 }
             });
         }
-    }, [debouncedAlias]);
+    }, [debouncedAlias, form]);
 
     return (
         <Dialog open={isOpen} onOpenChange={handleOpenChange}>
@@ -171,13 +180,6 @@ export default function CreateCommunityModal() {
                         Create a new community by selecting a blockchain and providing basic information.
                     </DialogDescription>
                 </DialogHeader>
-
-                {error && (
-                    <div className="flex items-center gap-2 p-3 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
-                        <AlertCircle size={16} />
-                        <span>{error}</span>
-                    </div>
-                )}
 
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
@@ -256,6 +258,12 @@ export default function CreateCommunityModal() {
                                 </FormItem>
                             )}
                         />
+
+                        {form.formState.errors.root && (
+                            <div className="text-sm text-red-600">
+                                {form.formState.errors.root.message}
+                            </div>
+                        )}
 
                         <DialogFooter>
                             <Button
