@@ -47,7 +47,18 @@ export function AppSidebar({
       email: user?.email ?? '',
       avatar: user?.avatar ?? ''
     },
-    projects: [
+    projects: selectedCommunity.active === false ? [
+      {
+        name: 'Profile',
+        url: `/${selectedCommunity.alias}/profile`,
+        icon: University
+      },
+      {
+        name: 'Admins',
+        url: `/${selectedCommunity.alias}/admins`,
+        icon: Shield
+      }
+    ] : [
       {
         name: 'Overview',
         url: `/${selectedCommunity.alias}`,
@@ -82,7 +93,7 @@ export function AppSidebar({
       },
       {
         name: 'Profile',
-        url: `/${selectedCommunity?.community.alias}/profile`,
+        url: `/${selectedCommunity.alias}/profile`,
         icon: University
       },
       {
