@@ -96,7 +96,7 @@ export const createCommunityAction = async (
       logo: '',
       name: name,
       alias: alias,
-      theme: { primary: '' },
+      theme: { primary: '#1f6feb' },
       profile: {
         address: '',
         chain_id: parseInt(chainId)
