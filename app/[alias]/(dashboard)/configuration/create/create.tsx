@@ -2,19 +2,84 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
+import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { Separator } from '@/components/ui/separator';
-import { Upload } from 'lucide-react';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { Loader2 } from 'lucide-react';
+import { useState } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { z } from 'zod';
+import { IconUpload } from '../_components/iconUpload';
 
+// Form validation schema
+const createFormSchema = z.object({
+    tokenName: z.string()
+        .min(1, 'Token name is required')
+        .max(50, 'Token name must be less than 50 characters'),
+    tokenSymbol: z.string()
+        .min(1, 'Token symbol is required')
+        .max(4, 'Token symbol must be 4 characters or less')
+        .regex(/^[A-Z0-9]+$/, 'Token symbol must contain only uppercase letters and numbers'),
+    icon: z.any().optional(),
+});
+
+type CreateFormValues = z.infer<typeof createFormSchema>;
 
 export default function CreateForm({ alias }: { alias: string }) {
+    const [isLoading, setIsLoading] = useState(false);
 
+    const form = useForm<CreateFormValues>({
+        resolver: zodResolver(createFormSchema),
+        defaultValues: {
+            tokenName: '',
+            tokenSymbol: '',
+            icon: undefined,
+        },
+    });
+
+    const onSubmit = async (data: CreateFormValues) => {
+        try {
+            setIsLoading(true);
+
+            // Handle icon upload if provided
+            let iconUrl;
+            if (data.icon && data.icon instanceof File) {
+                // TODO: Implement icon upload logic
+                // iconUrl = await uploadIconAction(data.icon, alias);
+                console.log('Icon file:', data.icon);
+            }
+
+            // Prepare the token creation data
+            const tokenData = {
+                name: data.tokenName,
+                symbol: data.tokenSymbol.toUpperCase(),
+                icon: iconUrl,
+                alias: alias,
+            };
+
+            // TODO: Implement the actual token creation
+            console.log('Token Configuration:', tokenData);
+
+            // Simulate API call
+            await new Promise(resolve => setTimeout(resolve, 2000));
+
+            // Show success message
+            toast.success('Token configuration created successfully!');
+
+            // Reset form after successful submission
+            form.reset();
+        } catch (error) {
+            console.error('Error creating token configuration:', error);
+            toast.error('Failed to create token configuration. Please try again.');
+        } finally {
+            setIsLoading(false);
+        }
+    };
 
     return (
         <div className="w-full h-full">
             <div className="flex items-left space-x-4">
-
                 <div>
                     <h1 className="text-2xl font-bold">Create Your Own Currency</h1>
                     <p className="text-muted-foreground">Design your community token</p>
@@ -23,56 +88,93 @@ export default function CreateForm({ alias }: { alias: string }) {
 
             <Card className="w-full h-full mt-10 border-none">
                 <CardContent className="space-y-6">
-                    <div className="space-y-2">
-                        <Label htmlFor="tokenName">Name</Label>
-                        <Input
-                            id="tokenName"
-                            placeholder="My Token"
-                        />
-                    </div>
-
-                    <div className="space-y-2">
-                        <Label htmlFor="tokenSymbol">Symbol (typically 2-4 characters)</Label>
-                        <Input
-                            id="tokenSymbol"
-                            placeholder="MYT"
-                            maxLength={4}
-                        />
-                    </div>
-
-                    <Separator />
-
-                    <div className="space-y-2">
-                        <Label htmlFor="createIcon">Icon</Label>
-                        <div className="flex items-center space-x-4">
-                            <Input
-                                id="createIcon"
-                                type="file"
-                                accept=".png,.svg"
-                                className="hidden"
+                    <Form {...form}>
+                        <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
+                            {/* Token Name Field */}
+                            <FormField
+                                control={form.control}
+                                name="tokenName"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Name</FormLabel>
+                                        <FormControl>
+                                            <Input placeholder="My Token" {...field} />
+                                        </FormControl>
+                                        <FormDescription>
+                                            Enter the name of your token.
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
                             />
-                            <Button
-                                variant="outline"
-                                onClick={() => document.getElementById('createIcon')?.click()}
-                                className="flex items-center space-x-2"
-                            >
-                                <Upload className="h-4 w-4" />
-                                <span>Upload Icon</span>
-                            </Button>
-                        </div>
-                        <p className="text-xs text-muted-foreground">
-                            Supported formats: PNG, SVG (max 5MB)
-                        </p>
-                    </div>
 
-                    <div className="pt-4 flex justify-end items-end">
-                        <Button className="w-full md:w-96">
-                            Create Configuration
-                        </Button>
-                    </div>
+                            {/* Token Symbol Field */}
+                            <FormField
+                                control={form.control}
+                                name="tokenSymbol"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Symbol (typically 2-4 characters)</FormLabel>
+                                        <FormControl>
+                                            <Input
+                                                placeholder="MYT"
+                                                maxLength={4}
+                                                {...field}
+                                                onChange={(e) => {
+                                                    // Convert to uppercase as user types
+                                                    field.onChange(e.target.value.toUpperCase());
+                                                }}
+                                            />
+                                        </FormControl>
+                                        <FormDescription>
+                                            A short abbreviation for your token (e.g., BTC, ETH).
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            {/* Icon Upload Field */}
+                            <FormField
+                                control={form.control}
+                                name="icon"
+                                render={({ field }) => (
+                                    <FormItem>
+                                        <FormLabel>Icon</FormLabel>
+                                        <FormControl>
+                                            <IconUpload
+                                                value={field.value}
+                                                onChange={field.onChange}
+                                            />
+                                        </FormControl>
+                                        <FormDescription>
+                                            Upload your logo in SVG or PNG format. It will be stored securely in our storage.
+                                        </FormDescription>
+                                        <FormMessage />
+                                    </FormItem>
+                                )}
+                            />
+
+                            <div className="pt-4 flex justify-end items-end">
+                                <Button
+                                    type="submit"
+                                    className="w-full md:w-96"
+                                    disabled={isLoading}
+                                >
+                                    {isLoading ? (
+                                        <>
+                                            <Loader2 className="w-4 h-4 animate-spin mr-2" />
+                                            Creating Configuration...
+                                        </>
+                                    ) : (
+                                        'Create Configuration'
+                                    )}
+                                </Button>
+                            </div>
+                        </form>
+                    </Form>
                 </CardContent>
             </Card>
         </div>
     );
-
 }
