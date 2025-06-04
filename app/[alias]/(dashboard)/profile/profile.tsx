@@ -20,7 +20,7 @@ const profileFormSchema = z.object({
     name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
     description: z.string().max(500, 'Description must be less than 500 characters'),
     url: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
-    custom_domain: z.string().optional(),
+    custom_domain: z.string(),
     logo: z.any().optional(),
     color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Please enter a valid hex color').default('#3B82F6'),
 });
@@ -198,9 +198,9 @@ export default function ProfilePage({ config }: { config: Config }) {
                             </FormControl>
                             <FormDescription>
                                 {config.community.custom_domain ? (
-                                    <>You have set a custom domain. Your community will be accessible at: <strong>{config.community.custom_domain}</strong></>
+                                    <>You have set a custom domain. Your community will be accessible at: <strong>{form.getValues('custom_domain')}</strong></>
                                 ) : (
-                                    <>No custom domain set. Your community will be accessible at: <strong>{config.community.alias}.citizenwallet.xyz</strong></>
+                                    <>No custom domain set. Your community will be accessible at: <strong>{form.getValues('custom_domain')}</strong></>
                                 )}
 
                                 <Button
@@ -208,7 +208,7 @@ export default function ProfilePage({ config }: { config: Config }) {
                                     variant="ghost"
                                     size="sm"
                                     className="h-6 w-6 p-0"
-                                    onClick={() => copyDomainToClipboard(config.community.custom_domain ? config.community.custom_domain : `${config.community.alias}.citizenwallet.xyz`)}
+                                    onClick={() => copyDomainToClipboard(form.getValues('custom_domain'))}
                                 >
                                     {copiedDomain ? (
                                         <Check className="h-3 w-3 text-green-600" />
