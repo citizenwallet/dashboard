@@ -82,7 +82,7 @@ export function AppSidebar({
       },
       {
         name: 'Profile',
-        url: `/${selectedCommunity?.community.alias}/profile`,
+        url: `/${selectedCommunity.alias}/profile`,
         icon: University
       },
       {
