@@ -116,7 +116,14 @@ export default function ProfilePage({ config }: { config: Config }) {
             await updateProfileAction(updatedConfig, config.community.alias);
 
             // Show success message
-            toast.success(`Profile updated successfully!`);
+            toast.success(`Profile updated successfully!`, {
+                onAutoClose: () => {
+                    window.location.reload();
+                },
+                onDismiss: () => {
+                    window.location.reload();
+                }
+            });
         } catch (error) {
             console.error('Error updating profile:', error);
             toast.error('Failed to update profile. Please try again.');
