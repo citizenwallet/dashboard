@@ -16,7 +16,8 @@ import {
     FormField,
     FormItem,
     FormLabel,
-    FormMessage
+    FormMessage,
+    FormDescription
 } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import {
@@ -26,6 +27,8 @@ import {
     SelectTrigger,
     SelectValue
 } from '@/components/ui/select';
+import { aliasSchema, isValidAlias } from '@/app/(home)/_components/alias-utils';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { AlertCircle, Plus } from 'lucide-react';
 import Image from 'next/image';
 import { useRouter } from 'next/navigation';
@@ -33,15 +36,27 @@ import { useEffect, useState, useTransition } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useDebounce } from 'use-debounce';
+import { z } from 'zod';
 import { checkAliasAction, createCommunityAction, generateUniqueSlugAction } from '../action';
 
+// Form validation schema
+const createCommunityFormSchema = z.object({
+    chainId: z.string({
+        required_error: 'Please select a Chain'
+    }).min(1, {
+        message: 'Please select a Chain'
+    }),
+    name: z.string({
+        required_error: 'Community name is required'
+    }).min(1, {
+        message: 'Community name is required'
+    }).max(100, {
+        message: 'Community name must be 100 characters or less'
+    }),
+    alias: aliasSchema
+});
 
-
-interface CreateCommunityFormData {
-    chainId: string;
-    name: string;
-    alias: string;
-}
+type CreateCommunityFormData = z.infer<typeof createCommunityFormSchema>;
 
 const chains = [
     { id: '100', name: 'Gnosis', logo: '/chainLogo/Gnosis.png' },
@@ -60,6 +75,7 @@ export default function CreateCommunityModal() {
     const [isCheckingAlias, startCheckingAlias] = useTransition();
 
     const form = useForm<CreateCommunityFormData>({
+        resolver: zodResolver(createCommunityFormSchema),
         defaultValues: {
             chainId: '',
             name: '',
@@ -119,17 +135,22 @@ export default function CreateCommunityModal() {
         if (debouncedAlias) {
             startCheckingAlias(async () => {
                 try {
-                    const isAvailable = await checkAliasAction(debouncedAlias);
-                    if (isAvailable) {
-                        setIsAvailable(false);
-                        setError(null);
+                    if (isValidAlias(debouncedAlias)) {
+                        const isAvailable = await checkAliasAction(debouncedAlias);
+                        if (isAvailable) {
+                            setIsAvailable(false);
+                            setError(null);
+                        } else {
+                            setError('Alias is already taken');
+                            setIsAvailable(true);
+                        }
                     } else {
-                        setError('Alias is already taken');
+                        setError('Invalid alias format. Alias must contain only lowercase letters, numbers, and hyphens.');
                         setIsAvailable(true);
                     }
                 } catch (error) {
                     console.error('Error checking alias:', error);
-                    setError('Error checking alias availability');
+                    setError(error instanceof Error ? error.message : 'Error checking alias availability');
                 }
             });
         }
@@ -163,7 +184,6 @@ export default function CreateCommunityModal() {
                         <FormField
                             control={form.control}
                             name="chainId"
-                            rules={{ required: 'Please select a blockchain' }}
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Blockchain</FormLabel>
@@ -198,9 +218,6 @@ export default function CreateCommunityModal() {
                         <FormField
                             control={form.control}
                             name="name"
-                            rules={{
-                                required: 'Community name is required'
-                            }}
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>Community Name</FormLabel>
@@ -215,9 +232,6 @@ export default function CreateCommunityModal() {
                         <FormField
                             control={form.control}
                             name="alias"
-                            rules={{
-                                required: 'Community alias is required'
-                            }}
                             render={({ field }) => (
                                 <FormItem>
                                     <FormLabel>
@@ -235,6 +249,9 @@ export default function CreateCommunityModal() {
                                             disabled={isGeneratingAlias}
                                         />
                                     </FormControl>
+                                    <FormDescription>
+                                        Alias must contain only lowercase letters, numbers, and hyphens. It will be used in your community URL.
+                                    </FormDescription>
                                     <FormMessage />
                                 </FormItem>
                             )}

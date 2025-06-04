@@ -1,6 +1,10 @@
 'use server';
 
 import { generateRandomString } from '@/helpers/formatting';
+import {
+  sanitizeAlias,
+  isValidAlias
+} from '@/app/(home)/_components/alias-utils';
 import { getServiceRoleClient } from '@/services/top-db';
 import {
   createCommunity,
@@ -10,7 +14,14 @@ import { addUserToCommunity } from '@/services/top-db/users';
 import { getAuthUserAction } from '../_actions/user-actions';
 
 export const generateUniqueSlugAction = async (baseSlug: string) => {
-  let slug = baseSlug;
+  let slug = sanitizeAlias(baseSlug);
+
+  if (!isValidAlias(slug)) {
+    throw new Error(
+      'Invalid alias format. Alias must contain only lowercase letters, numbers, and hyphens.'
+    );
+  }
+
   let attempts = 0;
   const maxAttempts = 5;
 
@@ -27,7 +38,8 @@ export const generateUniqueSlugAction = async (baseSlug: string) => {
       return slug;
     }
 
-    slug = `${baseSlug}-${generateRandomString(4)}`;
+    // When generating a new slug variant, ensure it remains valid
+    slug = sanitizeAlias(`${baseSlug}-${generateRandomString(4)}`);
     attempts++;
   }
 
@@ -35,9 +47,17 @@ export const generateUniqueSlugAction = async (baseSlug: string) => {
 };
 
 export const checkAliasAction = async (alias: string) => {
+  const sanitizedAlias = sanitizeAlias(alias);
+
+  if (!isValidAlias(sanitizedAlias)) {
+    throw new Error(
+      'Invalid alias format. Alias must contain only lowercase letters, numbers, and hyphens.'
+    );
+  }
+
   const client = getServiceRoleClient();
 
-  const { data, error } = await getCommunityByAlias(client, alias);
+  const { data, error } = await getCommunityByAlias(client, sanitizedAlias);
 
   if (error && error.code !== 'PGRST116') {
     throw new Error('Error checking alias availability');
