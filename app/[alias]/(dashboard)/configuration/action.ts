@@ -4,6 +4,8 @@ import {
   getAuthUserRoleInAppAction,
   getAuthUserRoleInCommunityAction
 } from '@/app/_actions/user-actions';
+import { getServiceRoleClient as getServiceRoleClientChainDb } from '@/services/chain-db';
+import { insertEvent } from '@/services/chain-db/event';
 import { uploadImage } from '@/services/storage';
 import { getServiceRoleClient } from '@/services/top-db';
 import { updateCommunityJson } from '@/services/top-db/community';
@@ -77,6 +79,7 @@ export async function createByocAction(
       },
       community: {
         ...config.community,
+        logo: icon,
         primary_token: {
           ...config.community.primary_token,
           address: tokenAddress
@@ -84,16 +87,32 @@ export async function createByocAction(
       }
     };
 
-    const { data, error } = await updateCommunityJson(
-      client,
-      config.community.alias,
-      { json: updateJson }
-    );
+    const [updateCommunityJsonPromise] = await Promise.allSettled([
+      updateCommunityJson(client, config.community.alias, {
+        json: updateJson
+      }),
 
-    if (error) {
-      console.error('Error updating community json:', error);
-      throw new Error('Failed to update community json');
-    }
+      insertEvent({
+        client: getServiceRoleClientChainDb(
+          config.community.primary_token.chain_id
+        ),
+        chainId: config.community.primary_token.chain_id.toString(),
+        event: {
+          name: `${config.community.alias} Transfer`,
+          contract: tokenAddress,
+          event_signature:
+            'Transfer (index_topic_1 address from, index_topic_2 address to, uint256 value)',
+          topic:
+            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+          alias: config.community.alias
+        }
+      })
+    ]);
+
+    const data =
+      updateCommunityJsonPromise.status === 'fulfilled'
+        ? updateCommunityJsonPromise.value.data
+        : [];
 
     return data;
   } catch (error) {
