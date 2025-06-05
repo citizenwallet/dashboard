@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { Config } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Loader2 } from 'lucide-react';
 import { useState } from 'react';
@@ -11,7 +12,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { IconUpload } from '../_components/iconUpload';
-import { Config } from '@citizenwallet/sdk';
+import { uploadIconAction } from '../action';
 
 // Form validation schema
 const createFormSchema = z.object({
@@ -22,7 +23,9 @@ const createFormSchema = z.object({
         .min(1, 'Token symbol is required')
         .max(4, 'Token symbol must be 4 characters or less')
         .regex(/^[A-Z0-9]+$/, 'Token symbol must contain only uppercase letters and numbers'),
-    icon: z.any().optional(),
+    icon: z.any().refine((val) => val instanceof File, {
+        message: 'Icon is required',
+    }),
 });
 
 type CreateFormValues = z.infer<typeof createFormSchema>;
@@ -46,9 +49,7 @@ export default function CreateForm({ config }: { config: Config }) {
             // Handle icon upload if provided
             let iconUrl;
             if (data.icon && data.icon instanceof File) {
-                // TODO: Implement icon upload logic
-                // iconUrl = await uploadIconAction(data.icon, alias);
-                console.log('Icon file:', data.icon);
+                iconUrl = await uploadIconAction(data.icon, config.community.alias);
             }
 
             // Prepare the token creation data
@@ -59,16 +60,9 @@ export default function CreateForm({ config }: { config: Config }) {
                 alias: config.community.alias,
             };
 
-            // TODO: Implement the actual token creation
-            console.log('Token Configuration:', tokenData);
+            console.log('tokenData-->', tokenData);
 
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            // Show success message
-            toast.success('Token configuration created successfully!');
-
-            // Reset form after successful submission
+            toast.success('Configuration created successfully!');
             form.reset();
         } catch (error) {
             console.error('Error creating token configuration:', error);
