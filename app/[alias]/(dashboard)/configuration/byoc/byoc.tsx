@@ -13,6 +13,7 @@ import { toast } from 'sonner';
 import { useDebounce } from 'use-debounce';
 import { z } from 'zod';
 import { IconUpload } from '../_components/iconUpload';
+import { Config } from '@citizenwallet/sdk';
 
 
 // Form validation schema
@@ -25,7 +26,7 @@ const byocFormSchema = z.object({
 
 type BYOCFormValues = z.infer<typeof byocFormSchema>;
 
-export default function BYOCForm({ alias }: { alias: string }) {
+export default function BYOCForm({ config }: { config: Config }) {
 
     const [isLoading, setIsLoading] = useState(false);
 
@@ -67,7 +68,7 @@ export default function BYOCForm({ alias }: { alias: string }) {
             const byocData = {
                 tokenAddress: data.tokenAddress,
                 icon: iconUrl,
-                alias: alias,
+                alias: config.community.alias,
             };
 
             // TODO: Implement the actual BYOC configuration creation
