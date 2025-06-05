@@ -4,6 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
+import { CommunityConfig, Config, getTokenMetadata } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { isAddress } from 'ethers';
 import { Loader2 } from 'lucide-react';
@@ -13,7 +14,7 @@ import { toast } from 'sonner';
 import { useDebounce } from 'use-debounce';
 import { z } from 'zod';
 import { IconUpload } from '../_components/iconUpload';
-import { Config } from '@citizenwallet/sdk';
+import { createByocAction, uploadIconAction } from '../action';
 
 
 // Form validation schema
@@ -24,11 +25,18 @@ const byocFormSchema = z.object({
     icon: z.any().optional(),
 });
 
+interface TokenMetadata {
+    decimals: number;
+    symbol: string;
+    name: string;
+}
+
 type BYOCFormValues = z.infer<typeof byocFormSchema>;
 
 export default function BYOCForm({ config }: { config: Config }) {
 
     const [isLoading, setIsLoading] = useState(false);
+    const [tokenData, setTokenData] = useState<TokenMetadata | null>(null);
 
     const form = useForm<BYOCFormValues>({
         resolver: zodResolver(byocFormSchema),
@@ -41,16 +49,29 @@ export default function BYOCForm({ config }: { config: Config }) {
     const [debouncedTokenAddress] = useDebounce(form.watch('tokenAddress'), 1000);
 
     useEffect(() => {
-        if (debouncedTokenAddress) {
-            const isValid = isAddress(debouncedTokenAddress);
-            if (isValid) {
-                console.log('Valid token address:', debouncedTokenAddress);
-                form.clearErrors('tokenAddress');
-            } else {
-                form.setError('tokenAddress', { message: 'Invalid token address' });
+        const validateAddress = async () => {
+            if (debouncedTokenAddress) {
+                const isValid = isAddress(debouncedTokenAddress);
+                if (isValid) {
+                    const communityConfig = new CommunityConfig(config);
+                    const tokenMetadata = await getTokenMetadata(communityConfig);
+                    if (tokenMetadata?.decimals == null || tokenMetadata?.symbol == null || tokenMetadata?.name == null) {
+                        form.setError('tokenAddress', { message: 'Token metadata not found' });
+                    } else {
+                        form.clearErrors('tokenAddress');
+                        setTokenData({
+                            decimals: Number(tokenMetadata.decimals),
+                            symbol: String(tokenMetadata.symbol),
+                            name: String(tokenMetadata.name)
+                        });
+                    }
+                } else {
+                    form.setError('tokenAddress', { message: 'Invalid token address' });
+                }
             }
-        }
-    }, [debouncedTokenAddress]);
+        };
+        validateAddress();
+    }, [debouncedTokenAddress, form]);
 
     const onSubmit = async (data: BYOCFormValues) => {
         try {
@@ -59,32 +80,18 @@ export default function BYOCForm({ config }: { config: Config }) {
             // Handle icon upload if provided
             let iconUrl;
             if (data.icon && data.icon instanceof File) {
-                // TODO: Implement icon upload logic
-                // iconUrl = await uploadIconAction(data.icon, alias);
-                console.log('Icon file:', data.icon);
+                iconUrl = await uploadIconAction(data.icon, config.community.alias);
+            } else {
+                form.setError('icon', { message: 'Icon is required' });
+                return;
             }
 
-            // Prepare the BYOC configuration data
-            const byocData = {
-                tokenAddress: data.tokenAddress,
-                icon: iconUrl,
-                alias: config.community.alias,
-            };
-
-            // TODO: Implement the actual BYOC configuration creation
-            console.log('BYOC Configuration:', byocData);
-
-            // Simulate API call
-            await new Promise(resolve => setTimeout(resolve, 2000));
-
-            // Show success message
-            toast.success('BYOC configuration created successfully!');
-
-            // Reset form after successful submission
+            await createByocAction(config, data.tokenAddress, iconUrl, tokenData?.decimals ?? 0, tokenData?.symbol ?? '', tokenData?.name ?? '');
+            toast.success('Configuration created successfully!');
             form.reset();
         } catch (error) {
-            console.error('Error creating BYOC configuration:', error);
-            toast.error('Failed to create BYOC configuration. Please try again.');
+            console.error('Error creating  configuration:', error);
+            toast.error('Failed to create  configuration. Please try again.');
         } finally {
             setIsLoading(false);
         }
