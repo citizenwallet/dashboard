@@ -11,6 +11,7 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { IconUpload } from '../_components/iconUpload';
+import { Config } from '@citizenwallet/sdk';
 
 // Form validation schema
 const createFormSchema = z.object({
@@ -26,7 +27,7 @@ const createFormSchema = z.object({
 
 type CreateFormValues = z.infer<typeof createFormSchema>;
 
-export default function CreateForm({ alias }: { alias: string }) {
+export default function CreateForm({ config }: { config: Config }) {
     const [isLoading, setIsLoading] = useState(false);
 
     const form = useForm<CreateFormValues>({
@@ -55,7 +56,7 @@ export default function CreateForm({ alias }: { alias: string }) {
                 name: data.tokenName,
                 symbol: data.tokenSymbol.toUpperCase(),
                 icon: iconUrl,
-                alias: alias,
+                alias: config.community.alias,
             };
 
             // TODO: Implement the actual token creation
