@@ -2,7 +2,10 @@ import { Suspense } from "react";
 import TransakWidget from "./TransakWidget";
 import { Skeleton } from "@/components/ui/skeleton";
 import { TransakConfig, Transak } from '@transak/transak-sdk';
-import { getTokenPriceAction } from "../action";
+import { getTokenPriceAction, wpolUsdcPriceAction } from "../action";
+import { ethers } from 'ethers';
+// Import the ABI
+import onRampSwapperABI from '../_abi/onRampSwapper.json';
 
 interface Props {
     params: Promise<{ alias: string }>;
@@ -31,12 +34,16 @@ export default async function page(props: Props) {
 
 async function AsyncPage({ account, amount }: { account: string, amount: number }) {
 
+    const price = await getTokenPriceAction(amount); //usdc
+    const wpolUsdc_Price = Number((await wpolUsdcPriceAction()).toFixed(3)); //wpol
+    const wpol_amount = price / wpolUsdc_Price;
 
-    const price = await getTokenPriceAction(amount);
+    // Generate calldata for onRampAndSwap function
+    const calldata = generateCalldata(account, amount);
 
     const transakConfig: TransakConfig = {
         apiKey: process.env.TRANSAK_API_KEY || '',
-        environment: Transak.ENVIRONMENTS.STAGING,
+        environment: Transak.ENVIRONMENTS.PRODUCTION,
         walletAddress: account,
         fiatCurrency: 'USD',
         fiatAmount: price,
@@ -46,18 +53,40 @@ async function AsyncPage({ account, amount }: { account: string, amount: number 
         hideMenu: true,
         // Transak One
         isTransakOne: true,
-        smartContractAddress: '0x6b3a1f4277391526413F583c23D5B9EF4d2fE986',
-        estimatedGasLimit: 200000,
+        smartContractAddress: '0xF6433dee15c1F54A431D186339d9610D3389E152',
+        estimatedGasLimit: 300_000,
+
         sourceTokenData: [
             {
                 sourceTokenCode: "POL",
-                sourceTokenAmount: 10,
+                sourceTokenAmount: Number(wpol_amount.toFixed(3))
+            }
+        ],
+        cryptoCurrencyData: [
+            {
+                cryptoCurrencyCode: "CTZN",
+                cryptoCurrencyName: "Citizen Wallet",
+                cryptoCurrencyImageURL: "https://assets.citizenwallet.xyz/wallet-config/_images/ctzn.svg"
             },
         ],
+        calldata: calldata,
     }
 
     return (
         <TransakWidget transakConfig={transakConfig} />
     );
+}
+
+function generateCalldata(recipient: string, expectedCTZNAmount: number): string {
+
+    const iface = new ethers.Interface(onRampSwapperABI);
+    const calldata = iface.encodeFunctionData('onRampAndSwap', [
+        recipient,
+        0
+
+    ]);
+
+    return calldata;
+
 }
 
