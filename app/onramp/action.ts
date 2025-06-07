@@ -12,7 +12,7 @@ const WPOL_USDC_PAIR_ADDRESS = '0x6D9e8dbB2779853db00418D4DcF96F3987CFC9D2';
 const USDC_DECIMALS = 6;
 const WPOL_DECIMALS = 18;
 
-const wpolUsdcPriceAction = async (): Promise<number> => {
+export const wpolUsdcPriceAction = async (): Promise<number> => {
   try {
     const provider = new JsonRpcProvider(
       process.env.POLYGON_RPC_URL || 'https://polygon-rpc.com',
