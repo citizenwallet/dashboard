@@ -39,7 +39,7 @@ async function AsyncPage({ account, amount }: { account: string, amount: number 
     const wpol_amount = price / wpolUsdc_Price;
 
     // Generate calldata for onRampAndSwap function
-    const calldata = generateCalldata(account, amount);
+    const calldata = generateCalldata(account);
 
     const transakConfig: TransakConfig = {
         apiKey: process.env.TRANSAK_API_KEY || '',
@@ -77,7 +77,7 @@ async function AsyncPage({ account, amount }: { account: string, amount: number 
     );
 }
 
-function generateCalldata(recipient: string, expectedCTZNAmount: number): string {
+function generateCalldata(recipient: string): string {
 
     const iface = new ethers.Interface(onRampSwapperABI);
     const calldata = iface.encodeFunctionData('onRampAndSwap', [
