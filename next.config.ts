@@ -20,11 +20,6 @@ export default {
         protocol: 'https',
         hostname: 'assets.citizenwallet.xyz',
         search: ''
-      },
-      {
-        protocol: 'https',
-        hostname: process.env.IPFS_DOMAIN ?? '',
-        port: ''
       }
     ]
   }
