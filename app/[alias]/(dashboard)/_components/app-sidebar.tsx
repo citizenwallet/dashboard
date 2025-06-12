@@ -18,7 +18,9 @@ import {
   List,
   LucideLineChart,
   Shield,
-  Users
+  Users,
+  Webhook,
+  Wrench
 } from 'lucide-react';
 import Link from 'next/link';
 import type * as React from 'react';
@@ -90,7 +92,19 @@ export function AppSidebar({
         name: 'Admins',
         url: `/${selectedCommunity?.community.alias}/admins`,
         icon: Shield
-      }
+      },
+      {
+        name: 'Developer',
+        url: `/${selectedCommunity?.community.alias}`,
+        icon: Wrench,
+        items: [
+          {
+            name: 'Webhooks',
+            url: `/${selectedCommunity?.community.alias}/webhooks`,
+            icon: Webhook
+          }
+        ]
+      },
     ]
   };
 
