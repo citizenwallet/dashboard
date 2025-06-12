@@ -3,8 +3,8 @@
 import {
   Collapsible,
   CollapsibleContent,
-  CollapsibleTrigger
-} from '@/components/ui/collapsible';
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   SidebarGroup,
   SidebarMenu,
@@ -34,9 +34,16 @@ export function NavProjects({
   return (
     <SidebarGroup>
       <SidebarMenu>
+
         {projects.map((item) => (
-          <Collapsible key={item.name} asChild className="group/collapsible">
+          <Collapsible
+            key={item.name}
+            asChild
+            className="group/collapsible"
+          >
+
             {item.items && item.items.length > 0 ? (
+
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton tooltip={item.name}>
@@ -60,7 +67,9 @@ export function NavProjects({
                   </SidebarMenuSub>
                 </CollapsibleContent>
               </SidebarMenuItem>
+
             ) : (
+
               <SidebarMenuItem key={item.name}>
                 <SidebarMenuButton asChild>
                   <Link href={item.url}>
@@ -69,9 +78,13 @@ export function NavProjects({
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+
             )}
+
           </Collapsible>
         ))}
+
+
       </SidebarMenu>
     </SidebarGroup>
   );
