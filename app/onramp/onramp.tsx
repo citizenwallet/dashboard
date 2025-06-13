@@ -247,7 +247,7 @@ export default function Onramp({
           )}
           {loading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
         </Button>
-        {cost < 5 && (
+        {!costLoading && cost > 0 && cost < 5 && (
           <div className="text-sm text-destructive mt-2">
             The minimum amount for a swap is $5
           </div>
