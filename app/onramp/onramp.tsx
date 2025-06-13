@@ -11,7 +11,7 @@ import { getTokenPriceAction } from './action';
 import { useDebouncedCallback } from 'use-debounce';
 import { useRouter } from 'next/navigation';
 
-const PRESET_AMOUNTS = [10, 20, 50, 100];
+const PRESET_AMOUNTS = [100, 200, 500, 1000];
 
 interface TopUpSelectorProps {
   connectedAccount?: string;
@@ -213,7 +213,7 @@ export default function Onramp({
               <div className="text-sm text-gray-500 mt-2">
                 This is an estimate of the cost for the requested CTZN. The
                 final cost and amount of CTZN can vary slightly depending on
-                market conditions
+                market conditions and 3rd party fees.
               </div>
             </div>
           )}
@@ -222,7 +222,9 @@ export default function Onramp({
         <Button
           type="button"
           onClick={handleSubmit}
-          disabled={!isValidEthereumAddress(address) || !finalAmount}
+          disabled={
+            !isValidEthereumAddress(address) || !finalAmount || cost < 5
+          }
           className={cn(
             'w-full py-4 text-lg h-auto',
             finalAmount && 'bg-black hover:bg-black/90'
@@ -245,6 +247,11 @@ export default function Onramp({
           )}
           {loading && <Loader2 className="ml-2 h-4 w-4 animate-spin" />}
         </Button>
+        {cost < 5 && (
+          <div className="text-sm text-destructive mt-2">
+            The minimum amount for a swap is $5
+          </div>
+        )}
       </form>
     </div>
   );
