@@ -1,5 +1,3 @@
-import { cn } from '@/lib/utils';
-import { CheckCircle } from 'lucide-react';
 import Success from './success';
 
 export default async function Page({
