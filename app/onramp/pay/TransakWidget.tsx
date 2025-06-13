@@ -92,7 +92,7 @@ export default function TransakWidget({
         transak.close();
       }
     };
-  }, [transakConfig, router]);
+  }, [transakConfig, router, closeUrl]);
 
   return (
     <div className="w-full h-full">
