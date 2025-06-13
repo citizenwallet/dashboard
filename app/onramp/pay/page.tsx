@@ -12,16 +12,17 @@ interface Props {
   searchParams: Promise<{
     account: string;
     amount: number;
+    closeUrl?: string;
   }>;
 }
 
 export default async function page(props: Props) {
-  const { account, amount } = await props.searchParams;
+  const { account, amount, closeUrl } = await props.searchParams;
 
   return (
     <>
       <Suspense fallback={<Skeleton className="h-[125px] w-full rounded-xl" />}>
-        <AsyncPage account={account} amount={amount} />
+        <AsyncPage account={account} amount={amount} closeUrl={closeUrl} />
       </Suspense>
     </>
   );
@@ -29,10 +30,12 @@ export default async function page(props: Props) {
 
 async function AsyncPage({
   account,
-  amount
+  amount,
+  closeUrl
 }: {
   account: string;
   amount: number;
+  closeUrl?: string;
 }) {
   const price = await getTokenPriceAction(amount); //usdc
   const wpolUsdc_Price = Number((await wpolUsdcPriceAction()).toFixed(3)); //wpol
@@ -73,7 +76,7 @@ async function AsyncPage({
     calldata: calldata
   };
 
-  return <TransakWidget transakConfig={transakConfig} />;
+  return <TransakWidget transakConfig={transakConfig} closeUrl={closeUrl} />;
 }
 
 function generateCalldata(recipient: string): string {

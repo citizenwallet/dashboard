@@ -17,12 +17,14 @@ interface TopUpSelectorProps {
   connectedAccount?: string;
   connectedProfile?: ProfileWithTokenId | null;
   image: string;
+  closeUrl?: string;
 }
 
 export default function Onramp({
   image,
   connectedAccount,
-  connectedProfile
+  connectedProfile,
+  closeUrl
 }: TopUpSelectorProps) {
   const [selectedAmount, setSelectedAmount] = useState<number | null>(null);
   const [customAmount, setCustomAmount] = useState('');
@@ -77,7 +79,12 @@ export default function Onramp({
       setLoading(true);
 
       const amount = selectedAmount ? selectedAmount : parseFloat(customAmount);
-      router.push(`/onramp/pay?account=${address}&amount=${amount}`);
+
+      let onrampUrl = `/onramp/pay?account=${address}&amount=${amount}`;
+      if (closeUrl) {
+        onrampUrl += `&closeUrl=${closeUrl}`;
+      }
+      router.push(onrampUrl);
 
       // the pass ontramp
     } catch (error) {
