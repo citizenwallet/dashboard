@@ -3,29 +3,36 @@
 import { Config } from '@citizenwallet/sdk';
 import eureGnosisCommunity from './eure_gnosis_community.json' assert { type: 'json' };
 import { getAuthUserAction, getAuthUserRoleInAppAction } from './user-actions';
+import { getCommunity } from '@/services/cw';
 const typedEureGnosisCommunity = eureGnosisCommunity as Config;
 
 export const fetchCommunitiesAction = async (args: {
+  alias: string;
   query?: string;
 }): Promise<{ communities: Config[]; total: number }> => {
-  const user = await getAuthUserAction();
+  const { alias } = args;
 
-  if (!user) {
+  const { community } = await getCommunity(alias);
+  const chain_id = community.community.primary_token.chain_id;
+
+  const response = await getAuthUserAction({ chain_id });
+
+  if (!response?.data) {
     return {
       communities: [],
       total: 0
     };
   }
 
-  const { role } = user;
+  const { data: user } = response;
 
-  if (role === 'admin') {
+  if (user.role === 'admin') {
     return await fetchCommunitiesForAdminAction({
       query: args.query
     });
   }
 
-  if (role === 'user') {
+  if (user.role === 'user') {
     const accessList = user.users_community_access.map(
       (access) => access.alias
     );
@@ -89,15 +96,9 @@ const fetchCommunitiesForUserAction = async (args: {
   return { communities, total: communities.length };
 };
 
-const fetchCommunitiesForAdminAction = async (args: {
+export const fetchCommunitiesForAdminAction = async (args: {
   query?: string;
 }): Promise<{ communities: Config[]; total: number }> => {
-  const userRole = await getAuthUserRoleInAppAction();
-
-  if (userRole !== 'admin') {
-    throw new Error('Unauthorized');
-  }
-
   if (!process.env.COMMUNITIES_CONFIG_URL) {
     throw new Error('COMMUNITIES_CONFIG_URL is not set');
   }
