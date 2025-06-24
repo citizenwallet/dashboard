@@ -1,4 +1,3 @@
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 import {
   getAuthUserRoleInAppAction,
   getAuthUserRoleInCommunityAction
@@ -6,9 +5,13 @@ import {
 import { Skeleton } from '@/components/ui/skeleton';
 import { getServiceRoleClient } from '@/services/chain-db';
 import { getMemberByAccount } from '@/services/chain-db/members';
+import { getServiceRoleClient as getTopDbServiceRoleClient } from '@/services/top-db';
+import { getCommunityByAlias } from '@/services/top-db/community';
 import { Config } from '@citizenwallet/sdk';
 import { Suspense } from 'react';
 import Profile from './profile';
+
+
 
 interface PageProps {
   params: Promise<{
@@ -20,8 +23,14 @@ interface PageProps {
 export default async function page(props: PageProps) {
   const { account, alias } = await props.params;
 
-  const { community: config } = await fetchCommunityByAliasAction(alias);
+  const client = getTopDbServiceRoleClient();
+  const { data, error } = await getCommunityByAlias(client, alias);
 
+  if (error || !data) {
+    throw new Error('Failed to get community by alias');
+  }
+
+  const config = data.json;
 
   return (
     <div className="flex flex-1 w-full flex-col h-full">
