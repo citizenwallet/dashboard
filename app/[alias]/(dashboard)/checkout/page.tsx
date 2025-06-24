@@ -1,8 +1,7 @@
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
-import { CheckoutFlow } from './checkout-flow';
-import { Suspense } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { Suspense } from 'react';
+import { CheckoutFlow } from './checkout-flow';
 
 interface CheckoutPageProps {
     params: Promise<{ alias: string }>;
@@ -14,8 +13,9 @@ interface CheckoutPageProps {
 
 export default async function CheckoutPage(props: CheckoutPageProps) {
     const { alias } = await props.params;
-    const { option, address } = await props.searchParams;
 
+    const { option, address } = await props.searchParams;
+    console.log(alias, option, address)
     return (
         <div className="flex flex-1 w-full flex-col h-full">
             <div className="grid grid-cols-1 gap-4 mb-4">
