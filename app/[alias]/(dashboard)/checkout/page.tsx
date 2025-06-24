@@ -6,10 +6,15 @@ import { Skeleton } from '@/components/ui/skeleton';
 
 interface CheckoutPageProps {
     params: Promise<{ alias: string }>;
+    searchParams: Promise<{
+        option: 'byoc' | 'create';
+        address: string;
+    }>;
 }
 
 export default async function CheckoutPage(props: CheckoutPageProps) {
     const { alias } = await props.params;
+    const { option, address } = await props.searchParams;
 
     return (
         <div className="flex flex-1 w-full flex-col h-full">
@@ -22,16 +27,26 @@ export default async function CheckoutPage(props: CheckoutPageProps) {
                 </div>
             </div>
 
-            <Suspense fallback={<CheckoutSkeleton />}>
-                <CheckoutLoader alias={alias} />
-            </Suspense>
+            {
+                option !== 'byoc' && option !== 'create' ? (
+                    <div className="flex flex-col">
+                        <p className="text-sm text-muted-foreground">
+                            Invalid option
+                        </p>
+                    </div>
+                ) : (
+                    <Suspense fallback={<CheckoutSkeleton />}>
+                        <CheckoutLoader option={option} />
+                    </Suspense>
+                )
+            }
+
         </div>
     );
 }
 
-async function CheckoutLoader({ alias }: { alias: string }) {
-    const { community: config } = await fetchCommunityByAliasAction(alias);
-    return <CheckoutFlow config={config} alias={alias} />;
+async function CheckoutLoader({ option }: { option: 'byoc' | 'create' }) {
+    return <CheckoutFlow option={option} />;
 }
 
 function CheckoutSkeleton() {
