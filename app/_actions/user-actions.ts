@@ -1,12 +1,15 @@
 'use server';
 
+import { auth, signOut } from '@/auth';
 import { getServiceRoleClient } from '@/services/top-db';
 import { getUserByEmail } from '@/services/top-db/users';
-import { signOut } from '@/auth';
-import { auth } from '@/auth';
 
-export async function getAuthUserAction() {
+export async function getAuthUserAction({ chain_id }: { chain_id: number }) {
   const session = await auth();
+
+  if (!session?.user.chainIds?.includes(chain_id)) {
+    return null;
+  }
 
   if (!session?.user) {
     return null;
@@ -22,7 +25,7 @@ export async function getAuthUserAction() {
     throw new Error('Could not find user by email');
   }
 
-  return data;
+  return { data, session: session.user };
 }
 
 export async function getAuthUserRoleInAppAction() {
