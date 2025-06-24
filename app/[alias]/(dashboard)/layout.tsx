@@ -29,6 +29,7 @@ export default async function DashboardLayout({
     client,
     alias
   );
+
   if (error || !communityRow) {
     redirect('/');
   }
@@ -37,6 +38,7 @@ export default async function DashboardLayout({
   const community_chain_id = community.community.primary_token.chain_id;
 
   const response = await getAuthUserAction({ chain_id: community_chain_id });
+
   if (!response || !response.data) {
     redirect(`/${alias}/login`);
   }
@@ -61,8 +63,7 @@ export default async function DashboardLayout({
     hasAccess = true;
   }
 
-  const { data: communities, error: communitiesError } =
-    await getCommunities(client);
+  const { data: communities, error: communitiesError } = await getCommunities(client);
   if (communitiesError || !communities) {
     redirect('/');
   }
