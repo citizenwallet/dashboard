@@ -1,8 +1,9 @@
-import { columns } from './columns';
 import { DataTable } from '@/components/ui/data-table';
-import { Config } from '@citizenwallet/sdk';
-import { fetchCommunitiesForAdminAction } from '@/app/_actions/community-actions';
 import { Separator } from '@/components/ui/separator';
+import { getServiceRoleClient } from '@/services/top-db';
+import { getCommunities } from '@/services/top-db/community';
+import { Config } from '@citizenwallet/sdk';
+import { columns } from './columns';
 
 interface CommunitiesTableProps {
   query: string;
@@ -14,12 +15,20 @@ export async function CommunitiesTable({ query, page }: CommunitiesTableProps) {
   let total: number = 0;
 
   try {
-    const result = await fetchCommunitiesForAdminAction({
-      query: query
-    });
 
-    communities = result.communities;
-    total = result.total;
+    const client = getServiceRoleClient();
+
+    const { data: datas, count } = await getCommunities(client, query, page);
+
+    if (!datas || datas.length < 1) {
+
+      communities = [];
+      total = 0;
+    } else {
+      communities = datas?.map((data) => data?.json);
+      total = count ?? 0;
+    }
+
   } catch (error) {
     console.error(error);
   }
