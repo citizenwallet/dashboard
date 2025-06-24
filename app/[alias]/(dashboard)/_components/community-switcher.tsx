@@ -15,7 +15,7 @@ import {
   SidebarMenuItem,
   useSidebar
 } from '@/components/ui/sidebar';
-import { CommunityT } from '@/services/top-db/community';
+import { CommunityRow } from '@/services/top-db/community';
 import { CommunityConfig, Config, ConfigToken } from '@citizenwallet/sdk';
 import { ChevronsUpDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -23,13 +23,15 @@ import { useState } from 'react';
 
 export function CommunitySwitcher({
   communities,
-  selectedCommunity
+  selectedCommunity,
+  active
 }: {
   communities: Config[];
-  selectedCommunity?: CommunityT;
+  selectedCommunity?: Config;
+  active?: boolean;
 }) {
   const { isMobile } = useSidebar();
-  const [activeCommunity, setActiveCommunity] = useState(selectedCommunity?.json);
+  const [activeCommunity, setActiveCommunity] = useState(selectedCommunity);
   const router = useRouter();
 
   if (!activeCommunity) {
@@ -63,18 +65,15 @@ export function CommunitySwitcher({
                   {activeCommunity.community.alias}
                 </span>
               </div>
-              {selectedCommunity?.active == true ? (
-                <Badge variant="default" className="bg-green-500">Public</Badge>
+              {active ? (
+                <Badge variant="default" className="bg-green-500">
+                  Public
+                </Badge>
               ) : (
                 <Badge variant="destructive">Private</Badge>
               )}
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
-
-
-
-
-
           </DropdownMenuTrigger>
           <DropdownMenuContent
             className="w-[--radix-dropdown-menu-trigger-width] min-w-56 rounded-lg max-h-[300px] overflow-y-auto"

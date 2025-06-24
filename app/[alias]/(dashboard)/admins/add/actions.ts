@@ -4,7 +4,7 @@ import { getServiceRoleClient as getTopDbClient } from '@/services/top-db';
 import { z } from 'zod';
 import { inviteAdminFormSchema } from './form-schema';
 
-import { addUserToApp, addUserToCommunity } from '@/services/top-db/users';
+import { addUserRowoApp, addUserRowoCommunity } from '@/services/top-db/users';
 import { saveOTP } from '@/services/top-db/otp';
 
 import { sendCommunityInvitationEmail } from '@/services/brevo';
@@ -38,7 +38,7 @@ export async function submitAdminInvitation(args: {
 
   const topDbClient = getTopDbClient();
 
-  const { data: user, error: addUserToAppError } = await addUserToApp({
+  const { data: user, error: addUserRowoAppError } = await addUserRowoApp({
     client: topDbClient,
     data: {
       email,
@@ -47,12 +47,12 @@ export async function submitAdminInvitation(args: {
     }
   });
 
-  if (addUserToAppError) {
-    console.error(addUserToAppError);
+  if (addUserRowoAppError) {
+    console.error(addUserRowoAppError);
     throw new Error('Failed to add user to app');
   }
 
-  const { error: addUserToCommunityError } = await addUserToCommunity({
+  const { error: addUserRowoCommunityError } = await addUserRowoCommunity({
     client: topDbClient,
     data: {
       user_id: user.id,
@@ -62,8 +62,8 @@ export async function submitAdminInvitation(args: {
     }
   });
 
-  if (addUserToCommunityError) {
-    console.error(addUserToCommunityError);
+  if (addUserRowoCommunityError) {
+    console.error(addUserRowoCommunityError);
     throw new Error('Failed to add user to community');
   }
 

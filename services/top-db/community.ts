@@ -7,7 +7,7 @@ import {
   SupabaseClient
 } from '@supabase/supabase-js';
 
-export interface CommunityT {
+export interface CommunityRow {
   alias: string;
   chain_id: number;
   active: boolean;
@@ -22,7 +22,7 @@ const LIMIT = 15;
 export const getCommunitiesByChainId = async (
   client: SupabaseClient,
   chainId?: number
-): Promise<PostgrestResponse<CommunityT>> => {
+): Promise<PostgrestResponse<CommunityRow>> => {
   let query = client
     .from(TABLE_NAME)
     .select('*')
@@ -39,7 +39,7 @@ export const getCommunitiesByChainId = async (
 export const getCommunityByAlias = async (
   client: SupabaseClient,
   alias: string
-): Promise<PostgrestMaybeSingleResponse<CommunityT>> => {
+): Promise<PostgrestMaybeSingleResponse<CommunityRow>> => {
   return await client
     .from(TABLE_NAME)
     .select('*')
@@ -53,7 +53,7 @@ export const getCommunities = async (
   client: SupabaseClient,
   query?: string,
   page: number = 1
-): Promise<PostgrestResponse<CommunityT>> => {
+): Promise<PostgrestResponse<CommunityRow>> => {
   const limit = LIMIT;
   const offset = (page - 1) * limit;
 
@@ -77,6 +77,6 @@ export const updateCommunityJson = async (
   client: SupabaseClient,
   alias: string,
   json: Config
-): Promise<PostgrestMaybeSingleResponse<CommunityT>> => {
+): Promise<PostgrestMaybeSingleResponse<CommunityRow>> => {
   return await client.from(TABLE_NAME).update({ json }).eq('alias', alias);
 };
