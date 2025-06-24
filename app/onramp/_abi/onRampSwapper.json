@@ -1,0 +1,324 @@
+[
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_swapRouter",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "_ctznToken",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "_wpol",
+                "type": "address"
+            },
+            {
+                "internalType": "address",
+                "name": "_treasuryAddress",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "nonpayable",
+        "type": "constructor"
+    },
+    {
+        "inputs": [],
+        "name": "ApproveFailed",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "uint256",
+                "name": "actualAmount",
+                "type": "uint256"
+            },
+            {
+                "internalType": "uint256",
+                "name": "minimumAmount",
+                "type": "uint256"
+            }
+        ],
+        "name": "InsufficientOutputAmount",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "InvalidCTZNAddress",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "InvalidRecipientAddress",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "InvalidRouterAddress",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "InvalidTreasuryAddress",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "InvalidWPOLAddress",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "NoPOLSent",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "NoPOLToWithdraw",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "owner",
+                "type": "address"
+            }
+        ],
+        "name": "OwnableInvalidOwner",
+        "type": "error"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "account",
+                "type": "address"
+            }
+        ],
+        "name": "OwnableUnauthorizedAccount",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "ReentrancyGuardReentrantCall",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "SendingExcessPOLFailed",
+        "type": "error"
+    },
+    {
+        "inputs": [],
+        "name": "WithdrawFailed",
+        "type": "error"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "previousOwner",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "newOwner",
+                "type": "address"
+            }
+        ],
+        "name": "OwnershipTransferred",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "recipient",
+                "type": "address"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "amountPOL",
+                "type": "uint256"
+            },
+            {
+                "indexed": false,
+                "internalType": "uint256",
+                "name": "amountCTZN",
+                "type": "uint256"
+            }
+        ],
+        "name": "SwapExecuted",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "newTreasury",
+                "type": "address"
+            }
+        ],
+        "name": "TreasuryAddressUpdated",
+        "type": "event"
+    },
+    {
+        "anonymous": false,
+        "inputs": [
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "oldTreasury",
+                "type": "address"
+            },
+            {
+                "indexed": true,
+                "internalType": "address",
+                "name": "newTreasury",
+                "type": "address"
+            }
+        ],
+        "name": "TreasuryChanged",
+        "type": "event"
+    },
+    {
+        "inputs": [],
+        "name": "CTZN_TOKEN",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "QUICKSWAP_ROUTER",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "WPOL",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "emergencyWithdraw",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "recipient",
+                "type": "address"
+            },
+            {
+                "internalType": "uint256",
+                "name": "amountOutMin",
+                "type": "uint256"
+            }
+        ],
+        "name": "onRampAndSwap",
+        "outputs": [],
+        "stateMutability": "payable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "owner",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "renounceOwnership",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "newOwner",
+                "type": "address"
+            }
+        ],
+        "name": "transferOwnership",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "inputs": [],
+        "name": "treasuryAddress",
+        "outputs": [
+            {
+                "internalType": "address",
+                "name": "",
+                "type": "address"
+            }
+        ],
+        "stateMutability": "view",
+        "type": "function"
+    },
+    {
+        "inputs": [
+            {
+                "internalType": "address",
+                "name": "_newTreasury",
+                "type": "address"
+            }
+        ],
+        "name": "updateTreasuryAddress",
+        "outputs": [],
+        "stateMutability": "nonpayable",
+        "type": "function"
+    },
+    {
+        "stateMutability": "payable",
+        "type": "receive"
+    }
+]

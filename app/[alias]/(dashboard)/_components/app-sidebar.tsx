@@ -8,8 +8,8 @@ import {
   SidebarMenuButton,
   SidebarRail
 } from '@/components/ui/sidebar';
-import { CommunityT } from '@/services/top-db/community';
-import { UserT } from '@/services/top-db/users';
+import { CommunityRow } from '@/services/top-db/community';
+import { UserRow } from '@/services/top-db/users';
 import { Config } from '@citizenwallet/sdk';
 import {
   ArrowLeft,
@@ -20,7 +20,9 @@ import {
   LucideLineChart,
   Shield,
   University,
-  Users
+  Users,
+  Webhook,
+  Wrench
 } from 'lucide-react';
 import Link from 'next/link';
 import type * as React from 'react';
@@ -30,17 +32,20 @@ import { NavUser } from './nav-user';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   communities: Config[];
-  selectedCommunity: CommunityT;
-  user: UserT | null;
+  config: Config;
+  active: boolean;
+  user: UserRow | null;
+  hasAccess: boolean;
 }
 
 export function AppSidebar({
   communities,
-  selectedCommunity,
+  config,
+  active,
   user,
+  hasAccess,
   ...props
 }: AppSidebarProps) {
-
   const data = {
     user: {
       name: user?.name ?? '',
@@ -50,45 +55,62 @@ export function AppSidebar({
     projects: [
       {
         name: 'Overview',
-        url: `/${selectedCommunity.alias}`,
+        url: `/${config?.community.alias}`,
         icon: Home
       },
       {
         name: 'Members',
-        url: `/${selectedCommunity.alias}/members`,
+        url: `/${config?.community.alias}/members`,
+        icon: Users
+      },
+      {
+        name: 'Members',
+        url: `/${config?.community.alias}/members`,
         icon: Users
       },
       {
         name: 'Transfers',
-        url: `/${selectedCommunity.alias}/transfers`,
+        url: `/${config?.community.alias}/transfers`,
         icon: LucideLineChart
       },
       {
         name: 'Treasury',
-        url: `/${selectedCommunity.alias}/treasury`,
+        url: `/${config?.community.alias}/treasury`,
         icon: Landmark,
         items: [
           {
             name: 'History',
-            url: `/${selectedCommunity.alias}/treasury`,
+            url: `/${config?.community.alias}/treasury`,
             icon: List
           },
           {
             name: 'Minters',
-            url: `/${selectedCommunity.alias}/roles`,
+            url: `/${config?.community.alias}/roles`,
             icon: Hammer
           }
         ]
       },
       {
         name: 'Profile',
-        url: `/${selectedCommunity.alias}/profile`,
+        url: `/${config?.community.alias}/profile`,
         icon: University
       },
       {
         name: 'Admins',
-        url: `/${selectedCommunity.alias}/admins`,
+        url: `/${config?.community.alias}/admins`,
         icon: Shield
+      },
+      {
+        name: 'Developer',
+        url: `/${config?.community.alias}`,
+        icon: Wrench,
+        items: [
+          {
+            name: 'Webhooks',
+            url: `/${config?.community.alias}/webhooks`,
+            icon: Webhook
+          }
+        ]
       }
     ]
   };
@@ -99,14 +121,21 @@ export function AppSidebar({
         <BackToAllCommunities />
         <CommunitySwitcher
           communities={communities}
-          selectedCommunity={selectedCommunity}
+          selectedCommunity={config}
+          active={active}
         />
       </SidebarHeader>
       <SidebarContent>
-        <NavProjects projects={data.projects} />
+        <NavProjects
+          projects={
+            hasAccess
+              ? data.projects
+              : data.projects.filter((project) => project.name == 'Overview')
+          }
+        />
       </SidebarContent>
       <SidebarFooter>
-        <NavUser user={data.user} />
+        <NavUser user={data.user} config={config} />
       </SidebarFooter>
       <SidebarRail />
     </Sidebar>

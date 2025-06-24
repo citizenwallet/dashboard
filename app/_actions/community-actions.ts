@@ -5,32 +5,50 @@ import {
   getCommunities,
   getCommunityByAlias
 } from '@/services/top-db/community';
-import { Config } from '@citizenwallet/sdk';
+import { CommunityConfig, Config } from '@citizenwallet/sdk';
 import { getAuthUserAction, getAuthUserRoleInAppAction } from './user-actions';
 
 export const fetchCommunitiesAction = async (args: {
+  alias: string;
   query?: string;
   page?: number;
 }): Promise<{ communities: Config[]; total: number }> => {
-  const user = await getAuthUserAction();
+  const { alias } = args;
 
-  if (!user) {
+  const client = getServiceRoleClient();
+
+  const { data: communityRow, error } = await getCommunityByAlias(
+    client,
+    alias
+  );
+  if (error || !communityRow) {
+    throw new Error('Community not found');
+  }
+
+  const community = new CommunityConfig(communityRow.json);
+
+  // TODO: this will create a conflict with the new PR
+  const chain_id = community.primaryToken.chain_id;
+
+  const response = await getAuthUserAction({ chain_id });
+
+  if (!response?.data) {
     return {
       communities: [],
       total: 0
     };
   }
 
-  const { role } = user;
+  const { data: user } = response;
 
-  if (role === 'admin') {
+  if (user.role === 'admin') {
     return await fetchCommunitiesForAdminAction({
       query: args.query,
       page: args.page
     });
   }
 
-  if (role === 'user') {
+  if (user.role === 'user') {
     const accessList = user.users_community_access.map(
       (access) => access.alias
     );
@@ -84,7 +102,7 @@ const fetchCommunitiesForUserAction = async (args: {
   return { communities, total: count ?? 0 };
 };
 
-const fetchCommunitiesForAdminAction = async (args: {
+export const fetchCommunitiesForAdminAction = async (args: {
   query?: string;
   page?: number;
 }): Promise<{ communities: Config[]; total: number }> => {
