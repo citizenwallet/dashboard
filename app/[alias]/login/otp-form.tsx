@@ -15,6 +15,7 @@ import {
   InputOTPGroup,
   InputOTPSlot
 } from '@/components/ui/input-otp';
+import { REGEXP_ONLY_DIGITS } from 'input-otp';
 import { CommunityConfig, Config, waitForTxSuccess } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Mail } from 'lucide-react';
@@ -157,13 +158,11 @@ export default function OtpForm({
                   <FormLabel className="text-center mb-2">Login Code</FormLabel>
                   <FormControl>
                     <InputOTP
-                      type="text"
-                      inputMode="numeric"
-                      autoComplete="one-time-code"
-                      pattern="\d{6}"
                       maxLength={6}
-                      required
+                      pattern={REGEXP_ONLY_DIGITS}
                       {...field}
+                      autoFocus
+                      required
                     >
                       <InputOTPGroup>
                         {Array.from({ length: 6 }).map((_, index) => (
