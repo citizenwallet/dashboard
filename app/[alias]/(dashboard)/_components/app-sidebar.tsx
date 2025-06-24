@@ -60,11 +60,6 @@ export function AppSidebar({
         icon: Users
       },
       {
-        name: 'Members',
-        url: `/${config?.community.alias}/members`,
-        icon: Users
-      },
-      {
         name: 'Transfers',
         url: `/${config?.community.alias}/transfers`,
         icon: LucideLineChart
