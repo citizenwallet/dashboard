@@ -2,9 +2,9 @@ import { getServiceRoleClient } from '@/services/top-db';
 import { getUserByEmail } from '@/services/top-db/users';
 import { CredentialsSignin, NextAuthConfig, Profile } from 'next-auth';
 import CredentialProvider from 'next-auth/providers/credentials';
-import { getCommunity } from './services/cw';
 import { JWT } from 'next-auth/jwt';
 import { User } from 'next-auth';
+import { getCommunityByAlias } from './services/top-db/community';
 
 declare module 'next-auth/jwt' {
   interface JWT {
@@ -70,8 +70,20 @@ const authConfig = {
           throw new CredentialsSignin(`User not found for email ${email}`);
         }
 
-        const { community } = await getCommunity(alias);
-        const chainId = community.community.profile.chain_id;
+        const { data: communityData, error: communityError } =
+          await getCommunityByAlias(client, alias);
+
+        if (communityError) {
+          throw new CredentialsSignin(
+            `Failed to get community by alias ${alias}`
+          );
+        }
+
+        if (!communityData) {
+          throw new CredentialsSignin(`Community not found for alias ${alias}`);
+        }
+
+        const chainId = communityData.chain_id;
 
         let parsedChainIds: number[];
 
