@@ -28,7 +28,6 @@ import { CommunitySwitcher } from './community-switcher';
 import { NavProjects } from './nav-projects';
 import { NavUser } from './nav-user';
 
-
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   communities: Config[];
   config: Config;
@@ -43,7 +42,6 @@ export function AppSidebar({
   hasAccess,
   ...props
 }: AppSidebarProps) {
-
   const data = {
     user: {
       name: user?.name ?? '',
@@ -95,16 +93,16 @@ export function AppSidebar({
       },
       {
         name: 'Developer',
-        url: `/${selectedCommunity?.community.alias}`,
+        url: `/${config?.community.alias}`,
         icon: Wrench,
         items: [
           {
             name: 'Webhooks',
-            url: `/${selectedCommunity?.community.alias}/webhooks`,
+            url: `/${config?.community.alias}/webhooks`,
             icon: Webhook
           }
         ]
-      },
+      }
     ]
   };
 
@@ -118,9 +116,13 @@ export function AppSidebar({
         />
       </SidebarHeader>
       <SidebarContent>
-        <NavProjects projects={
-          hasAccess ? data.projects : data.projects.filter(project => project.name == 'Overview')
-        } />
+        <NavProjects
+          projects={
+            hasAccess
+              ? data.projects
+              : data.projects.filter((project) => project.name == 'Overview')
+          }
+        />
       </SidebarContent>
       <SidebarFooter>
         <NavUser user={data.user} config={config} />
