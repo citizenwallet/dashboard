@@ -8,6 +8,7 @@ import {
 } from '@/components/custom/metric-card';
 import { getServiceRoleClient } from '@/services/top-db';
 import { getCommunityByAlias } from '@/services/top-db/community';
+import { SupabaseClient } from '@supabase/supabase-js';
 import { CreditCard, Users } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
@@ -62,7 +63,7 @@ export default async function Page(props: {
               />
             }
           >
-            {getMembersOverview({ alias })}
+            {getMembersOverview({ alias, client })}
           </Suspense>
 
           <Suspense
@@ -74,7 +75,7 @@ export default async function Page(props: {
               />
             }
           >
-            {getTransactionsOverview({ alias })}
+            {getTransactionsOverview({ alias, client })}
           </Suspense>
         </div >
 
@@ -89,11 +90,16 @@ export default async function Page(props: {
   );
 }
 
-async function getMembersOverview({ alias }: { alias: string }) {
-  const { community: config } = await fetchCommunityByAliasAction(alias);
+async function getMembersOverview({ alias, client }: { alias: string, client: SupabaseClient }) {
+
+  const { data, error } = await getCommunityByAlias(client, alias);
+
+  if (error || !data) {
+    throw new Error('Failed to get community by alias');
+  }
 
   const { count } = await getMembersAction({
-    config,
+    config: data.json,
     query: '',
     page: 1,
     showAllMembers: true
@@ -104,19 +110,19 @@ async function getMembersOverview({ alias }: { alias: string }) {
       icon={<Users className="h-full w-full text-slate-600" />}
       title="Members"
       value={count || 0}
-    // change={{
-    //   value: 11.0,
-    //   trend: 'up'
-    // }}
     />
   );
 }
 
-async function getTransactionsOverview({ alias }: { alias: string }) {
-  const { community: config } = await fetchCommunityByAliasAction(alias);
+async function getTransactionsOverview({ alias, client }: { alias: string, client: SupabaseClient }) {
+  const { data, error } = await getCommunityByAlias(client, alias);
+
+  if (error || !data) {
+    throw new Error('Failed to get community by alias');
+  }
 
   const { count } = await getTransfersOfTokenAction({
-    config,
+    config: data.json,
     query: '',
     page: 1
   });
@@ -126,10 +132,6 @@ async function getTransactionsOverview({ alias }: { alias: string }) {
       icon={<CreditCard className="h-full w-full text-slate-600" />}
       title="Transactions"
       value={count || 0}
-    // change={{
-    //   value: 22.0,
-    //   trend: 'down'
-    // }}
     />
   );
 }
