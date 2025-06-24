@@ -6,7 +6,8 @@ import {
   MetricCard,
   MetricCardSkeleton
 } from '@/components/custom/metric-card';
-import { getCommunity } from '@/services/cw';
+import { getServiceRoleClient } from '@/services/top-db';
+import { getCommunityByAlias } from '@/services/top-db/community';
 import { CreditCard, Users } from 'lucide-react';
 import { redirect } from 'next/navigation';
 import { Suspense } from 'react';
@@ -16,8 +17,14 @@ export default async function Page(props: {
 }) {
   const { alias } = await props.params;
 
-  const { community } = await getCommunity(alias);
-  const chain_id = community.community.primary_token.chain_id;
+  const client = getServiceRoleClient();
+  const { data: communityData, error: communityError } = await getCommunityByAlias(client, alias);
+
+  if (communityError || !communityData) {
+    redirect('/');
+  }
+
+  const chain_id = communityData.chain_id;
 
   const response = await getAuthUserAction({ chain_id });
 
