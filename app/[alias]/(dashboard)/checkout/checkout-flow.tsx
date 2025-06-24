@@ -5,9 +5,8 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { Config } from '@citizenwallet/sdk';
 import { AlertCircle, Copy, Wallet as WalletIcon } from 'lucide-react';
-import { useCallback, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 
 interface CheckoutFlowProps {
@@ -205,7 +204,7 @@ export function CheckoutFlow({ option }: CheckoutFlowProps) {
                                 className="flex-1"
                             >
 
-                                'Confirm & Publish'
+                                Confirm & Publish
 
                             </Button>
                             <Button
