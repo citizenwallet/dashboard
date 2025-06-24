@@ -1,8 +1,9 @@
 import { Label } from '@/components/ui/label';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getServiceRoleClient } from '@/services/top-db';
+import { getCommunityByAlias } from '@/services/top-db/community';
 import { Suspense } from 'react';
 import Onramp from './onramp';
-import { getCommunity } from '@/services/cw';
 import {
   CommunityConfig,
   getProfileFromAddress,
@@ -60,7 +61,16 @@ async function PageLoader({
   sigAuthSignature?: string;
   sigAuthRedirect?: string;
 }) {
-  const { community } = await getCommunity(ALIAS);
+
+
+  const client = getServiceRoleClient();
+  const { data, error } = await getCommunityByAlias(client, ALIAS);
+
+  if (error || !data) {
+    throw new Error('Failed to get community by alias');
+  }
+
+  const community = data.json;
   const image = community.community.logo;
   const communityConfig = new CommunityConfig(community);
 

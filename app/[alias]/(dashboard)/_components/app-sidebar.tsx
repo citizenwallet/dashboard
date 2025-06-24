@@ -8,7 +8,6 @@ import {
   SidebarMenuButton,
   SidebarRail
 } from '@/components/ui/sidebar';
-import { CommunityRow } from '@/services/top-db/community';
 import { UserRow } from '@/services/top-db/users';
 import { Config } from '@citizenwallet/sdk';
 import {

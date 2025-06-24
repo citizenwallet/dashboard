@@ -1,6 +1,5 @@
 import { getMembersAction } from '@/app/[alias]/(dashboard)/members/action';
 import { getTransfersOfTokenAction } from '@/app/[alias]/(dashboard)/transfers/actions';
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 import { getAuthUserAction } from '@/app/_actions/user-actions';
 import {
   MetricCard,

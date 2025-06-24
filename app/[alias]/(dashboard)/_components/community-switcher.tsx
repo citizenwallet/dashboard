@@ -15,7 +15,6 @@ import {
   SidebarMenuItem,
   useSidebar
 } from '@/components/ui/sidebar';
-import { CommunityRow } from '@/services/top-db/community';
 import { CommunityConfig, Config, ConfigToken } from '@citizenwallet/sdk';
 import { ChevronsUpDown } from 'lucide-react';
 import { useRouter } from 'next/navigation';
