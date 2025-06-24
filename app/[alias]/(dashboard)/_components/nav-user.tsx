@@ -1,6 +1,5 @@
 'use client';
 
-import { ChevronsUpDown, LogOut } from 'lucide-react';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import {
   DropdownMenu,
@@ -16,18 +15,88 @@ import {
   SidebarMenuItem,
   useSidebar
 } from '@/components/ui/sidebar';
-import { signOutAction } from '@/app/_actions/user-actions';
+import { StorageService } from '@/services/storage';
+import { CommunityConfig, Config, revokeSession } from '@citizenwallet/sdk';
+import { Wallet } from "ethers";
+import { ChevronsUpDown, LogOut } from 'lucide-react';
+import { useSession as useNextAuthSession } from "next-auth/react";
+import { useRouter } from 'next/navigation';
+import { toast } from 'sonner';
+import { useSession } from 'state/session/action';
 
 export function NavUser({
-  user
+  user,
+  config
 }: {
   user: {
     name: string;
     email: string;
     avatar: string;
   };
+  config?: Config;
 }) {
   const { isMobile } = useSidebar();
+  const { data: session, update } = useNextAuthSession();
+  const router = useRouter();
+  const sessionActions = useSession(config as Config);
+
+
+  const removeSession = async () => {
+
+    try {
+
+      if (!config) {
+        return;
+      }
+
+      const privateKey = sessionActions[1].storage.getKey("session_private_key");
+      const account = await sessionActions[1].getAccountAddress();
+      const communityConfig = new CommunityConfig(config);
+      const storageService = new StorageService(config.community.alias);
+
+      if (!privateKey || !account) {
+        return;
+      }
+
+      const signer = new Wallet(privateKey);
+
+      const tx = await revokeSession({
+        community: communityConfig,
+        signer,
+        account,
+      });
+
+
+      if (!tx) {
+        toast.error("Signout failed");
+        return;
+      }
+      sessionActions[1].clear();
+      storageService.deleteKey("session_private_key");
+      storageService.deleteKey("session_source_type");
+      storageService.deleteKey("session_source_value");
+      storageService.deleteKey("session_hash");
+
+      const removeChainIds = config?.community.profile.chain_id;
+      const updateChainIds = session?.user.chainIds?.filter((chainId: number) => chainId !== removeChainIds);
+
+      //remove chainId from session
+      await update({
+        chainIds: updateChainIds
+      });
+
+      toast.success("Signout successful");
+
+    } catch (error) {
+      console.error(error);
+      toast.error("Signout failed");
+
+    } finally {
+      router.push("/");
+    }
+
+
+  }
 
   return (
     <SidebarMenu>
@@ -71,40 +140,17 @@ export function NavUser({
                 </div>
               </div>
             </DropdownMenuLabel>
-            {/* <DropdownMenuSeparator /> */}
-            {/* <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <Sparkles />
-                Upgrade to Pro
-              </DropdownMenuItem>
-            </DropdownMenuGroup> */}
-            {/* <DropdownMenuSeparator /> */}
-            {/* <DropdownMenuGroup>
-              <DropdownMenuItem>
-                <BadgeCheck />
-                Account
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <CreditCard />
-                Billing
-              </DropdownMenuItem>
-              <DropdownMenuItem>
-                <Bell />
-                Notifications
-              </DropdownMenuItem>
-            </DropdownMenuGroup> */}
+
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-              <form
-                action={async () => {
-                  await signOutAction();
-                }}
-              >
-                <button className="flex items-center gap-2" type="submit">
-                  <LogOut className="" />
-                  Sign Out
-                </button>
-              </form>
+
+              <button className="flex items-center gap-2" onClick={
+                removeSession
+              }>
+                <LogOut className="" />
+                Sign Out
+              </button>
+
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
