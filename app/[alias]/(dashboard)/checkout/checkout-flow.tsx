@@ -5,51 +5,60 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
-import { AlertCircle, Copy, Wallet as WalletIcon } from 'lucide-react';
-import { useState } from 'react';
-import { toast } from 'sonner';
+import { CommunityConfig, Config, getAccountBalance } from '@citizenwallet/sdk';
+import { formatUnits } from 'ethers';
+import { AlertCircle, Wallet as WalletIcon } from 'lucide-react';
+import { useEffect, useState } from 'react';
+import QRCode from "react-qr-code";
+import { useSession } from 'state/session/action';
+
 
 interface CheckoutFlowProps {
     option: 'byoc' | 'create';
+    config: Config;
+    address: string;
 }
 
-type CheckoutStatus = 'idle' | 'waiting_for_funds';
 
-const BYOC_COST = 50;
-const TOKEN_PUBLISH_COST = 100;
+const BYOC_COST = 100;
+const TOKEN_PUBLISH_COST = 200;
 
-export function CheckoutFlow({ option }: CheckoutFlowProps) {
-
-
-    const [status, setStatus] = useState<CheckoutStatus>('idle');
+export function CheckoutFlow({ option, config, address }: CheckoutFlowProps) {
 
     // Map the option prop to the internal state values
     const selectedOption: 'byoc' | 'create' = option === 'byoc' ? 'byoc' : 'create';
+    console.log("address--->", address)
 
-    // Generate private key and addresses
-    const generateKeyPair = async () => {
-        setStatus('waiting_for_funds');
-        try {
 
-            //create a temporary wallet
+    const [, sessionActions] = useSession(config);
+    const [userAddress, setUserAddress] = useState<string | null>(null);
+    const [userAccountBalance, setUserAccountBalance] = useState<number>(0);
+    const [topupUrl, setTopupUrl] = useState<string | null>(null);
 
-        } catch (error) {
-            console.error('Error generating key pair:', error);
-            toast.error('Failed to generate wallet. Please try again.');
-            setStatus('idle');
+    useEffect(() => {
+        const fetchAccountData = async () => {
+            const userAddress = await sessionActions.getAccountAddress();
+            setUserAddress(userAddress);
+
+            const communityConfig = new CommunityConfig(config);
+
+            if (userAddress) {
+                const balance = await getAccountBalance(communityConfig, userAddress);
+                if (balance) {
+                    setUserAccountBalance(Number(formatUnits(balance, 18)));
+                }
+            }
+
+            setTopupUrl(`${window.location.origin}/onramp/pay?account=${userAddress}&amount=${option === 'byoc' ? BYOC_COST : TOKEN_PUBLISH_COST}`);
+
         }
-    };
-
-
-    const handleCopyToClipboard = (text: string, label: string) => {
-        navigator.clipboard.writeText(text);
-        toast.success(`${label} copied to clipboard`);
-    };
+        fetchAccountData();
+    }, [sessionActions, option, config])
 
 
 
     return (
-        <div className="w-full space-y-6">
+        <div className="w-full space-y-6 overflow-y-auto max-h-[calc(100vh-4rem)] p-4">
             {/* Pricing Options */}
             <Card>
                 <CardHeader>
@@ -109,113 +118,97 @@ export function CheckoutFlow({ option }: CheckoutFlowProps) {
                 </CardContent>
             </Card>
 
-            {/* Wallet Generation and Status */}
+            {/* Wallet  */}
             <Card>
                 <CardHeader>
                     <div className="flex items-center space-x-2">
                         <WalletIcon className="h-5 w-5" />
                         <CardTitle>
-                            {status === 'idle' && 'Generate a temporary wallet to receive CTZN tokens'}
-                            {status === 'waiting_for_funds' && 'Waiting for CTZN tokens'}
+
+                            Deploying Contracts
                         </CardTitle>
                     </div>
                     <CardDescription>
-                        {status === 'idle'}
-                        {status === 'waiting_for_funds'}
+                        Waiting for CTZN tokens to be deposited
                     </CardDescription>
                 </CardHeader>
 
                 <CardContent className="space-y-4">
-                    {status === 'idle' && (
-                        <Button onClick={generateKeyPair} className="flex justify-end">
-                            Generate Wallet
-                        </Button>
-                    )}
 
-                    {(status === 'waiting_for_funds') && (
-                        <div className="space-y-4">
+                    <div className="space-y-4">
+
+                        {userAccountBalance < (option === 'byoc' ? BYOC_COST : TOKEN_PUBLISH_COST) && (
                             <div className="rounded-lg border border-yellow-200 bg-yellow-50 p-4">
                                 <div className="flex items-center space-x-2">
                                     <AlertCircle className="h-4 w-4 text-yellow-600" />
                                     <p className="text-sm text-yellow-800">
-                                        This is a temporary wallet generated for this transaction only.
-                                        Do not use it for storing funds long-term.
+                                        You have enough balance to continue. Please Top Up your account.
                                     </p>
                                 </div>
                             </div>
+                        )}
+                        <div className="space-y-3">
 
-                            <div className="space-y-3">
-                                <div>
-                                    <label className="text-sm font-medium">Wallet Address</label>
-                                    <div className="flex items-center space-x-2 mt-1">
-                                        <code className="flex-1 rounded bg-muted px-3 py-2 text-sm font-mono">
-                                            0x1D1479C185d32EB90533a08b36B3CFa5F84A0E6B
-                                        </code>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleCopyToClipboard('0x1D1479C185d32EB90533a08b36B3CFa5F84A0E6B', 'Wallet address')}
-                                        >
-                                            <Copy className="h-4 w-4" />
-                                        </Button>
+
+                            <div>
+                                {userAccountBalance < (option === 'byoc' ? BYOC_COST : TOKEN_PUBLISH_COST) && (
+                                    <div className="space-y-4">
+                                        <div className="text-sm text-muted-foreground">
+                                            Insufficient balance. You need {option === 'byoc' ? BYOC_COST : TOKEN_PUBLISH_COST} CTZN to continue.
+                                        </div>
+                                        <div className="flex flex-col items-center justify-center space-y-4 p-4 border rounded-lg">
+                                            {userAddress && (
+                                                <>
+
+                                                    <QRCode value={topupUrl || ''} />
+
+                                                    <Button
+                                                        variant="secondary"
+                                                        onClick={() => {
+                                                            window.open(`/onramp/pay?account=${userAddress}&amount=${option === 'byoc' ? BYOC_COST : TOKEN_PUBLISH_COST}`, '_blank');
+                                                        }}
+                                                    >
+                                                        Top Up Account
+                                                    </Button>
+                                                </>
+                                            )}
+                                        </div>
                                     </div>
-                                </div>
-
-                                <div>
-                                    <label className="text-sm font-medium">Account Address</label>
-                                    <div className="flex items-center space-x-2 mt-1">
-                                        <code className="flex-1 rounded bg-muted px-3 py-2 text-sm font-mono">
-                                            0x1D1479C185d32EB90533a08b36B3CFa5F84A0E6B
-                                        </code>
-                                        <Button
-                                            variant="outline"
-                                            size="sm"
-                                            onClick={() => handleCopyToClipboard('0x1D1479C185d32EB90533a08b36B3CFa5F84A0E6B', 'Account address')}
-                                        >
-                                            <Copy className="h-4 w-4" />
-                                        </Button>
-                                    </div>
-                                </div>
-
-                                <Separator />
-
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Current Balance:</span>
-                                    <Badge variant="default">
-                                        10 CTZN
-                                    </Badge>
-                                </div>
-
-                                <div className="flex items-center justify-between">
-                                    <span className="text-sm font-medium">Required Amount:</span>
-                                    <Badge variant="outline">10 CTZN</Badge>
-                                </div>
-
+                                )}
                             </div>
+
+                            <Separator />
+
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium">Current Balance:</span>
+                                <Badge variant="default">
+                                    {userAccountBalance} CTZN
+                                </Badge>
+                            </div>
+
+                            <div className="flex items-center justify-between">
+                                <span className="text-sm font-medium">Required Amount:</span>
+                                <Badge variant="outline">{option === 'byoc' ? BYOC_COST : TOKEN_PUBLISH_COST} CTZN</Badge>
+                            </div>
+
                         </div>
-                    )}
+                    </div>
+
 
                 </CardContent>
 
-                {
-                    (status != 'idle') && (
-                        <CardFooter className="flex gap-2">
-                            <Button
-                                className="flex-1"
-                            >
 
-                                Confirm & Publish
+                <CardFooter className="flex items-end justify-end">
+                    <div className="flex gap-4">
+                        <Button className="flex-1" disabled={userAccountBalance < (option === 'byoc' ? BYOC_COST : TOKEN_PUBLISH_COST)}>
+                            Confirm & Publish
+                        </Button>
+                        <Button variant="outline" className="flex-1" >
+                            Cancel
+                        </Button>
+                    </div>
+                </CardFooter>
 
-                            </Button>
-                            <Button
-                                variant="outline"
-                                className="flex-1"
-                            >
-                                Cancel
-                            </Button>
-                        </CardFooter>
-                    )
-                }
             </Card>
         </div>
     );
