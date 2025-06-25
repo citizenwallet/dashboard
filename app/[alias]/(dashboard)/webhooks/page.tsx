@@ -1,14 +1,16 @@
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
+import { Button } from '@/components/ui/button';
 import { DataTable } from '@/components/ui/data-table';
 import { getServiceRoleClient } from '@/services/chain-db';
-import { getWebhooks, getWebhookSecret } from '@/services/chain-db/webhooks';
-import { Config } from '@citizenwallet/sdk';
-import { Suspense } from 'react';
-import Webhooks from './webhooks';
-import { placeholderData, skeletonColumns } from './_components/columns';
-import { Button } from '@/components/ui/button';
-import { Copy, Plus } from 'lucide-react';
 import { getEventsByChainId } from '@/services/chain-db/event';
+import { getWebhooks, getWebhookSecret } from '@/services/chain-db/webhooks';
+import { getServiceRoleClient as getServiceRoleClientTopDb } from '@/services/top-db';
+import { getCommunityByAlias } from '@/services/top-db/community';
+import { Config } from '@citizenwallet/sdk';
+import { Copy, Plus } from 'lucide-react';
+import { Suspense } from 'react';
+import { placeholderData, skeletonColumns } from './_components/columns';
+import Webhooks from './webhooks';
+
 
 export default async function Page(props: {
     params: Promise<{ alias: string }>;
@@ -18,7 +20,14 @@ export default async function Page(props: {
     }>;
 }) {
     const { alias } = await props.params;
-    const { community: config } = await fetchCommunityByAliasAction(alias);
+    const client = getServiceRoleClientTopDb();
+    const { data, error } = await getCommunityByAlias(client, alias);
+
+    if (error || !data) {
+        throw new Error('Failed to get community by alias');
+    }
+
+    const config = data.json;
 
     const { query: queryParam, page: pageParam } = await props.searchParams;
     const query = queryParam || '';
