@@ -1,11 +1,12 @@
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
+import { getAuthUserRoleInCommunityAction } from '@/app/_actions/user-actions';
 import UrlSearch from '@/components/custom/url-button-search';
 import { DataTable } from '@/components/ui/data-table';
+import { getCommunity } from '@/services/cw';
 import { Suspense } from 'react';
+import AddMember from './_components/add-member';
+import SwitcherButton from './_components/switcher-button';
 import { placeholderData, skeletonColumns } from './_table/columns';
 import MembersTable from './_table/members-table';
-import SwitcherButton from './_components/switcher-button';
-import AddMember from './_components/add-member';
 
 export default async function Page(props: {
   params: Promise<{ alias: string }>;
@@ -16,7 +17,11 @@ export default async function Page(props: {
   }>;
 }) {
   const { alias } = await props.params;
-  const { community: config } = await fetchCommunityByAliasAction(alias);
+  const { community: config } = await getCommunity(alias);
+
+  const roleInCommunity = await getAuthUserRoleInCommunityAction({
+    alias
+  });
 
   const {
     query: queryParam,
@@ -35,7 +40,7 @@ export default async function Page(props: {
           <p className="text-sm text-gray-500">{config.community.name}</p>
         </div>
         <div className="flex justify-end gap-2">
-          <AddMember config={config} />
+          {roleInCommunity && <AddMember config={config} />}
           <div className="flex flex-col">
             <UrlSearch config={config} />
             <div className="h-2" />
