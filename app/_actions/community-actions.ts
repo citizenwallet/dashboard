@@ -128,20 +128,3 @@ export const fetchCommunitiesForAdminAction = async (args: {
 
   return { communities, total: count ?? 0 };
 };
-
-export const fetchCommunityByAliasAction = async (
-  alias: string
-): Promise<{ community: Config }> => {
-  const client = getServiceRoleClient();
-  const { data, error } = await getCommunityByAlias(client, alias);
-
-  if (error) {
-    throw new Error(error.message);
-  }
-
-  if (!data) {
-    throw new Error('Community not found');
-  }
-
-  return { community: data?.json };
-};

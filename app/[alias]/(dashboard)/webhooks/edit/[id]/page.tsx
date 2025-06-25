@@ -1,19 +1,26 @@
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getServiceRoleClient } from '@/services/chain-db';
+import { getEventByContractAndTopic, getEventsByChainId } from '@/services/chain-db/event';
 import { getWebhookById } from '@/services/chain-db/webhooks';
+import { getServiceRoleClient as getServiceRoleClientTopDb } from '@/services/top-db';
+import { getCommunityByAlias } from '@/services/top-db/community';
 import { Config } from '@citizenwallet/sdk';
 import { Suspense } from 'react';
 import { WebhookForm } from './edit-page';
-import { getEventByContractAndTopic, getEventsByChainId } from '@/services/chain-db/event';
 
 
 export default async function Page(props: {
     params: Promise<{ alias: string, id: string }>;
 }) {
     const { alias, id } = await props.params;
-    const { community: config } = await fetchCommunityByAliasAction(alias);
+    const client = getServiceRoleClientTopDb();
+    const { data, error } = await getCommunityByAlias(client, alias);
 
+    if (error || !data) {
+        throw new Error('Failed to get community by alias');
+    }
+
+    const config = data.json;
 
     return (
         <div className="flex flex-1 w-full flex-col h-full">
