@@ -14,20 +14,24 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
+  BundlerService,
   CommunityConfig,
   Config,
-  checkUsernameAvailability
+  checkUsernameAvailability,
+  waitForTxSuccess
 } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Wallet } from 'ethers';
 import { Upload, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { useSession } from 'state/session/action';
 import { useDebounce } from 'use-debounce';
 import * as z from 'zod';
 import type { Profile } from '../action';
-import { updateProfileAction, updateProfileImageAction } from '../action';
+import { pinJsonToIPFSAction, updateProfileAction, updateProfileImageAction } from '../action';
 
 const profileFormSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -51,6 +55,8 @@ export default function Profile({
   const [usernameEdit, setUsernameEdit] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [, sessionActions] = useSession(config);
+
 
   const form = useForm<z.infer<typeof profileFormSchema>>({
     resolver: zodResolver(profileFormSchema),
@@ -137,9 +143,39 @@ export default function Profile({
         username: values.username
       };
 
-      await updateProfileAction(profile, config.community.alias, config);
-      toast.success('Profile updated successfully');
+      const result = await pinJsonToIPFSAction(profile);
+      const profileCid = result.IpfsHash;
+
+      const privateKey = sessionActions.storage.getKey('session_private_key');
+      const signerAccountAddress = await sessionActions.getAccountAddress();
+
+      const signer = new Wallet(privateKey as string);
+
+      const bundler = new BundlerService(community);
+
+      const txHash = await bundler.setProfile(
+        signer,
+        signerAccountAddress || '',
+        profile?.account || '',
+        values.username || '',
+        profileCid
+      );
+
+      const isSuccess = await waitForTxSuccess(community, txHash);
+
+      if (isSuccess) {
+        await updateProfileAction(
+          profile,
+          config.community.alias,
+          config,
+          profile?.account || ''
+        );
+      }
+
+      toast.success('Profile added successfully');
       router.push(`/${config.community.alias}/members`);
+
+
     } catch (error) {
       console.error('Error adding member:', error);
       toast.error('Error updating profile');
