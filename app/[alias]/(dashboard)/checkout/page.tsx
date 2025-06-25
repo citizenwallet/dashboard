@@ -1,5 +1,8 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
+import { getServiceRoleClient } from '@/services/top-db';
+import { getCommunityByAlias } from '@/services/top-db/community';
+import { Config } from '@citizenwallet/sdk';
 import { Suspense } from 'react';
 import { CheckoutFlow } from './checkout-flow';
 
@@ -15,7 +18,16 @@ export default async function CheckoutPage(props: CheckoutPageProps) {
     const { alias } = await props.params;
 
     const { option, address } = await props.searchParams;
-    console.log(alias, option, address)
+
+    const client = getServiceRoleClient();
+    const { data, error } = await getCommunityByAlias(client, alias);
+
+    if (error || !data) {
+        throw new Error('Failed to get community by alias');
+    }
+
+    const config = data.json;
+
     return (
         <div className="flex flex-1 w-full flex-col h-full">
             <div className="grid grid-cols-1 gap-4 mb-4">
@@ -36,7 +48,7 @@ export default async function CheckoutPage(props: CheckoutPageProps) {
                     </div>
                 ) : (
                     <Suspense fallback={<CheckoutSkeleton />}>
-                        <CheckoutLoader option={option} />
+                        <CheckoutLoader option={option} config={config} address={address} />
                     </Suspense>
                 )
             }
@@ -45,8 +57,16 @@ export default async function CheckoutPage(props: CheckoutPageProps) {
     );
 }
 
-async function CheckoutLoader({ option }: { option: 'byoc' | 'create' }) {
-    return <CheckoutFlow option={option} />;
+async function CheckoutLoader({
+    option, config, address
+}: {
+    option: 'byoc' | 'create',
+    config: Config,
+    address: string
+}) {
+
+
+    return <CheckoutFlow option={option} config={config} address={address} />;
 }
 
 function CheckoutSkeleton() {
