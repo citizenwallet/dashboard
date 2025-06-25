@@ -1,18 +1,19 @@
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 import { getAuthUserRoleInCommunityAction } from '@/app/_actions/user-actions';
-import { getTreasuryTransfersOfTokenAction } from '../actions';
 import UrlPagination from '@/components/custom/pagination-via-url';
-import { TransferClientTable } from './treasury-client-table';
 import { Separator } from '@/components/ui/separator';
-import MintToken from '../_components/mint-token';
-import BurnToken from '../_components/burn-token';
+import { PAGE_SIZE } from '@/services/chain-db/transfers';
+import { getServiceRoleClient } from '@/services/top-db';
+import { getCommunityByAlias } from '@/services/top-db/community';
 import {
-  MINTER_ROLE,
   hasRole as CWCheckRoleAccess,
-  CommunityConfig
+  CommunityConfig,
+  MINTER_ROLE
 } from '@citizenwallet/sdk';
 import { JsonRpcProvider } from 'ethers';
-import { PAGE_SIZE } from '@/services/chain-db/transfers';
+import BurnToken from '../_components/burn-token';
+import MintToken from '../_components/mint-token';
+import { getTreasuryTransfersOfTokenAction } from '../actions';
+import { TransferClientTable } from './treasury-client-table';
 
 interface TreasuryTableProps {
   query: string;
@@ -29,7 +30,17 @@ export default async function TreasuryTable({
   from,
   to
 }: TreasuryTableProps) {
-  const { community: config } = await fetchCommunityByAliasAction(alias);
+
+  const client = getServiceRoleClient();
+  const { data: communityData, error: communityError } = await getCommunityByAlias(client, alias);
+
+  if (communityError || !communityData) {
+    throw new Error('Failed to get community by alias');
+  }
+
+  const config = communityData.json;
+
+
   const communityConfig = new CommunityConfig(config);
 
   const primaryRpcUrl = communityConfig.primaryRPCUrl;
