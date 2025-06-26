@@ -30,7 +30,8 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { cn, formatAddress } from '@/lib/utils';
 import { MemberT } from '@/services/chain-db/members';
-import { Config } from '@citizenwallet/sdk';
+import { BundlerService, CommunityConfig, Config, MINTER_ROLE, waitForTxSuccess } from '@citizenwallet/sdk';
+import { Wallet } from 'ethers';
 import {
   Check,
   ChevronsUpDown,
@@ -41,6 +42,7 @@ import {
 } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useSession } from 'state/session/action';
 import { grantRoleAction, MinterMembers, revokeRoleAction } from './action';
 
 export default function RolePage({
@@ -62,6 +64,8 @@ export default function RolePage({
 
   const [open, setOpen] = useState(false);
   const [memberAccount, setMemberAccount] = useState('');
+  const [, sessionActions] = useSession(config);
+
 
   const totalPages = Math.ceil(Number(count) / 25);
 
@@ -97,16 +101,44 @@ export default function RolePage({
   };
 
   const grantAccess = async () => {
-    setIsLoading(true);
-    const res = await grantRoleAction({ config, account: memberAccount });
+    try {
+      setIsLoading(true);
+      const community = new CommunityConfig(config);
+      const bundler = new BundlerService(community);
 
-    if (res.success) {
-      toast.success('Access granted successfully.');
-    } else {
+      const tokenAddress = community.primaryToken.address;
+
+      const privateKey = sessionActions.storage.getKey('session_private_key');
+      const signerAccountAddress = await sessionActions.getAccountAddress();
+
+      const signer = new Wallet(privateKey as string);
+
+      const hash = await bundler.grantRole(
+        signer,
+        tokenAddress,
+        signerAccountAddress || '',
+        MINTER_ROLE,
+        memberAccount
+      );
+      const isSuccess = await waitForTxSuccess(community, hash);
+
+      if (isSuccess) {
+        await grantRoleAction({ config, account: memberAccount });
+        toast.success('Access granted successfully.');
+      } else {
+        toast.error('Failed to grant access.');
+      }
+
+    } catch (error) {
+      console.error(error);
       toast.error('Failed to grant access.');
+    } finally {
+
+      setIsLoading(false);
+      setIsAddDialogOpen(false);
     }
-    setIsLoading(false);
-    setIsAddDialogOpen(false);
+
+
   };
 
   const handleGrantAccess = () => {
@@ -347,15 +379,38 @@ export default function RolePage({
                           return;
                         }
                         setIsPending(true);
-                        const res = await revokeRoleAction({
-                          config,
-                          account: account
-                        });
-                        if (res.success) {
+
+                        const community = new CommunityConfig(config);
+                        const bundler = new BundlerService(community);
+                        const tokenAddress = community.primaryToken.address;
+
+                        const privateKey = sessionActions.storage.getKey('session_private_key');
+                        const signerAccountAddress = await sessionActions.getAccountAddress();
+
+                        const signer = new Wallet(privateKey as string);
+
+
+                        const hash = await bundler.revokeRole(
+                          signer,
+                          tokenAddress,
+                          signerAccountAddress || '',
+                          MINTER_ROLE,
+                          account
+                        );
+                        const isSuccess = await waitForTxSuccess(community, hash);
+
+                        if (isSuccess) {
+                          await revokeRoleAction({
+                            config,
+                            account: account
+                          });
+
                           toast.success('Access revoked successfully.');
                         } else {
                           toast.error('Failed to revoke access.');
                         }
+
+
                         setIsPending(false);
                         setIsDialogOpen(false);
                       };
