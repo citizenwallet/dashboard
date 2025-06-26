@@ -24,9 +24,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { MemberT } from '@/services/chain-db/members';
 import {
+  BundlerService,
   CommunityConfig,
   Config,
-  checkUsernameAvailability
+  checkUsernameAvailability,
+  waitForTxSuccess
 } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save, Trash2, Upload, User } from 'lucide-react';
@@ -39,9 +41,13 @@ import * as z from 'zod';
 import type { Profile } from '../action';
 import {
   deleteProfileAction,
+  pinJsonToIPFSAction,
+  unpinAction,
   updateProfileAction,
   updateProfileImageAction
 } from '../action';
+import { useSession } from 'state/session/action';
+import { Wallet } from 'ethers';
 
 const formSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -58,6 +64,7 @@ export default function Profile({
   hasAdminRole: boolean;
   config: Config;
 }) {
+
   const community = useMemo(() => new CommunityConfig(config), [config]);
   const [isEditing, setIsEditing] = useState(hasAdminRole);
   const router = useRouter();
@@ -84,6 +91,8 @@ export default function Profile({
   const [debouncedUsername] = useDebounce(form.watch('username'), 300);
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [, sessionActions] = useSession(config);
+
 
   useEffect(() => {
     if (debouncedUsername && usernameEdit && isEditing) {
@@ -166,7 +175,37 @@ export default function Profile({
         username: values.username || ''
       };
 
-      await updateProfileAction(profile, config.community.alias, config);
+
+      const result = await pinJsonToIPFSAction(profile);
+      const profileCid = result.IpfsHash;
+
+
+      const privateKey = sessionActions.storage.getKey('session_private_key');
+      const signerAccountAddress = await sessionActions.getAccountAddress();
+
+
+      const signer = new Wallet(privateKey as string);
+
+      const bundler = new BundlerService(community);
+
+      const txHash = await bundler.setProfile(
+        signer,
+        signerAccountAddress || '',
+        memberData?.account || '',
+        values.username || '',
+        profileCid
+      );
+
+      const isSuccess = await waitForTxSuccess(community, txHash);
+
+      if (isSuccess) {
+        await updateProfileAction(
+          profile,
+          config.community.alias,
+          config,
+          memberData?.account || ''
+        );
+      }
 
       toast.success('Profile updated successfully', {
         onAutoClose: () => {
@@ -174,6 +213,7 @@ export default function Profile({
         }
       });
       setIsEditing(false);
+
     } catch (error) {
       console.error('Error updating profile:', error);
       toast.error('Error updating profile');
@@ -186,18 +226,41 @@ export default function Profile({
   const handleDelete = async () => {
     try {
       setIsLoading(true);
-      await deleteProfileAction(
-        userData.avatarUrl || '',
-        config.community.alias,
-        config,
+
+      if (userData.avatarUrl) {
+        await unpinAction(userData.avatarUrl);
+      }
+
+      const community = new CommunityConfig(config);
+      const bundler = new BundlerService(community);
+
+      const privateKey = sessionActions.storage.getKey('session_private_key');
+      const signerAccountAddress = await sessionActions.getAccountAddress();
+
+      const signer = new Wallet(privateKey as string);
+
+      const txHash = await bundler.burnProfile(
+        signer,
+        signerAccountAddress || '',
         memberData?.account || ''
       );
 
-      toast.success('Profile deleted successfully', {
-        onAutoClose: () => {
-          router.push(`/${config.community.alias}/members`);
-        }
-      });
+      const isSuccess = await waitForTxSuccess(community, txHash);
+
+      if (isSuccess) {
+        await deleteProfileAction(
+          config.community.alias,
+          config,
+          memberData?.account || ''
+        );
+
+        toast.success('Profile deleted successfully', {
+          onAutoClose: () => {
+            router.push(`/${config.community.alias}/members`);
+          }
+        });
+      }
+
     } catch (error) {
       console.error('Error deleting profile:', error);
       toast.error('Error deleting profile');
