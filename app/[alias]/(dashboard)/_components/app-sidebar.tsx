@@ -18,6 +18,7 @@ import {
   Landmark,
   List,
   LucideLineChart,
+  Settings,
   Shield,
   University,
   Users
@@ -82,8 +83,13 @@ export function AppSidebar({
       },
       {
         name: 'Profile',
-        url: `/${selectedCommunity?.community.alias}/profile`,
+        url: `/${selectedCommunity.alias}/profile`,
         icon: University
+      },
+      {
+        name: 'Configuration',
+        url: `/${selectedCommunity.alias}/configuration`,
+        icon: Settings
       },
       {
         name: 'Admins',
