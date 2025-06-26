@@ -45,6 +45,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { isAddress } from 'ethers';
 import { formatAddress } from '@/lib/utils';
 import MemberListItem from '../_components/member-list-item';
+import { useRouter } from 'next/navigation';
 
 interface MintTokenFormProps {
   alias: string;
@@ -52,8 +53,9 @@ interface MintTokenFormProps {
 }
 
 export default function MintTokenForm({ config }: MintTokenFormProps) {
+  const router = useRouter();
+
   const [isPending, startTransition] = useTransition();
-  // const router = useRouter();
 
   const form = useForm<z.infer<typeof mintTokenFormSchema>>({
     resolver: zodResolver(mintTokenFormSchema),
@@ -73,7 +75,7 @@ export default function MintTokenForm({ config }: MintTokenFormProps) {
         });
 
         toast.success(`Success 🔨`);
-        //    router.back();
+        router.push(`/${config.community.alias}/treasury`);
       } catch (error) {
         if (error instanceof Error) {
           toast.error(error.message);
