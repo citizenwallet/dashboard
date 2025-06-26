@@ -82,7 +82,7 @@ export const updateCommunityJson = async (
 
   return await client
     .from(TABLE_NAME)
-    .update({ json })
+    .update({ json, updated_at: new Date() })
     .eq('alias', alias)
     .single();
 };
