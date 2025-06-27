@@ -60,7 +60,7 @@ export async function updateProfileAction(data: Config, alias: string) {
     const { data: updatedData, error } = await updateCommunityJson(
       client,
       alias,
-      data
+      { json: data }
     );
 
     if (error) {

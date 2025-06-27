@@ -46,6 +46,7 @@ export default async function DashboardLayout({
     redirect('/');
   }
 
+
   return (
     <SidebarProvider>
       <AppSidebar user={user} communities={communities} selectedCommunity={selectedCommunity} />

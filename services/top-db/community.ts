@@ -45,8 +45,7 @@ export const getCommunityByAlias = async (
     .from(TABLE_NAME)
     .select('*')
     .eq('alias', alias)
-    .eq('active', true)
-    .single();
+    .maybeSingle();
 };
 
 //it uses for the table
@@ -86,4 +85,11 @@ export const updateCommunityJson = async (
     .update({ json, updated_at: new Date() })
     .eq('alias', alias)
     .single();
+};
+
+export const createCommunity = async (
+  client: SupabaseClient,
+  community: CommunityT
+): Promise<PostgrestResponse<CommunityT>> => {
+  return await client.from(TABLE_NAME).insert(community).select();
 };
