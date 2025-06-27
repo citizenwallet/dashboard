@@ -14,38 +14,25 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2 } from 'lucide-react';
+import { Loader2, ExternalLink, CheckCircle2, Copy } from 'lucide-react';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
-import { deployContract } from './actions';
+import { deployContract, DeploymentResult } from './actions';
 
 // Form schema with validation
 const deployFormSchema = z.object({
-    abi: z.string().min(1, 'Contract ABI is required').refine(
-        (val) => {
-            try {
-                JSON.parse(val);
-                return true;
-            } catch {
-                return false;
-            }
-        },
-        {
-            message: 'Invalid JSON format for ABI',
-        }
-    ),
-    bytecode: z
-        .string()
-        .min(1, 'Bytecode is required')
-        .regex(/^0x[a-fA-F0-9]+$/, 'Invalid bytecode format'),
+    abi: z.string().min(1, 'Contract ABI is required'),
+    bytecode: z.string().min(1, 'Bytecode is required'),
 });
 
 type DeployFormValues = z.infer<typeof deployFormSchema>;
 
 export default function DeployContractPage() {
     const [isDeploying, setIsDeploying] = React.useState(false);
+    const [finished, setFinished] = React.useState(false);
+    const [result, setResult] = React.useState<DeploymentResult | null>(null);
 
     const form = useForm<DeployFormValues>({
         resolver: zodResolver(deployFormSchema),
@@ -55,6 +42,11 @@ export default function DeployContractPage() {
         },
     });
 
+    const copyToClipboard = (text: string) => {
+        navigator.clipboard.writeText(text);
+        toast.success('Copied to clipboard!');
+    };
+
     async function onSubmit(data: DeployFormValues) {
         try {
             setIsDeploying(true);
@@ -62,16 +54,9 @@ export default function DeployContractPage() {
             const result = await deployContract(data);
 
             if (result.success && result.data) {
-                toast.success('Contract deployed successfully!', {
-                    description: (
-                        <div className="mt-2 text-xs font-mono break-all">
-                            <p>Contract Address: {result.data.contractAddress}</p>
-                            <p>Transaction Hash: {result.data.transactionHash || 'N/A'}</p>
-                            <p>Deployed By: {result.data.deployedBy}</p>
-                        </div>
-                    ),
-                });
-
+                toast.success('Contract deployed successfully!');
+                setFinished(true);
+                setResult(result);
                 // Reset form after successful deployment
                 form.reset();
             } else {
@@ -93,8 +78,6 @@ export default function DeployContractPage() {
             <CardContent>
                 <Form {...form}>
                     <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
-
-
                         <FormField
                             control={form.control}
                             name="abi"
@@ -149,8 +132,109 @@ export default function DeployContractPage() {
                         </Button>
                     </form>
                 </Form>
-            </CardContent>
 
+                {/* Deployment Results */}
+                {finished && result?.data && (
+                    <div className="mt-8 rounded-lg border border-green-200 bg-green-50 dark:bg-green-900/10">
+                        <div className="p-6">
+                            <div className="flex items-center gap-2 mb-4">
+                                <CheckCircle2 className="h-6 w-6 text-green-500" />
+                                <h2 className="text-xl font-semibold text-green-700 dark:text-green-300">
+                                    Contract Deployed Successfully
+                                </h2>
+                            </div>
+
+                            <div className="space-y-4">
+                                {/* Contract Address */}
+                                <div className="rounded-md bg-white dark:bg-black/20 p-4">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                            Contract Address
+                                        </span>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => result.data && copyToClipboard(result.data.contractAddress)}
+                                                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                            >
+                                                <Copy className="h-4 w-4" />
+                                            </button>
+                                            <a
+                                                href={`https://amoy.polygonscan.com/address/${result.data.contractAddress}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-500 hover:text-blue-600"
+                                            >
+                                                <ExternalLink className="h-4 w-4" />
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div className="font-mono text-sm break-all">
+                                        {result.data.contractAddress}
+                                    </div>
+                                </div>
+
+                                {/* Transaction Hash */}
+                                <div className="rounded-md bg-white dark:bg-black/20 p-4">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                            Transaction Hash
+                                        </span>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => result.data?.transactionHash && copyToClipboard(result.data.transactionHash)}
+                                                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                            >
+                                                <Copy className="h-4 w-4" />
+                                            </button>
+                                            {result.data.transactionHash && (
+                                                <a
+                                                    href={`https://amoy.polygonscan.com/tx/${result.data.transactionHash}`}
+                                                    target="_blank"
+                                                    rel="noopener noreferrer"
+                                                    className="text-blue-500 hover:text-blue-600"
+                                                >
+                                                    <ExternalLink className="h-4 w-4" />
+                                                </a>
+                                            )}
+                                        </div>
+                                    </div>
+                                    <div className="font-mono text-sm break-all">
+                                        {result.data.transactionHash || 'N/A'}
+                                    </div>
+                                </div>
+
+                                {/* Deployer Address */}
+                                <div className="rounded-md bg-white dark:bg-black/20 p-4">
+                                    <div className="flex items-center justify-between mb-2">
+                                        <span className="text-sm font-medium text-gray-500 dark:text-gray-400">
+                                            Deployed By
+                                        </span>
+                                        <div className="flex gap-2">
+                                            <button
+                                                onClick={() => result.data && copyToClipboard(result.data.deployedBy)}
+                                                className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
+                                            >
+                                                <Copy className="h-4 w-4" />
+                                            </button>
+                                            <a
+                                                href={`https://amoy.polygonscan.com/address/${result.data.deployedBy}`}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="text-blue-500 hover:text-blue-600"
+                                            >
+                                                <ExternalLink className="h-4 w-4" />
+                                            </a>
+                                        </div>
+                                    </div>
+                                    <div className="font-mono text-sm break-all">
+                                        {result.data.deployedBy}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </CardContent>
         </>
     );
 }
