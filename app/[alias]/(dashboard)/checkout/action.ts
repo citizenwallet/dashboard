@@ -8,12 +8,12 @@ import {
 import { PROFILE_ABI, PROFILE_BYTECODE } from './contract/profile_contract';
 
 interface ProxyDeployParams {
-  initializeArgs?: any[];
+  initializeArgs?: string[];
   privateKey: string;
   chainId: string;
 }
 
-export const CHAIN_ID_TO_RPC_URL = (chainId: string) => {
+const CHAIN_ID_TO_RPC_URL = (chainId: string) => {
   switch (chainId) {
     case '137':
       return process.env.POLYGON_RPC_URL;
