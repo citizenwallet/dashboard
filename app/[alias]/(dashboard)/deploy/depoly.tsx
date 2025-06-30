@@ -14,12 +14,12 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, ExternalLink, CheckCircle2, Copy } from 'lucide-react';
+import { CheckCircle2, Copy, ExternalLink, Loader2 } from 'lucide-react';
 import React from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import * as z from 'zod';
-import { deployContract, DeploymentResult } from './actions';
+import { deployWithProxy, ProxyDeployResult } from './proxy-deploy';
 
 // Form schema with validation
 const deployFormSchema = z.object({
@@ -32,7 +32,7 @@ type DeployFormValues = z.infer<typeof deployFormSchema>;
 export default function DeployContractPage() {
     const [isDeploying, setIsDeploying] = React.useState(false);
     const [finished, setFinished] = React.useState(false);
-    const [result, setResult] = React.useState<DeploymentResult | null>(null);
+    const [result, setResult] = React.useState<ProxyDeployResult | null>(null);
 
     const form = useForm<DeployFormValues>({
         resolver: zodResolver(deployFormSchema),
@@ -51,7 +51,10 @@ export default function DeployContractPage() {
         try {
             setIsDeploying(true);
 
-            const result = await deployContract(data);
+            const result = await deployWithProxy({
+                implementationABI: data.abi,
+                implementationBytecode: data.bytecode,
+            });
 
             if (result.success && result.data) {
                 toast.success('Contract deployed successfully!');
@@ -153,13 +156,13 @@ export default function DeployContractPage() {
                                         </span>
                                         <div className="flex gap-2">
                                             <button
-                                                onClick={() => result.data && copyToClipboard(result.data.contractAddress)}
+                                                onClick={() => result.data && copyToClipboard(result.data.implementationAddress)}
                                                 className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                                             >
                                                 <Copy className="h-4 w-4" />
                                             </button>
                                             <a
-                                                href={`https://amoy.polygonscan.com/address/${result.data.contractAddress}`}
+                                                href={`https://amoy.polygonscan.com/address/${result.data.implementationAddress}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="text-blue-500 hover:text-blue-600"
@@ -169,7 +172,7 @@ export default function DeployContractPage() {
                                         </div>
                                     </div>
                                     <div className="font-mono text-sm break-all">
-                                        {result.data.contractAddress}
+                                        {result.data.implementationAddress}
                                     </div>
                                 </div>
 
@@ -211,13 +214,13 @@ export default function DeployContractPage() {
                                         </span>
                                         <div className="flex gap-2">
                                             <button
-                                                onClick={() => result.data && copyToClipboard(result.data.deployedBy)}
+                                                onClick={() => result.data && copyToClipboard(result.data.proxyAddress)}
                                                 className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200"
                                             >
                                                 <Copy className="h-4 w-4" />
                                             </button>
                                             <a
-                                                href={`https://amoy.polygonscan.com/address/${result.data.deployedBy}`}
+                                                href={`https://amoy.polygonscan.com/address/${result.data.proxyAddress}`}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
                                                 className="text-blue-500 hover:text-blue-600"
@@ -227,7 +230,7 @@ export default function DeployContractPage() {
                                         </div>
                                     </div>
                                     <div className="font-mono text-sm break-all">
-                                        {result.data.deployedBy}
+                                        {result.data.proxyAddress}
                                     </div>
                                 </div>
                             </div>
