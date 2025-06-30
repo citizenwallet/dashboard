@@ -5,11 +5,12 @@ import {
   ERC1967_ABI,
   ERC1967_BYTECODE
 } from './contract/ERC1967Proxy_contract';
-import { PROFILE_ABI, PROFILE_BYTECODE } from './contract/profile_contract';
 import {
   PAYMASTER_ABI,
   PAYMASTER_BYTECODE
 } from './contract/paymaster_contract';
+import { PROFILE_ABI, PROFILE_BYTECODE } from './contract/profile_contract';
+import { TOKEN_ABI, TOKEN_BYTECODE } from './contract/token_contract';
 
 interface ProxyDeployParams {
   initializeArgs?: string[];
@@ -36,7 +37,7 @@ export async function deployProfileAction({
   initializeArgs = [],
   privateKey,
   chainId
-}: ProxyDeployParams) {
+}: ProxyDeployParams): Promise<string | undefined> {
   try {
     // Connect to Polygon Amoy
     const provider = new ethers.JsonRpcProvider(CHAIN_ID_TO_RPC_URL(chainId));
@@ -84,11 +85,7 @@ export async function deployProfileAction({
     await proxy.waitForDeployment();
     const proxyAddress = await proxy.getAddress();
 
-    return {
-      implementationAddress,
-      proxyAddress,
-      transactionHash: proxy.deploymentTransaction()?.hash
-    };
+    return proxyAddress;
   } catch (error) {
     console.error('Proxy deployment error:', error);
   }
@@ -104,7 +101,7 @@ export async function deployPaymasterAction({
   chainId: string;
   profileAddress: string;
   tokenAddress: string;
-}) {
+}): Promise<string | undefined> {
   try {
     // Get the provider from environment variable
     const provider = new ethers.JsonRpcProvider(CHAIN_ID_TO_RPC_URL(chainId));
@@ -149,6 +146,44 @@ export async function deployPaymasterAction({
     await paymasterContract.initialize(wallet.address, whitelistedAddresses, {
       gasLimit: 3000000
     });
+
+    return contractAddress;
+  } catch (error) {
+    console.error('Contract deployment error:', error);
+  }
+}
+
+export async function deployTokenAction({
+  privateKey,
+  chainId
+}: {
+  privateKey: string;
+  chainId: string;
+}): Promise<string | undefined> {
+  try {
+    // Get the provider from environment variable
+    const provider = new ethers.JsonRpcProvider(CHAIN_ID_TO_RPC_URL(chainId));
+
+    // Create a wallet instance
+    const wallet = new ethers.Wallet(privateKey, provider);
+
+    // Create contract factory
+    const factory = new ethers.ContractFactory(
+      TOKEN_ABI,
+      TOKEN_BYTECODE,
+      wallet
+    );
+
+    // Deploy the contract with constructor arguments if provided
+    const contract = await factory.deploy({
+      gasLimit: 3000000
+    });
+
+    // Wait for deployment to complete
+    await contract.waitForDeployment();
+
+    // Get the contract address
+    const contractAddress = await contract.getAddress();
 
     return contractAddress;
   } catch (error) {
