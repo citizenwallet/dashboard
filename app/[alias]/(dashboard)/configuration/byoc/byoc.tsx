@@ -71,7 +71,7 @@ export default function BYOCForm({ config }: { config: Config }) {
             }
         };
         validateAddress();
-    }, [debouncedTokenAddress, form]);
+    }, [debouncedTokenAddress, form, config]);
 
     const onSubmit = async (data: BYOCFormValues) => {
         try {
