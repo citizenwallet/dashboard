@@ -12,13 +12,13 @@ import { AlertCircle, Loader2, Wallet as WalletIcon } from 'lucide-react';
 import { useEffect, useState, useTransition } from 'react';
 import QRCode from "react-qr-code";
 import { useSession } from 'state/session/action';
-import { deployProfileAction } from './action';
+import { deployPaymasterAction, deployProfileAction, deployTokenAction, updateCommunityConfigAction } from './action';
 
 
 interface CheckoutFlowProps {
     option: 'byoc' | 'create';
     config: Config;
-    address: string;
+    address?: string;
 }
 
 
@@ -29,12 +29,10 @@ export function CheckoutFlow({ option, config, address }: CheckoutFlowProps) {
 
     // Map the option prop to the internal state values
     const selectedOption: 'byoc' | 'create' = option === 'byoc' ? 'byoc' : 'create';
-    console.log("address--->", address)
 
 
     const [, sessionActions] = useSession(config);
     const [userAddress, setUserAddress] = useState<string | null>(null);
-    const [wallet, setWallet] = useState<string | null>(null);
     const [userAccountBalance, setUserAccountBalance] = useState<number>(0);
     const [topupUrl, setTopupUrl] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
@@ -42,30 +40,20 @@ export function CheckoutFlow({ option, config, address }: CheckoutFlowProps) {
 
     useEffect(() => {
         const fetchAccountData = async () => {
-
-            const privateKey = localStorage.getItem("Private_key_Deploy") || ""
-
-            if (!privateKey) {
-                const wallet = Wallet.createRandom();
-                localStorage.setItem("Private_key_Deploy", wallet.privateKey);
-            }
-
-            const wallet = new Wallet(privateKey);
-            setWallet(wallet.address);
-
             const userAddress = await sessionActions.getAccountAddress();
             setUserAddress(userAddress);
+
 
             const communityConfig = new CommunityConfig(config);
 
             if (userAddress) {
-                const balance = await getAccountBalance(communityConfig, wallet.address);
+                const balance = await getAccountBalance(communityConfig, userAddress);
                 if (balance) {
                     setUserAccountBalance(Number(formatUnits(balance, 18)));
                 }
             }
 
-            setTopupUrl(`${window.location.origin}/onramp/pay?account=${wallet.address}&amount=${option === 'byoc' ? BYOC_COST : TOKEN_PUBLISH_COST}`);
+            setTopupUrl(`${window.location.origin}/onramp/pay?account=${userAddress}&amount=${option === 'byoc' ? BYOC_COST : TOKEN_PUBLISH_COST}`);
 
         }
         fetchAccountData();
@@ -75,52 +63,79 @@ export function CheckoutFlow({ option, config, address }: CheckoutFlowProps) {
     const deployContract = () => {
         startTransition(async () => {
 
-            let profileDeploy: any;
+            const privateKey = sessionActions.storage.getKey('session_private_key');
+
+            let profileDeploy: string | undefined;
+            let paymasterDeploy: string | undefined;
+            let tokenDeploy: string | undefined = address || undefined;
+
             const communityConfig = new CommunityConfig(config);
             const chainId = communityConfig.primaryToken.chain_id.toString();
 
             if (option == 'byoc') {
+
                 //- profile deploy
                 profileDeploy = await deployProfileAction({
-                    initializeArgs: [userAddress],
-                    privateKey: localStorage.getItem("Private_key_Deploy") || "",
+                    initializeArgs: [userAddress || ''],
+                    privateKey: privateKey || '',
                     chainId: chainId
                 })
                 setOnprogress(40);
 
-
                 // - paymaster deploy
-                await new Promise(resolve => setTimeout(resolve, 10000));
+                paymasterDeploy = await deployPaymasterAction({
+                    privateKey: privateKey || '',
+                    chainId: chainId,
+                    profileAddress: profileDeploy || '',
+                    tokenAddress: tokenDeploy || ''
+                })
+
                 setOnprogress(80);
+
+                console.log("profileDeploy--->", profileDeploy, "paymasterDeploy--->", paymasterDeploy)
+                console.log("config--->", config)
+
+                //community config json update
+                const updateJson = await updateCommunityConfigAction(profileDeploy || '', paymasterDeploy || '', config);
+                console.log("updateJson--->", updateJson)
+                setOnprogress(100);
+
+
 
 
             } else if (option == 'create') {
                 // - profile deploy
                 profileDeploy = await deployProfileAction({
-                    initializeArgs: [userAddress],
-                    privateKey: localStorage.getItem("Private_key_Deploy") || "",
+                    initializeArgs: [userAddress || ''],
+                    privateKey: privateKey || '',
                     chainId: chainId
                 })
                 setOnprogress(20);
 
-
-                // - paymaster deploy
-                await new Promise(resolve => setTimeout(resolve, 10000));
+                // - token deploy
+                tokenDeploy = await deployTokenAction({
+                    privateKey: privateKey || '',
+                    chainId: chainId
+                })
                 setOnprogress(40);
 
-
-                // - token deploy
-                await new Promise(resolve => setTimeout(resolve, 10000));
+                // - paymaster deploy
+                paymasterDeploy = await deployPaymasterAction({
+                    privateKey: privateKey || '',
+                    chainId: chainId,
+                    profileAddress: profileDeploy || '',
+                    tokenAddress: tokenDeploy || ''
+                })
                 setOnprogress(80);
 
+
+                //community config json update
+                await new Promise(resolve => setTimeout(resolve, 10000));
+                setOnprogress(100);
+
+                console.log("profileDeploy--->", profileDeploy, "paymasterDeploy--->", paymasterDeploy)
+
             }
-
-            //community config json update
-            await new Promise(resolve => setTimeout(resolve, 10000));
-            setOnprogress(100);
-
-            console.log("profileDeploy--->", profileDeploy)
-
 
         });
     }
@@ -225,7 +240,7 @@ export function CheckoutFlow({ option, config, address }: CheckoutFlowProps) {
                                             Insufficient balance. You need {option === 'byoc' ? BYOC_COST : TOKEN_PUBLISH_COST} CTZN to continue.
                                         </div>
                                         <div className="flex flex-col items-center justify-center space-y-4 p-4 border rounded-lg">
-                                            {wallet && (
+                                            {userAddress && (
                                                 <>
 
                                                     <QRCode value={topupUrl || ''} />
@@ -233,7 +248,7 @@ export function CheckoutFlow({ option, config, address }: CheckoutFlowProps) {
                                                     <Button
                                                         variant="secondary"
                                                         onClick={() => {
-                                                            window.open(`/onramp/pay?account=${wallet}&amount=${option === 'byoc' ? BYOC_COST : TOKEN_PUBLISH_COST}`, '_blank');
+                                                            window.open(`/onramp/pay?account=${userAddress}&amount=${option === 'byoc' ? BYOC_COST : TOKEN_PUBLISH_COST}`, '_blank');
                                                         }}
                                                     >
                                                         Top Up Account
