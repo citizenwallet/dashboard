@@ -7,7 +7,7 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from '@/components/ui/separator';
 import { cn } from '@/lib/utils';
 import { CommunityConfig, Config, getAccountBalance } from '@citizenwallet/sdk';
-import { formatUnits, Wallet } from 'ethers';
+import { formatUnits } from 'ethers';
 import { AlertCircle, Loader2, Wallet as WalletIcon } from 'lucide-react';
 import { useEffect, useState, useTransition } from 'react';
 import QRCode from "react-qr-code";
@@ -53,7 +53,7 @@ export function CheckoutFlow({ option, config, address }: CheckoutFlowProps) {
                 }
             }
 
-            setTopupUrl(`${window.location.origin}/onramp/pay?account=${userAddress}&amount=${option === 'byoc' ? BYOC_COST : TOKEN_PUBLISH_COST}`);
+            setTopupUrl(`ethereum:0x0D9B0790E97e3426C161580dF4Ee853E4A7C4607@${communityConfig.primaryToken.chain_id}/transfer?address=${userAddress}&uint256=${option === 'byoc' ? BYOC_COST : TOKEN_PUBLISH_COST}`);
 
         }
         fetchAccountData();
