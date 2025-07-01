@@ -10,8 +10,8 @@ import {
   createCommunity,
   getCommunityByAlias
 } from '@/services/top-db/community';
-import { addUserToCommunity } from '@/services/top-db/users';
 import { getAuthUserAction } from '../_actions/user-actions';
+import { addUserRowoCommunity } from '@/services/top-db/users';
 
 export const generateUniqueSlugAction = async (baseSlug: string) => {
   let slug = sanitizeAlias(baseSlug);
@@ -122,7 +122,7 @@ export const createCommunityAction = async (
     config_location: ''
   };
 
-  const user = await getAuthUserAction();
+  const user = await getAuthUserAction({ chain_id: parseInt(chainId) });
   if (!user) {
     throw new Error('User not found');
   }
@@ -136,10 +136,10 @@ export const createCommunityAction = async (
       updated_at: new Date(),
       json: communityConfig
     }),
-    addUserToCommunity({
+    addUserRowoCommunity({
       client,
       data: {
-        user_id: Number(user.id),
+        user_id: Number(user.data?.id),
         chain_id: parseInt(chainId),
         alias: alias,
         role: 'owner'
