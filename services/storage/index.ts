@@ -21,21 +21,21 @@ export const uploadImage = async (
 };
 
 export class StorageService {
-  alias: string;
-  constructor(alias: string) {
-    this.alias = alias;
+  chainId: string;
+  constructor(chainId: string) {
+    this.chainId = chainId;
   }
 
   setKey(key: StorageKey, value: string) {
-    localStorage.setItem(`${this.alias}_${key}`, value);
+    localStorage.setItem(`${this.chainId}_${key}`, value);
   }
 
   getKey(key: StorageKey) {
-    return localStorage.getItem(`${this.alias}_${key}`);
+    return localStorage.getItem(`${this.chainId}_${key}`);
   }
 
   deleteKey(key: StorageKey) {
-    localStorage.removeItem(`${this.alias}_${key}`);
+    localStorage.removeItem(`${this.chainId}_${key}`);
   }
 }
 
