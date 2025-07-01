@@ -4,7 +4,6 @@ import {
   getAuthUserRoleInAppAction,
   getAuthUserRoleInCommunityAction
 } from '@/app/_actions/user-actions';
-import { getServiceRoleClient } from '@/services/top-db';
 import { Config } from '@citizenwallet/sdk';
 import { ethers } from 'ethers';
 import {
@@ -202,7 +201,7 @@ export async function updateCommunityConfigAction(
   paymasterAddress: string,
   config: Config
 ) {
-  const client = getServiceRoleClient();
+  // const client = getServiceRoleClient();
 
   const roleInCommunity = await getAuthUserRoleInCommunityAction({
     alias: config.community.alias
