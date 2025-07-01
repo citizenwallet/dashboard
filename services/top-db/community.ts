@@ -76,8 +76,8 @@ export const getCommunities = async (
 export const updateCommunityJson = async (
   client: SupabaseClient,
   alias: string,
-  data: Pick<CommunityT, 'json'>
-): Promise<PostgrestSingleResponse<CommunityT>> => {
+  data: Pick<CommunityRow, 'json'>
+): Promise<PostgrestSingleResponse<CommunityRow>> => {
   const { json } = data;
 
   return await client
@@ -89,7 +89,7 @@ export const updateCommunityJson = async (
 
 export const createCommunity = async (
   client: SupabaseClient,
-  community: CommunityT
-): Promise<PostgrestResponse<CommunityT>> => {
+  community: CommunityRow
+): Promise<PostgrestResponse<CommunityRow>> => {
   return await client.from(TABLE_NAME).insert(community).select();
 };

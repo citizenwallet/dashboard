@@ -1,6 +1,10 @@
 import 'server-only';
 
-import { PostgrestSingleResponse, SupabaseClient } from '@supabase/supabase-js';
+import {
+  PostgrestResponse,
+  PostgrestSingleResponse,
+  SupabaseClient
+} from '@supabase/supabase-js';
 
 const TABLE_NAME = 't_events_';
 
@@ -29,26 +33,6 @@ export const insertEvent = async (args: {
     .insert(event)
     .single();
 };
-import 'server-only';
-
-import {
-  PostgrestResponse,
-  PostgrestSingleResponse,
-  SupabaseClient
-} from '@supabase/supabase-js';
-
-const TABLE_NAME = 't_events_';
-
-export interface Event {
-  id: string;
-  name: string;
-  contract: string;
-  event_signature: string;
-  topic: string;
-  alias: string;
-  created_at: Date;
-  updated_at: Date;
-}
 
 export const getEventsByChainId = async (args: {
   client: SupabaseClient;
