@@ -6,7 +6,7 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Config } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2, Palette } from 'lucide-react';
+import { Check, Copy, Loader2, Palette } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -20,7 +20,7 @@ const profileFormSchema = z.object({
     name: z.string().min(1, 'Name is required').max(100, 'Name must be less than 100 characters'),
     description: z.string().max(500, 'Description must be less than 500 characters'),
     url: z.string().url('Please enter a valid URL').optional().or(z.literal('')),
-    custom_domain: z.string().optional(),
+    custom_domain: z.string(),
     logo: z.any().optional(),
     color: z.string().regex(/^#[0-9A-F]{6}$/i, 'Please enter a valid hex color').default('#3B82F6'),
 });
@@ -42,6 +42,20 @@ export default function ProfilePage({ config }: { config: Config }) {
     });
 
     const [isLoading, setIsLoading] = useState(false);
+    const [copiedDomain, setCopiedDomain] = useState(false);
+
+    const copyDomainToClipboard = async (domain: string) => {
+        try {
+            await navigator.clipboard.writeText(domain);
+            setCopiedDomain(true);
+            toast.success('Domain copied to clipboard!');
+            setTimeout(() => setCopiedDomain(false), 2000);
+        } catch (error) {
+            console.error('Error copying domain:', error);
+            toast.error('Failed to copy domain');
+        }
+    };
+
     const onSubmit = async (data: ProfileFormValues) => {
         try {
             setIsLoading(true);
@@ -102,7 +116,14 @@ export default function ProfilePage({ config }: { config: Config }) {
             await updateProfileAction(updatedConfig, config.community.alias);
 
             // Show success message
-            toast.success(`Profile updated successfully!`);
+            toast.success(`Profile updated successfully!`, {
+                onAutoClose: () => {
+                    window.location.reload();
+                },
+                onDismiss: () => {
+                    window.location.reload();
+                }
+            });
         } catch (error) {
             console.error('Error updating profile:', error);
             toast.error('Failed to update profile. Please try again.');
@@ -184,10 +205,25 @@ export default function ProfilePage({ config }: { config: Config }) {
                             </FormControl>
                             <FormDescription>
                                 {config.community.custom_domain ? (
-                                    <>You have set a custom domain. Your profile will be accessible at: <strong>{config.community.custom_domain}</strong></>
+                                    <>You have set a custom domain. Your community will be accessible at: <strong>{form.getValues('custom_domain')}</strong></>
                                 ) : (
-                                    <>No custom domain set. Your profile will be accessible at: <strong>{config.community.alias}.citizenwallet.xyz</strong></>
+                                    <>No custom domain set. Your community will be accessible at: <strong>{form.getValues('custom_domain')}</strong></>
                                 )}
+
+                                <Button
+                                    type="button"
+                                    variant="ghost"
+                                    size="sm"
+                                    className="h-6 w-6 p-0"
+                                    onClick={() => copyDomainToClipboard(form.getValues('custom_domain'))}
+                                >
+                                    {copiedDomain ? (
+                                        <Check className="h-3 w-3 text-green-600" />
+                                    ) : (
+                                        <Copy className="h-3 w-3" />
+                                    )}
+                                </Button>
+
                             </FormDescription>
                             <FormMessage />
                         </FormItem>
