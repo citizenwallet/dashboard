@@ -4,6 +4,7 @@ import { Config } from '@citizenwallet/sdk';
 import {
   PostgrestMaybeSingleResponse,
   PostgrestResponse,
+  PostgrestSingleResponse,
   SupabaseClient
 } from '@supabase/supabase-js';
 
@@ -44,8 +45,7 @@ export const getCommunityByAlias = async (
     .from(TABLE_NAME)
     .select('*')
     .eq('alias', alias)
-    .eq('active', true)
-    .single();
+    .maybeSingle();
 };
 
 //it uses for the table
@@ -76,7 +76,20 @@ export const getCommunities = async (
 export const updateCommunityJson = async (
   client: SupabaseClient,
   alias: string,
-  json: Config
-): Promise<PostgrestMaybeSingleResponse<CommunityRow>> => {
-  return await client.from(TABLE_NAME).update({ json }).eq('alias', alias);
+  data: Pick<CommunityT, 'json'>
+): Promise<PostgrestSingleResponse<CommunityT>> => {
+  const { json } = data;
+
+  return await client
+    .from(TABLE_NAME)
+    .update({ json, updated_at: new Date() })
+    .eq('alias', alias)
+    .single();
+};
+
+export const createCommunity = async (
+  client: SupabaseClient,
+  community: CommunityT
+): Promise<PostgrestResponse<CommunityT>> => {
+  return await client.from(TABLE_NAME).insert(community).select();
 };

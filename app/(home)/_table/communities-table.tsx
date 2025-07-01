@@ -4,6 +4,7 @@ import { getServiceRoleClient } from '@/services/top-db';
 import { getCommunities } from '@/services/top-db/community';
 import { Config } from '@citizenwallet/sdk';
 import { columns } from './columns';
+import CreateCommunityModal from '../_components/create-community-modal';
 
 interface CommunitiesTableProps {
   query: string;
@@ -35,11 +36,12 @@ export async function CommunitiesTable({ query, page }: CommunitiesTableProps) {
 
   return (
     <div className="flex flex-1 w-full flex-col h-full">
-      <div className="grid grid-cols-2 gap-4 mb-4">
+      <div className="flex justify-between items-start mb-4">
         <div className="flex flex-col">
           <h1 className="text-2xl font-bold">Communities</h1>
           <p className="text-sm text-gray-500">Browse communities</p>
         </div>
+        <CreateCommunityModal />
       </div>
 
       <div className="flex-1 overflow-hidden">

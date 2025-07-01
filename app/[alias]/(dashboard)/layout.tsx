@@ -68,6 +68,7 @@ export default async function DashboardLayout({
     redirect('/');
   }
 
+
   return (
     <SidebarProvider>
       <AppSidebar
