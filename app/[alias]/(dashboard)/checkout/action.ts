@@ -1,5 +1,11 @@
 'use server';
 
+import {
+  getAuthUserRoleInAppAction,
+  getAuthUserRoleInCommunityAction
+} from '@/app/_actions/user-actions';
+import { getServiceRoleClient } from '@/services/top-db';
+import { Config } from '@citizenwallet/sdk';
 import { ethers } from 'ethers';
 import {
   ERC1967_ABI,
@@ -189,4 +195,66 @@ export async function deployTokenAction({
   } catch (error) {
     console.error('Contract deployment error:', error);
   }
+}
+
+export async function updateCommunityConfigAction(
+  profileAddress: string,
+  paymasterAddress: string,
+  config: Config
+) {
+  const client = getServiceRoleClient();
+
+  const roleInCommunity = await getAuthUserRoleInCommunityAction({
+    alias: config.community.alias
+  });
+
+  const roleInApp = await getAuthUserRoleInAppAction();
+
+  if (!roleInApp) {
+    throw new Error('Unauthenticated user');
+  }
+
+  if (roleInApp === 'user' && !roleInCommunity) {
+    throw new Error('You are not a member of this community');
+  }
+
+  const updateJson = {
+    ...config,
+    community: {
+      ...config.community,
+      profile: {
+        ...config.community.profile,
+        address: profileAddress
+      }
+    },
+    accounts: {
+      ...config.accounts,
+      [`${config.community.profile.chain_id}:${config.community.primary_account_factory.address}`]:
+        {
+          ...config.accounts[
+            `${config.community.profile.chain_id}:${config.community.primary_account_factory.address}`
+          ],
+          paymaster_address: paymasterAddress
+        }
+    }
+  };
+
+  return updateJson;
+
+  // try {
+  //   const { data: updatedData, error } = await updateCommunityJson(
+  //     client,
+  //     config.community.alias,
+  //     updateJson
+  //   );
+
+  //   if (error) {
+  //     throw new Error('Failed to update community config');
+  //   }
+
+  //   return updatedData;
+  // } catch (error) {
+  //   console.error('Error updating community config:', error);
+  //   throw new Error('Failed to update community config');
+  // }
 }
