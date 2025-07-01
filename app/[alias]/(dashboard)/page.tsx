@@ -16,8 +16,13 @@ export default async function Page(props: {
   params: Promise<{ alias: string }>;
 }) {
   const { alias } = await props.params;
-
   const client = getServiceRoleClient();
+  const { data } = await getCommunityByAlias(client, alias);
+
+  if (!data?.active) {
+    redirect(`/${alias}/profile`);
+  }
+
   const { data: communityData, error: communityError } = await getCommunityByAlias(client, alias);
 
   if (communityError || !communityData) {
