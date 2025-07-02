@@ -121,19 +121,14 @@ export default function ProfilePage({ config }: { config: Config }) {
             await updateProfileAction(updatedConfig, config.community.alias);
 
             // Show success message
-            toast.success(`Profile updated successfully!`, {
-                onAutoClose: () => {
-                    (currencyActive) ?
-                        router.push(`/${config.community.alias}/configuration`) :
-                        window.location.reload();
-                },
-                onDismiss: () => {
-                    (currencyActive) ?
-                        router.push(`/${config.community.alias}/configuration`) :
-                        window.location.reload();
+            toast.success(`Profile updated successfully!`);
+            if (currencyActive) {
+                router.push(`/${config.community.alias}/configuration`)
+            } else {
+                window.location.reload();
+            }
 
-                }
-            });
+
         } catch (error) {
             console.error('Error updating profile:', error);
             toast.error('Failed to update profile. Please try again.');

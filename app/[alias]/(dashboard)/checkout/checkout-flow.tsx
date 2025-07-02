@@ -58,7 +58,7 @@ export function CheckoutFlow({ option, config, address, ctzn_config }: CheckoutF
 
         }
         fetchAccountData();
-    }, [sessionActions, option, config])
+    }, [sessionActions, option, config, ctzn_config])
 
     useEffect(() => {
         const fetchTokenData = async () => {
@@ -76,7 +76,7 @@ export function CheckoutFlow({ option, config, address, ctzn_config }: CheckoutF
             }
         }
         fetchTokenData();
-    }, [config])
+    }, [config, address, option])
 
     const deployContract = () => {
         startTransition(async () => {
