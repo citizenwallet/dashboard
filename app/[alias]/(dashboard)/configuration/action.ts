@@ -205,7 +205,7 @@ export async function getTokenMetadataAction(
 ) {
   const communityConfig = new CommunityConfig(config);
   const rpcUrl = CHAIN_ID_TO_RPC_URL(
-    communityConfig.primaryToken.chain_id.toString()
+    config.community.profile.chain_id.toString()
   );
 
   const tokenMetadata = await getTokenMetadata(communityConfig, {
