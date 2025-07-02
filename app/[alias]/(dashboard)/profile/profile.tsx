@@ -14,6 +14,8 @@ import { z } from 'zod';
 import { ColorPicker } from './_components/colorPicker';
 import { LogoUpload } from './_components/logoUpload';
 import { updateProfileAction, uploadItemImageAction } from './action';
+import { isEmpty } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 // Form validation schema
 const profileFormSchema = z.object({
@@ -43,6 +45,7 @@ export default function ProfilePage({ config }: { config: Config }) {
 
     const [isLoading, setIsLoading] = useState(false);
     const [copiedDomain, setCopiedDomain] = useState(false);
+    const router = useRouter();
 
     const copyDomainToClipboard = async (domain: string) => {
         try {
@@ -59,6 +62,8 @@ export default function ProfilePage({ config }: { config: Config }) {
     const onSubmit = async (data: ProfileFormValues) => {
         try {
             setIsLoading(true);
+
+            const currencyActive = (isEmpty(config.community.primary_token.address) && isEmpty(config.community.profile.address));
 
             // Handle logo upload to Supabase bucket or keep existing logo
             let logoUrl = config.community.logo;
@@ -118,10 +123,15 @@ export default function ProfilePage({ config }: { config: Config }) {
             // Show success message
             toast.success(`Profile updated successfully!`, {
                 onAutoClose: () => {
-                    window.location.reload();
+                    (currencyActive) ?
+                        router.push(`/${config.community.alias}/configuration`) :
+                        window.location.reload();
                 },
                 onDismiss: () => {
-                    window.location.reload();
+                    (currencyActive) ?
+                        router.push(`/${config.community.alias}/configuration`) :
+                        window.location.reload();
+
                 }
             });
         } catch (error) {
