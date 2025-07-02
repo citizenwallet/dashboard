@@ -7,12 +7,13 @@ import { Input } from '@/components/ui/input';
 import { Config } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Coins, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { z } from 'zod';
 import { IconUpload } from '../_components/iconUpload';
-import { uploadIconAction } from '../action';
+import { createTokenAction, uploadIconAction } from '../action';
 
 // Form validation schema
 const createFormSchema = z.object({
@@ -32,6 +33,7 @@ type CreateFormValues = z.infer<typeof createFormSchema>;
 
 export default function CreateForm({ config }: { config: Config }) {
     const [isLoading, setIsLoading] = useState(false);
+    const router = useRouter();
 
     const form = useForm<CreateFormValues>({
         resolver: zodResolver(createFormSchema),
@@ -52,18 +54,19 @@ export default function CreateForm({ config }: { config: Config }) {
                 iconUrl = await uploadIconAction(data.icon, config.community.alias);
             }
 
-            // Prepare the token creation data
-            const tokenData = {
-                name: data.tokenName,
-                symbol: data.tokenSymbol.toUpperCase(),
-                icon: iconUrl,
-                alias: config.community.alias,
-            };
+            await createTokenAction(config, iconUrl || '', data.tokenSymbol, data.tokenName);
 
-            console.log('tokenData-->', tokenData);
-
-            toast.success('Configuration created successfully!');
+            // Show success message
+            toast.success(`Token created successfully!`, {
+                onAutoClose: () => {
+                    router.push(`/${config.community.alias}/checkout?option=create`)
+                },
+                onDismiss: () => {
+                    router.push(`/${config.community.alias}/checkout?option=create`)
+                }
+            });
             form.reset();
+
         } catch (error) {
             console.error('Error creating token configuration:', error);
             toast.error('Failed to create token configuration. Please try again.');
@@ -81,8 +84,8 @@ export default function CreateForm({ config }: { config: Config }) {
                 </div>
             </div>
 
-            <Card className="w-full h-full mt-10 border-none">
-                <CardContent className="space-y-6">
+            <Card className="w-full h-full mt-10 border-none ">
+                <CardContent className="space-y-6 overflow-y-auto max-h-[calc(100vh-10rem)]">
                     <Form {...form}>
                         <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-6">
                             {/* Token Name Field */}
