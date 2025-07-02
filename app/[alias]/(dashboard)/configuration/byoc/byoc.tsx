@@ -31,6 +31,13 @@ interface TokenMetadata {
     name: string;
 }
 
+const chains = [
+    { id: '100', name: 'Gnosis' },
+    { id: '42220', name: 'Celo' },
+    { id: '42161', name: 'Arbitrum' },
+    { id: '137', name: 'Polygon' }
+];
+
 type BYOCFormValues = z.infer<typeof byocFormSchema>;
 
 export default function BYOCForm({ config }: { config: Config }) {
@@ -53,17 +60,23 @@ export default function BYOCForm({ config }: { config: Config }) {
             if (debouncedTokenAddress) {
                 const isValid = isAddress(debouncedTokenAddress);
                 if (isValid) {
+
                     const communityConfig = new CommunityConfig(config);
                     const tokenMetadata = await getTokenMetadata(communityConfig);
+
                     if (tokenMetadata?.decimals == null || tokenMetadata?.symbol == null || tokenMetadata?.name == null) {
-                        form.setError('tokenAddress', { message: 'Token metadata not found' });
+
+                        form.setError('tokenAddress', { message: `Unable to find token, are you sure it is published on ${chains.find(chain => Number(chain.id) === config.community.primary_token.chain_id)?.name}?` });
+
                     } else {
+
                         form.clearErrors('tokenAddress');
                         setTokenData({
                             decimals: Number(tokenMetadata.decimals),
                             symbol: String(tokenMetadata.symbol),
                             name: String(tokenMetadata.name)
                         });
+
                     }
                 } else {
                     form.setError('tokenAddress', { message: 'Invalid token address' });
