@@ -65,6 +65,29 @@ export const checkAliasAction = async (alias: string) => {
   return !data;
 };
 
+const chainsDetails = [
+  {
+    id: '100',
+    primary_account_factory: '0xBABCf159c4e3186cf48e4a48bC0AeC17CF9d90FE',
+    entrypoint_address: '0xAAEb9DC18aDadae9b3aE7ec2b47842565A81113f'
+  },
+  {
+    id: '42220',
+    primary_account_factory: '0xAE6E18a9Cd26de5C8f89B886283Fc3f0bE5f04DD',
+    entrypoint_address: '0x985ec7d08D9d15Ea79876E35FAdEFD58A627187E'
+  },
+  {
+    id: '42161',
+    primary_account_factory: '0x0000000000000000000000000000000000000000',
+    entrypoint_address: '0x0000000000000000000000000000000000000000'
+  },
+  {
+    id: '137',
+    primary_account_factory: '0x940Cbb155161dc0C4aade27a4826a16Ed8ca0cb2',
+    entrypoint_address: '0x7079253c0358eF9Fd87E16488299Ef6e06F403B6'
+  }
+];
+
 export const createCommunityAction = async (
   chainId: string,
   name: string,
@@ -89,7 +112,20 @@ export const createCommunityAction = async (
     tokens: {},
     plugins: [],
     version: 4,
-    accounts: {},
+    accounts: {
+      [`${chainId}:${chainsDetails.find((chain) => chain.id === chainId)?.primary_account_factory || ''}`]:
+        {
+          chain_id: parseInt(chainId),
+          entrypoint_address:
+            chainsDetails.find((chain) => chain.id === chainId)
+              ?.entrypoint_address || '',
+          paymaster_address: '',
+          account_factory_address:
+            chainsDetails.find((chain) => chain.id === chainId)
+              ?.primary_account_factory || '',
+          paymaster_type: 'cw-safe'
+        }
+    },
     sessions: {},
     community: {
       url: '',
@@ -111,7 +147,9 @@ export const createCommunityAction = async (
         chain_id: parseInt(chainId)
       },
       primary_account_factory: {
-        address: '',
+        address:
+          chainsDetails.find((chain) => chain.id === chainId)
+            ?.primary_account_factory || '',
         chain_id: parseInt(chainId)
       },
       primary_session_manager: {
