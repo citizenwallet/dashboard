@@ -50,7 +50,7 @@ export function AppSidebar({
   ...props
 }: AppSidebarProps) {
 
-  const profileActive = (isEmpty(config.community.name) && isEmpty(config.community.logo) && isEmpty(config.community.url));
+  const profileActive = (isEmpty(config.community.logo) && isEmpty(config.community.url));
   const currencyActive = (isEmpty(config.community.primary_token.address) && isEmpty(config.community.profile.address));
 
   const data = {
