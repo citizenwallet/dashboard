@@ -14,7 +14,8 @@ export class SessionLogic {
     this.state = state;
     this.communityConfig = new cwSDK.CommunityConfig(config);
     this.storage = new StorageService(
-      this.communityConfig.primaryToken.chain_id.toString()
+      this.communityConfig.primaryToken?.chain_id?.toString() ||
+        this.communityConfig.community.profile.chain_id.toString()
     );
   }
 

@@ -11,7 +11,6 @@ import {
 } from '@/services/top-db/community';
 import { redirect } from 'next/navigation';
 import { AppSidebar } from './_components/app-sidebar';
-import { CommunityConfig } from '@citizenwallet/sdk';
 
 export default async function DashboardLayout({
   children,
@@ -34,8 +33,8 @@ export default async function DashboardLayout({
     redirect('/');
   }
 
-  const community = new CommunityConfig(communityRow.json);
-  const community_chain_id = community.community.primary_token.chain_id;
+
+  const community_chain_id = communityRow.chain_id;
 
   const response = await getAuthUserAction({ chain_id: community_chain_id });
 
