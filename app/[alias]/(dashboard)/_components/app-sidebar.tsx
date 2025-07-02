@@ -8,10 +8,13 @@ import {
   SidebarMenuButton,
   SidebarRail
 } from '@/components/ui/sidebar';
+import { isEmpty } from '@/lib/utils';
 import { UserRow } from '@/services/top-db/users';
 import { Config } from '@citizenwallet/sdk';
 import {
   ArrowLeft,
+  CircleCheck,
+  CircleDashed,
   Hammer,
   Home,
   Landmark,
@@ -46,6 +49,10 @@ export function AppSidebar({
   hasAccess,
   ...props
 }: AppSidebarProps) {
+
+  const profileActive = (isEmpty(config.community.name) && isEmpty(config.community.logo) && isEmpty(config.community.url));
+  const currencyActive = (isEmpty(config.community.primary_token.address) && isEmpty(config.community.profile.address));
+
   const data = {
     user: {
       name: user?.name ?? '',
@@ -56,7 +63,15 @@ export function AppSidebar({
       {
         name: 'Profile',
         url: `/${config?.community.alias}/profile`,
-        icon: University
+        icon: University,
+        nextIcon: profileActive ? CircleDashed : CircleCheck
+      },
+      {
+        name: 'Currency',
+        url: `/${config?.community.alias}/configuration`,
+        icon: Settings,
+        nextIcon: currencyActive ? CircleDashed : CircleCheck
+
       },
       {
         name: 'Admins',
@@ -102,7 +117,7 @@ export function AppSidebar({
         icon: University
       },
       {
-        name: 'Configuration',
+        name: 'Currency',
         url: `/${config?.community.alias}/configuration`,
         icon: Settings
       },
