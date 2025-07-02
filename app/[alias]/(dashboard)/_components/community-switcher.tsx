@@ -74,7 +74,7 @@ export function CommunitySwitcher({
                   Public
                 </Badge>
               ) : (
-                <Badge variant="destructive">Private</Badge>
+                <Badge className="bg-gray-500">Inactive</Badge>
               )}
               <ChevronsUpDown className="ml-auto" />
             </SidebarMenuButton>
