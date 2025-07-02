@@ -15,6 +15,7 @@ import { useDebounce } from 'use-debounce';
 import { z } from 'zod';
 import { IconUpload } from '../_components/iconUpload';
 import { createByocAction, getTokenMetadataAction, uploadIconAction } from '../action';
+import { useRouter } from 'next/navigation';
 
 
 // Form validation schema
@@ -44,6 +45,7 @@ export default function BYOCForm({ config }: { config: Config }) {
 
     const [isLoading, setIsLoading] = useState(false);
     const [tokenData, setTokenData] = useState<TokenMetadata | null>(null);
+    const router = useRouter();
 
     const form = useForm<BYOCFormValues>({
         resolver: zodResolver(byocFormSchema),
@@ -100,7 +102,16 @@ export default function BYOCForm({ config }: { config: Config }) {
             }
 
             await createByocAction(config, data.tokenAddress, iconUrl, tokenData?.decimals ?? 0, tokenData?.symbol ?? '', tokenData?.name ?? '');
-            toast.success('Configuration created successfully!');
+            toast.success('Configuration created successfully!',
+                {
+                    onAutoClose: () => {
+                        router.push(`/${config.community.alias}/checkout?option=byoc&address=${data.tokenAddress}`);
+                    },
+                    onDismiss: () => {
+                        router.push(`/${config.community.alias}/checkout?option=byoc&address=${data.tokenAddress}`);
+                    }
+                }
+            );
             form.reset();
         } catch (error) {
             console.error('Error creating  configuration:', error);
