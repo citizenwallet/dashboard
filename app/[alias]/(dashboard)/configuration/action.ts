@@ -9,8 +9,23 @@ import { insertEvent } from '@/services/chain-db/event';
 import { uploadImage } from '@/services/storage';
 import { getServiceRoleClient } from '@/services/top-db';
 import { updateCommunityJson } from '@/services/top-db/community';
-import { Config } from '@citizenwallet/sdk';
+import { CommunityConfig, Config, getTokenMetadata } from '@citizenwallet/sdk';
 import { ethers } from 'ethers';
+
+const CHAIN_ID_TO_RPC_URL = (chainId: string) => {
+  switch (chainId) {
+    case '137':
+      return process.env.POLYGON_RPC_URL;
+    case '100':
+      return process.env.GNOSIS_RPC_URL;
+    case '42220':
+      return process.env.CELO_RPC_URL;
+    case '42161':
+      return process.env.ARBITRUM_RPC_URL;
+    default:
+      return process.env.BASE_RPC_URL;
+  }
+};
 
 export async function uploadIconAction(imageFile: File, alias: string) {
   const client = getServiceRoleClient();
@@ -182,4 +197,21 @@ export async function createTokenAction(
   } catch (error) {
     console.error('Error creating token:', error);
   }
+}
+
+export async function getTokenMetadataAction(
+  config: Config,
+  tokenAddress: string
+) {
+  const communityConfig = new CommunityConfig(config);
+  const rpcUrl = CHAIN_ID_TO_RPC_URL(
+    communityConfig.primaryToken.chain_id.toString()
+  );
+
+  const tokenMetadata = await getTokenMetadata(communityConfig, {
+    tokenAddress,
+    rpcUrl
+  });
+
+  return tokenMetadata;
 }

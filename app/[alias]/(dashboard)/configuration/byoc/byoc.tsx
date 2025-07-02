@@ -14,7 +14,7 @@ import { toast } from 'sonner';
 import { useDebounce } from 'use-debounce';
 import { z } from 'zod';
 import { IconUpload } from '../_components/iconUpload';
-import { createByocAction, uploadIconAction } from '../action';
+import { createByocAction, getTokenMetadataAction, uploadIconAction } from '../action';
 
 
 // Form validation schema
@@ -61,8 +61,8 @@ export default function BYOCForm({ config }: { config: Config }) {
                 const isValid = isAddress(debouncedTokenAddress);
                 if (isValid) {
 
-                    const communityConfig = new CommunityConfig(config);
-                    const tokenMetadata = await getTokenMetadata(communityConfig);
+
+                    const tokenMetadata = await getTokenMetadataAction(config, debouncedTokenAddress);
 
                     if (tokenMetadata?.decimals == null || tokenMetadata?.symbol == null || tokenMetadata?.name == null) {
 
