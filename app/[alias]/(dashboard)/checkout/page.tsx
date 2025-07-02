@@ -28,13 +28,21 @@ export default async function CheckoutPage(props: CheckoutPageProps) {
 
     const config = data.json;
 
+
+    const chains = [
+        { id: '100', name: 'Gnosis' },
+        { id: '42220', name: 'Celo' },
+        { id: '42161', name: 'Arbitrum' },
+        { id: '137', name: 'Polygon' }
+    ];
+
     return (
         <div className="flex flex-1 w-full flex-col h-full">
             <div className="grid grid-cols-1 gap-4 mb-4">
                 <div className="flex flex-col">
-                    <h1 className="text-2xl font-bold">Activate your community</h1>
+                    <h1 className="text-2xl font-bold">Activate your token</h1>
                     <p className="text-sm text-muted-foreground">
-                        In order to get started, we need to publish some contracts. This process is powered by CTZN tokens.
+                        In order to get started, we need to set up a few things on {chains.find(chain => Number(chain.id) === data.chain_id)?.name}. This process is powered by CTZN tokens.
                     </p>
                 </div>
             </div>
