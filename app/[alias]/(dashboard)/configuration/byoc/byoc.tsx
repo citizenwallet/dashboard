@@ -4,10 +4,11 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { CommunityConfig, Config, getTokenMetadata } from '@citizenwallet/sdk';
+import { Config } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { isAddress } from 'ethers';
 import { Coins, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -15,7 +16,6 @@ import { useDebounce } from 'use-debounce';
 import { z } from 'zod';
 import { IconUpload } from '../_components/iconUpload';
 import { createByocAction, getTokenMetadataAction, uploadIconAction } from '../action';
-import { useRouter } from 'next/navigation';
 
 
 // Form validation schema
