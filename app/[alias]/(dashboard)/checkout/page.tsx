@@ -29,6 +29,15 @@ export default async function CheckoutPage(props: CheckoutPageProps) {
     const config = data.json;
 
 
+    const { data: ctzn_data, error: ctzn_error } = await getCommunityByAlias(client, 'ctzn');
+
+    if (ctzn_error || !ctzn_data) {
+        throw new Error('Failed to get CTZN community by alias');
+    }
+
+    const CTZN_config = ctzn_data.json;
+
+
     const chains = [
         { id: '100', name: 'Gnosis' },
         { id: '42220', name: 'Celo' },
@@ -56,7 +65,7 @@ export default async function CheckoutPage(props: CheckoutPageProps) {
                     </div>
                 ) : (
                     <Suspense fallback={<CheckoutSkeleton />}>
-                        <CheckoutLoader option={option} config={config} address={address} />
+                        <CheckoutLoader option={option} config={config} address={address} ctzn_config={CTZN_config} />
                     </Suspense>
                 )
             }
@@ -66,15 +75,16 @@ export default async function CheckoutPage(props: CheckoutPageProps) {
 }
 
 async function CheckoutLoader({
-    option, config, address
+    option, config, address, ctzn_config
 }: {
     option: 'byoc' | 'create',
     config: Config,
-    address: string
+    address: string,
+    ctzn_config: Config
 }) {
 
 
-    return <CheckoutFlow option={option} config={config} address={address} />;
+    return <CheckoutFlow option={option} config={config} address={address} ctzn_config={ctzn_config} />;
 }
 
 function CheckoutSkeleton() {
