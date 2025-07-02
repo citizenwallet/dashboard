@@ -17,10 +17,11 @@ import {
 } from '@/components/ui/sidebar';
 import { StorageService } from '@/services/storage';
 import { CommunityConfig, Config, revokeSession } from '@citizenwallet/sdk';
-import { Wallet } from "ethers";
+import { Wallet } from 'ethers';
 import { ChevronsUpDown, LogOut } from 'lucide-react';
-import { useSession as useNextAuthSession } from "next-auth/react";
+import { useSession as useNextAuthSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
+import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { useSession } from 'state/session/action';
 
@@ -38,19 +39,17 @@ export function NavUser({
   const { isMobile } = useSidebar();
   const { data: session, update } = useNextAuthSession();
   const router = useRouter();
-  const sessionActions = useSession(config as Config);
 
+  const [, sessionActions] = useSession(config as Config);
 
   const removeSession = async () => {
-
     try {
-
       if (!config) {
         return;
       }
 
-      const privateKey = sessionActions[1].storage.getKey("session_private_key");
-      const account = await sessionActions[1].getAccountAddress();
+      const privateKey = sessionActions.storage.getKey('session_private_key');
+      const account = await sessionActions.getAccountAddress();
       const communityConfig = new CommunityConfig(config);
       const storageService = new StorageService(config.community.alias);
 
@@ -63,40 +62,37 @@ export function NavUser({
       const tx = await revokeSession({
         community: communityConfig,
         signer,
-        account,
+        account
       });
 
-
       if (!tx) {
-        toast.error("Signout failed");
+        toast.error('Signout failed');
         return;
       }
-      sessionActions[1].clear();
-      storageService.deleteKey("session_private_key");
-      storageService.deleteKey("session_source_type");
-      storageService.deleteKey("session_source_value");
-      storageService.deleteKey("session_hash");
+      sessionActions.clear();
+      storageService.deleteKey('session_private_key');
+      storageService.deleteKey('session_source_type');
+      storageService.deleteKey('session_source_value');
+      storageService.deleteKey('session_hash');
 
       const removeChainIds = config?.community.profile.chain_id;
-      const updateChainIds = session?.user.chainIds?.filter((chainId: number) => chainId !== removeChainIds);
+      const updateChainIds = session?.user.chainIds?.filter(
+        (chainId: number) => chainId !== removeChainIds
+      );
 
       //remove chainId from session
       await update({
         chainIds: updateChainIds
       });
 
-      toast.success("Signout successful");
-
+      toast.success('Signout successful');
     } catch (error) {
       console.error(error);
-      toast.error("Signout failed");
-
+      toast.error('Signout failed');
     } finally {
-      router.push("/");
+      router.push('/');
     }
-
-
-  }
+  };
 
   return (
     <SidebarMenu>
@@ -108,7 +104,11 @@ export function NavUser({
               className="data-[state=open]:bg-sidebar-accent data-[state=open]:text-sidebar-accent-foreground"
             >
               <Avatar className="h-8 w-8 rounded-lg">
-                <AvatarImage src={user.avatar} alt={user.name} />
+                <AvatarImage
+                  src={user.avatar}
+                  alt={user.name}
+                  className="object-cover"
+                />
                 <AvatarFallback className="rounded-lg">
                   {user.name.slice(0, 2)}
                 </AvatarFallback>
@@ -129,7 +129,11 @@ export function NavUser({
             <DropdownMenuLabel className="p-0 font-normal">
               <div className="flex items-center gap-2 px-1 py-1.5 text-left text-sm">
                 <Avatar className="h-8 w-8 rounded-lg">
-                  <AvatarImage src={user.avatar} alt={user.name} />
+                  <AvatarImage
+                    src={user.avatar}
+                    alt={user.name}
+                    className="object-cover"
+                  />
                   <AvatarFallback className="rounded-lg">
                     {user.name.slice(0, 2)}
                   </AvatarFallback>
@@ -143,14 +147,13 @@ export function NavUser({
 
             <DropdownMenuSeparator />
             <DropdownMenuItem>
-
-              <button className="flex items-center gap-2" onClick={
-                removeSession
-              }>
+              <button
+                className="flex items-center gap-2"
+                onClick={removeSession}
+              >
                 <LogOut className="" />
                 Sign Out
               </button>
-
             </DropdownMenuItem>
           </DropdownMenuContent>
         </DropdownMenu>
