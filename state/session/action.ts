@@ -1,6 +1,6 @@
 import { StorageService } from '@/services/storage';
 import * as cwSDK from '@citizenwallet/sdk';
-import { Wallet } from 'ethers';
+import { formatUnits, Wallet } from 'ethers';
 import { useMemo } from 'react';
 import { StoreApi, UseBoundStore } from 'zustand';
 import { SessionState, useSessionStore } from './state';
@@ -60,7 +60,26 @@ export class SessionLogic {
       type: sourceType
     });
 
+    this.state.setAccountAddress(accountAddress);
+
     return accountAddress;
+  }
+
+  async getAccountBalance() {
+    const accountAddress = await this.getAccountAddress();
+
+    if (!accountAddress) {
+      throw new Error('Account address not found');
+    }
+
+    const balance = await cwSDK.getAccountBalance(
+      this.communityConfig,
+      accountAddress
+    );
+
+    this.state.setBalance(
+      formatUnits(balance ?? 0, this.communityConfig.getToken().decimals)
+    );
   }
 
   async isSessionExpired() {
