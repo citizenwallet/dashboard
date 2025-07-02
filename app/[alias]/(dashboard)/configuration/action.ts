@@ -10,6 +10,7 @@ import { uploadImage } from '@/services/storage';
 import { getServiceRoleClient } from '@/services/top-db';
 import { updateCommunityJson } from '@/services/top-db/community';
 import { Config } from '@citizenwallet/sdk';
+import { ethers } from 'ethers';
 
 export async function uploadIconAction(imageFile: File, alias: string) {
   const client = getServiceRoleClient();
@@ -118,5 +119,67 @@ export async function createByocAction(
   } catch (error) {
     console.error('Error creating BYOC:', error);
     throw new Error('Failed to create BYOC');
+  }
+}
+
+export async function createTokenAction(
+  config: Config,
+  icon: string,
+  symbol: string,
+  name: string
+) {
+  const client = getServiceRoleClient();
+
+  const roleInCommunity = await getAuthUserRoleInCommunityAction({
+    alias: config.community.alias
+  });
+
+  const roleInApp = await getAuthUserRoleInAppAction();
+
+  if (!roleInApp) {
+    throw new Error('Unauthenticated user');
+  }
+
+  if (roleInApp === 'user' && !roleInCommunity) {
+    throw new Error('You are not a member of this community');
+  }
+
+  try {
+    const tokenAddress = ethers.ZeroAddress;
+
+    const updateJson = {
+      ...config,
+      tokens: {
+        ...config.tokens,
+        [`${config.community.primary_token.chain_id}:${tokenAddress}`]: {
+          name,
+          symbol,
+          address: tokenAddress,
+          chain_id: config.community.primary_token.chain_id,
+          decimals: 18,
+          standard: 'erc20'
+        }
+      },
+      community: {
+        ...config.community,
+        logo: icon,
+        primary_token: {
+          ...config.community.primary_token,
+          address: tokenAddress
+        }
+      }
+    };
+
+    const updateCommunity = await updateCommunityJson(
+      client,
+      config.community.alias,
+      {
+        json: updateJson
+      }
+    );
+
+    return updateCommunity;
+  } catch (error) {
+    console.error('Error creating token:', error);
   }
 }
