@@ -6,7 +6,7 @@ import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, For
 import { Input } from '@/components/ui/input';
 import { Config } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Loader2 } from 'lucide-react';
+import { Coins, Loader2 } from 'lucide-react';
 import { useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
@@ -128,6 +128,19 @@ export default function CreateForm({ config }: { config: Config }) {
                                     </FormItem>
                                 )}
                             />
+
+                            {form.getValues('tokenName') && form.getValues('tokenSymbol') && (
+                                <div className="flex flex-col items-center justify-center p-6 rounded-lg border bg-muted space-y-2">
+                                    <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center border">
+                                        <Coins className="h-12 w-12 text-orange-500/80" />
+                                    </div>
+                                    <div className="flex flex-col items-center space-y-1 mt-2">
+                                        <span className="text-xl font-medium">{form.getValues('tokenName')}</span>
+                                        <span className="text-lg text-foreground/70">{form.getValues('tokenSymbol')}</span>
+                                    </div>
+                                </div>
+                            )}
+
 
                             {/* Icon Upload Field */}
                             <FormField
