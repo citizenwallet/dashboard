@@ -13,3 +13,7 @@ export function generateOTP(): string {
 export const formatAddress = (address: string) => {
   return `${address.slice(0, 6)}...${address.slice(-4)}`;
 };
+
+export const isEmpty = (value: string | null | undefined): boolean => {
+  return !value || value.trim() === '';
+};
