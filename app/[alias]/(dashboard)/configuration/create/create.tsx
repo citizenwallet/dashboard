@@ -76,8 +76,8 @@ export default function CreateForm({ config }: { config: Config }) {
         <div className="w-full h-full">
             <div className="flex items-left space-x-4">
                 <div>
-                    <h1 className="text-2xl font-bold">Create Your Own Currency</h1>
-                    <p className="text-muted-foreground">Design your community token</p>
+                    <h1 className="text-2xl font-bold">Create Your Own Token</h1>
+                    <p className="text-muted-foreground">Design your token</p>
                 </div>
             </div>
 

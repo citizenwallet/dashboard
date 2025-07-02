@@ -13,9 +13,9 @@ export default function ConfigurationPage({ alias }: { alias: string }) {
     return (
         <div className="w-full h-full">
             <div className="text-left space-y-2">
-                <h1 className="text-3xl font-bold tracking-tight">Currency Configuration</h1>
+                <h1 className="text-3xl font-bold tracking-tight">Token Configuration</h1>
                 <p className="text-muted-foreground">
-                    Choose how you want to set up your community currency
+                    Choose how you would like to set up your token
                 </p>
             </div>
 
@@ -32,14 +32,15 @@ export default function ConfigurationPage({ alias }: { alias: string }) {
                                 <Image src="/icon/BYOC.png" alt="BYOC" width={24} height={24} />
                             </div>
                             <div>
-                                <CardTitle>Bring your own currency (BYOC)</CardTitle>
+                                <CardTitle>Bring your own token (BYOT)</CardTitle>
                                 <Badge variant="secondary" className="mt-1">ERC20 Token</Badge>
                             </div>
                         </div>
                     </CardHeader>
                     <CardContent>
                         <CardDescription className="text-sm leading-relaxed">
-                            Provide the address of your ERC20 token. It must be on the same chain as the chain on which your community was configured.
+                            Provide the address of any ERC20 token. It must be on the same
+                            chain as the chain on which your community was configured.
                         </CardDescription>
                     </CardContent>
                 </Card>
@@ -56,14 +57,14 @@ export default function ConfigurationPage({ alias }: { alias: string }) {
                                 <Image src="/icon/Create_currency.png" alt="Create Currency" width={24} height={24} />
                             </div>
                             <div>
-                                <CardTitle>Create your own currency</CardTitle>
+                                <CardTitle>Create your own token</CardTitle>
                                 <Badge variant="secondary" className="mt-1">New Token</Badge>
                             </div>
                         </div>
                     </CardHeader>
                     <CardContent>
                         <CardDescription className="text-sm leading-relaxed">
-                            Provide some basic information and get started with your very own community currency.
+                            Provide some basic information and get started with your very own community token.
                         </CardDescription>
                     </CardContent>
                 </Card>

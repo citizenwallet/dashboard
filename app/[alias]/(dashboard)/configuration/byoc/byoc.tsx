@@ -101,8 +101,8 @@ export default function BYOCForm({ config }: { config: Config }) {
         <div className="w-full h-full">
             <div className="flex items-left space-x-4">
                 <div>
-                    <h1 className="text-2xl font-bold">Bring Your Own Currency</h1>
-                    <p className="text-muted-foreground">Configure your existing ERC20 token</p>
+                    <h1 className="text-2xl font-bold">Bring your own token (BYOT)</h1>
+                    <p className="text-muted-foreground">Use an existing ERC20 token</p>
                 </div>
             </div>
 
