@@ -50,8 +50,8 @@ export function AppSidebar({
   ...props
 }: AppSidebarProps) {
 
-  const profileActive = (isEmpty(config.community.logo) && isEmpty(config.community.url));
-  const currencyActive = (isEmpty(config.community.primary_token.address) && isEmpty(config.community.profile.address));
+  const profileActive = (!isEmpty(config.community.logo) && !isEmpty(config.community.url));
+  const currencyActive = (!isEmpty(config.community.primary_token.address) && !isEmpty(config.community.profile.address));
 
   const data = {
     user: {
@@ -64,13 +64,13 @@ export function AppSidebar({
         name: 'Profile',
         url: `/${config?.community.alias}/profile`,
         icon: University,
-        nextIcon: profileActive ? CircleDashed : CircleCheck
+        nextIcon: profileActive ? CircleCheck : CircleDashed
       },
       {
         name: 'Currency',
         url: `/${config?.community.alias}/configuration`,
         icon: Settings,
-        nextIcon: currencyActive ? CircleDashed : CircleCheck
+        nextIcon: currencyActive ? CircleCheck : CircleDashed
 
       },
       {
