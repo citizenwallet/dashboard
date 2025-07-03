@@ -93,3 +93,14 @@ export const createCommunity = async (
 ): Promise<PostgrestResponse<CommunityRow>> => {
   return await client.from(TABLE_NAME).insert(community).select();
 };
+
+export const activeCommunity = async (
+  client: SupabaseClient,
+  alias: string
+): Promise<PostgrestResponse<CommunityRow>> => {
+  return await client
+    .from(TABLE_NAME)
+    .update({ active: true, updated_at: new Date() })
+    .eq('alias', alias)
+    .select();
+};
