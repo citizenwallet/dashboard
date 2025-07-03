@@ -5,8 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Progress } from "@/components/ui/progress";
 import { Separator } from '@/components/ui/separator';
-import { CommunityConfig, Config, getAccountBalance } from '@citizenwallet/sdk';
-import { formatUnits } from 'ethers';
+import { CommunityConfig, Config } from '@citizenwallet/sdk';
 import { AlertCircle, Coins, Loader2, Wallet as WalletIcon } from 'lucide-react';
 import { useEffect, useState, useTransition } from 'react';
 import QRCode from "react-qr-code";
@@ -21,6 +20,8 @@ interface CheckoutFlowProps {
     ctzn_config: Config;
     tokenName: string;
     tokenSymbol: string;
+    userAddress: string;
+    userAccountBalance: number;
 }
 
 
@@ -33,40 +34,30 @@ export function CheckoutFlow({
     address,
     ctzn_config,
     tokenName,
-    tokenSymbol
+    tokenSymbol,
+    userAddress,
+    userAccountBalance
 }:
     CheckoutFlowProps
 ) {
 
 
     const [, sessionActions] = useSession(ctzn_config);
-    const [userAddress, setUserAddress] = useState<string | null>(null);
-    const [userAccountBalance, setUserAccountBalance] = useState<number>(0);
     const [topupUrl, setTopupUrl] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
     const [onprogress, setOnprogress] = useState<number>(0);
 
 
     useEffect(() => {
-        const fetchAccountData = async () => {
-            const userAddress = await sessionActions.getAccountAddress();
-            setUserAddress(userAddress);
-
+        const createTopupUrl = async () => {
 
             const communityConfig = new CommunityConfig(ctzn_config);
-
-            if (userAddress) {
-                const balance = await getAccountBalance(communityConfig, userAddress);
-                if (balance) {
-                    setUserAccountBalance(Number(formatUnits(balance, 18)));
-                }
-            }
 
             setTopupUrl(`ethereum:0x0D9B0790E97e3426C161580dF4Ee853E4A7C4607@${communityConfig.primaryToken.chain_id}/transfer?address=${userAddress}&uint256=${option === 'byoc' ? BYOC_COST : TOKEN_PUBLISH_COST}`);
 
         }
-        fetchAccountData();
-    }, [sessionActions, option, config, ctzn_config])
+        createTopupUrl();
+    }, [option, ctzn_config, userAddress])
 
 
     const deployContract = () => {
@@ -108,8 +99,6 @@ export function CheckoutFlow({
                 const updateJson = await updateCommunityConfigAction(profileDeploy || '', paymasterDeploy || '', config);
                 console.log("updateJson--->", updateJson)
                 setOnprogress(100);
-
-
 
 
             } else if (option == 'create') {
