@@ -1,8 +1,10 @@
+import { auth } from '@/auth';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getServiceRoleClient } from '@/services/top-db';
 import { getCommunityByAlias } from '@/services/top-db/community';
-import { CommunityConfig, Config } from '@citizenwallet/sdk';
+import { CommunityConfig, Config, getAccountBalance, getTwoFAAddress } from '@citizenwallet/sdk';
+import { formatUnits } from 'ethers';
 import { Suspense } from 'react';
 import { CheckoutFlow } from './checkout-flow';
 
@@ -83,13 +85,36 @@ async function CheckoutLoader({
     ctzn_config: Config
 }) {
 
-    let tokenName = '';
-    let tokenSymbol = '';
-
-
     const communityConfig = new CommunityConfig(config);
-    tokenName = communityConfig.primaryToken.name;
-    tokenSymbol = communityConfig.primaryToken.symbol;
+    const tokenName = communityConfig.primaryToken.name;
+    const tokenSymbol = communityConfig.primaryToken.symbol;
+
+    const session = await auth();
+    if (!session) {
+        throw new Error('You are not logged in');
+    }
+
+    const { email } = session.user;
+    if (!email) {
+        throw new Error('You are not logged in');
+    }
+
+    const ctzn_communityConfig = new CommunityConfig(ctzn_config);
+
+    const accountAddress = await getTwoFAAddress({
+        community: ctzn_communityConfig,
+        source: email,
+        type: 'email'
+    });
+
+    if (!accountAddress) {
+        throw new Error('Account address not found');
+    }
+
+    const balance = await getAccountBalance(
+        ctzn_communityConfig,
+        accountAddress
+    );
 
 
     return <CheckoutFlow
@@ -99,6 +124,8 @@ async function CheckoutLoader({
         ctzn_config={ctzn_config}
         tokenName={tokenName}
         tokenSymbol={tokenSymbol}
+        userAddress={accountAddress}
+        userAccountBalance={balance ? Number(formatUnits(balance, ctzn_communityConfig.getToken().decimals)) : 0}
     />;
 }
 
