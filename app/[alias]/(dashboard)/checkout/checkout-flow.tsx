@@ -11,7 +11,6 @@ import { AlertCircle, Coins, Loader2, Wallet as WalletIcon } from 'lucide-react'
 import { useEffect, useState, useTransition } from 'react';
 import QRCode from "react-qr-code";
 import { useSession } from 'state/session/action';
-import { getTokenMetadataAction } from '../configuration/action';
 import { deployPaymasterAction, deployProfileAction, deployTokenAction, updateCommunityConfigAction } from './action';
 
 
@@ -20,13 +19,24 @@ interface CheckoutFlowProps {
     config: Config;
     address?: string;
     ctzn_config: Config;
+    tokenName: string;
+    tokenSymbol: string;
 }
 
 
 const BYOC_COST = 100;
 const TOKEN_PUBLISH_COST = 200;
 
-export function CheckoutFlow({ option, config, address, ctzn_config }: CheckoutFlowProps) {
+export function CheckoutFlow({
+    option,
+    config,
+    address,
+    ctzn_config,
+    tokenName,
+    tokenSymbol
+}:
+    CheckoutFlowProps
+) {
 
 
     const [, sessionActions] = useSession(ctzn_config);
@@ -36,8 +46,6 @@ export function CheckoutFlow({ option, config, address, ctzn_config }: CheckoutF
     const [isPending, startTransition] = useTransition();
     const [onprogress, setOnprogress] = useState<number>(0);
 
-    const [tokenName, setTokenName] = useState<string | null>(null);
-    const [tokenSymbol, setTokenSymbol] = useState<string | null>(null);
 
     useEffect(() => {
         const fetchAccountData = async () => {
@@ -60,23 +68,6 @@ export function CheckoutFlow({ option, config, address, ctzn_config }: CheckoutF
         fetchAccountData();
     }, [sessionActions, option, config, ctzn_config])
 
-    useEffect(() => {
-        const fetchTokenData = async () => {
-            if (option == 'create') {
-
-                const communityConfig = new CommunityConfig(config);
-                setTokenName(communityConfig.primaryToken.name);
-                setTokenSymbol(communityConfig.primaryToken.symbol);
-
-            } else if (option == 'byoc') {
-
-                const tokenMetadata = await getTokenMetadataAction(config, address || '');
-                setTokenName(String(tokenMetadata?.name));
-                setTokenSymbol(String(tokenMetadata?.symbol));
-            }
-        }
-        fetchTokenData();
-    }, [config, address, option])
 
     const deployContract = () => {
         startTransition(async () => {

@@ -21,7 +21,6 @@ import { Wallet } from 'ethers';
 import { ChevronsUpDown, LogOut } from 'lucide-react';
 import { useSession as useNextAuthSession } from 'next-auth/react';
 import { useRouter } from 'next/navigation';
-import { useEffect } from 'react';
 import { toast } from 'sonner';
 import { useSession } from 'state/session/action';
 

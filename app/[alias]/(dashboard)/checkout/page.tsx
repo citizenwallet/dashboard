@@ -2,7 +2,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getServiceRoleClient } from '@/services/top-db';
 import { getCommunityByAlias } from '@/services/top-db/community';
-import { Config } from '@citizenwallet/sdk';
+import { CommunityConfig, Config } from '@citizenwallet/sdk';
 import { Suspense } from 'react';
 import { CheckoutFlow } from './checkout-flow';
 
@@ -83,8 +83,23 @@ async function CheckoutLoader({
     ctzn_config: Config
 }) {
 
+    let tokenName = '';
+    let tokenSymbol = '';
 
-    return <CheckoutFlow option={option} config={config} address={address} ctzn_config={ctzn_config} />;
+
+    const communityConfig = new CommunityConfig(config);
+    tokenName = communityConfig.primaryToken.name;
+    tokenSymbol = communityConfig.primaryToken.symbol;
+
+
+    return <CheckoutFlow
+        option={option}
+        config={config}
+        address={address}
+        ctzn_config={ctzn_config}
+        tokenName={tokenName}
+        tokenSymbol={tokenSymbol}
+    />;
 }
 
 function CheckoutSkeleton() {
