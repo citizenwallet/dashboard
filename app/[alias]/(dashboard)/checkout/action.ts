@@ -4,6 +4,11 @@ import {
   getAuthUserRoleInAppAction,
   getAuthUserRoleInCommunityAction
 } from '@/app/_actions/user-actions';
+import { getServiceRoleClient } from '@/services/top-db';
+import {
+  activeCommunity,
+  updateCommunityJson
+} from '@/services/top-db/community';
 import { Config } from '@citizenwallet/sdk';
 import { ethers } from 'ethers';
 import {
@@ -196,12 +201,36 @@ export async function deployTokenAction({
   }
 }
 
+const chains = [
+  {
+    id: '100',
+    primary_account_factory: '0xBABCf159c4e3186cf48e4a48bC0AeC17CF9d90FE',
+    entrypoint_address: '0xAAEb9DC18aDadae9b3aE7ec2b47842565A81113f'
+  },
+  {
+    id: '42220',
+    primary_account_factory: '0xcd8b1B9E760148c5026Bc5B0D56a5374e301FDcA',
+    entrypoint_address: '0x66fE9c22CcA49B257dd4F00508AC90198d99Bf27'
+  },
+  {
+    id: '42161',
+    primary_account_factory: '0x0000000000000000000000000000000000000000',
+    entrypoint_address: '0x0000000000000000000000000000000000000000'
+  },
+  {
+    id: '137',
+    primary_account_factory: '0x940Cbb155161dc0C4aade27a4826a16Ed8ca0cb2',
+    entrypoint_address: '0x7079253c0358eF9Fd87E16488299Ef6e06F403B6'
+  }
+];
+
 export async function updateCommunityConfigAction(
   profileAddress: string,
   paymasterAddress: string,
-  config: Config
+  config: Config,
+  tokenAddress?: string
 ) {
-  // const client = getServiceRoleClient();
+  const client = getServiceRoleClient();
 
   const roleInCommunity = await getAuthUserRoleInCommunityAction({
     alias: config.community.alias
@@ -224,36 +253,73 @@ export async function updateCommunityConfigAction(
       profile: {
         ...config.community.profile,
         address: profileAddress
+      },
+      primary_token: {
+        ...config.community.primary_token,
+        address: tokenAddress || config.community.primary_token.address
+      },
+      primary_account_factory: {
+        ...config.community.primary_account_factory,
+        address:
+          chains.find(
+            (chain) => Number(chain.id) === config.community.profile.chain_id
+          )?.primary_account_factory || ''
       }
     },
     accounts: {
       ...config.accounts,
-      [`${config.community.profile.chain_id}:${config.community.primary_account_factory.address}`]:
+      [`${config.community.profile.chain_id}:${chains.find((chain) => Number(chain.id) === config.community.profile.chain_id)?.primary_account_factory}`]:
         {
-          ...config.accounts[
-            `${config.community.profile.chain_id}:${config.community.primary_account_factory.address}`
-          ],
-          paymaster_address: paymasterAddress
+          chain_id: config.community.profile.chain_id,
+          entrypoint_address: chains.find(
+            (chain) => Number(chain.id) === config.community.profile.chain_id
+          )?.entrypoint_address,
+          paymaster_address: paymasterAddress,
+          account_factory_address: chains.find(
+            (chain) => Number(chain.id) === config.community.profile.chain_id
+          )?.primary_account_factory,
+          paymaster_type: 'cw-safe'
         }
+    },
+    tokens: {
+      ...(tokenAddress
+        ? {
+            // remove the token address from the tokens object
+            ...Object.fromEntries(
+              Object.entries(config.tokens).filter(
+                ([key]) =>
+                  key !==
+                  `${config.community.profile.chain_id}:${ethers.ZeroAddress}`
+              )
+            ),
+
+            [`${config.community.profile.chain_id}:${tokenAddress}`]: {
+              ...config.tokens[
+                `${config.community.profile.chain_id}:${ethers.ZeroAddress}`
+              ],
+              address: tokenAddress
+            }
+          }
+        : config.tokens)
     }
-  };
+  } as Config;
 
-  return updateJson;
+  try {
+    const { data: updatedData, error } = await updateCommunityJson(
+      client,
+      config.community.alias,
+      { json: updateJson }
+    );
 
-  // try {
-  //   const { data: updatedData, error } = await updateCommunityJson(
-  //     client,
-  //     config.community.alias,
-  //     updateJson
-  //   );
+    if (error) {
+      throw new Error('Failed to update community config');
+    }
 
-  //   if (error) {
-  //     throw new Error('Failed to update community config');
-  //   }
+    await activeCommunity(client, config.community.alias);
 
-  //   return updatedData;
-  // } catch (error) {
-  //   console.error('Error updating community config:', error);
-  //   throw new Error('Failed to update community config');
-  // }
+    return updatedData;
+  } catch (error) {
+    console.error('Error updating community config:', error);
+    throw new Error('Failed to update community config');
+  }
 }

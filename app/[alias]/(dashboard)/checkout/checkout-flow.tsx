@@ -7,8 +7,10 @@ import { Progress } from "@/components/ui/progress";
 import { Separator } from '@/components/ui/separator';
 import { CommunityConfig, Config } from '@citizenwallet/sdk';
 import { AlertCircle, Coins, Loader2, Wallet as WalletIcon } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import QRCode from "react-qr-code";
+import { toast } from 'sonner';
 import { useSession } from 'state/session/action';
 import { deployPaymasterAction, deployProfileAction, deployTokenAction, updateCommunityConfigAction } from './action';
 
@@ -46,6 +48,7 @@ export function CheckoutFlow({
     const [topupUrl, setTopupUrl] = useState<string | null>(null);
     const [isPending, startTransition] = useTransition();
     const [onprogress, setOnprogress] = useState<number>(0);
+    const router = useRouter();
 
 
     useEffect(() => {
@@ -72,67 +75,71 @@ export function CheckoutFlow({
             const communityConfig = new CommunityConfig(config);
             const chainId = communityConfig.primaryToken.chain_id.toString();
 
-            if (option == 'byoc') {
+            try {
+                if (option == 'byoc') {
 
-                //- profile deploy
-                profileDeploy = await deployProfileAction({
-                    initializeArgs: [userAddress || ''],
-                    privateKey: privateKey || '',
-                    chainId: chainId
-                })
-                setOnprogress(40);
+                    //- profile deploy
+                    profileDeploy = await deployProfileAction({
+                        initializeArgs: [userAddress || ''],
+                        privateKey: privateKey || '',
+                        chainId: chainId
+                    })
+                    setOnprogress(40);
 
-                // - paymaster deploy
-                paymasterDeploy = await deployPaymasterAction({
-                    privateKey: privateKey || '',
-                    chainId: chainId,
-                    profileAddress: profileDeploy || '',
-                    tokenAddress: tokenDeploy || ''
-                })
+                    // - paymaster deploy
+                    paymasterDeploy = await deployPaymasterAction({
+                        privateKey: privateKey || '',
+                        chainId: chainId,
+                        profileAddress: profileDeploy || '',
+                        tokenAddress: tokenDeploy || ''
+                    })
 
-                setOnprogress(80);
+                    setOnprogress(80);
 
-                console.log("profileDeploy--->", profileDeploy, "paymasterDeploy--->", paymasterDeploy)
-                console.log("config--->", config)
-
-                //community config json update
-                const updateJson = await updateCommunityConfigAction(profileDeploy || '', paymasterDeploy || '', config);
-                console.log("updateJson--->", updateJson)
-                setOnprogress(100);
+                    //community config json update
+                    await updateCommunityConfigAction(profileDeploy || '', paymasterDeploy || '', config);
+                    setOnprogress(100);
 
 
-            } else if (option == 'create') {
-                // - profile deploy
-                profileDeploy = await deployProfileAction({
-                    initializeArgs: [userAddress || ''],
-                    privateKey: privateKey || '',
-                    chainId: chainId
-                })
-                setOnprogress(20);
+                } else if (option == 'create') {
+                    // - profile deploy
+                    profileDeploy = await deployProfileAction({
+                        initializeArgs: [userAddress || ''],
+                        privateKey: privateKey || '',
+                        chainId: chainId
+                    })
+                    setOnprogress(20);
 
-                // - token deploy
-                tokenDeploy = await deployTokenAction({
-                    privateKey: privateKey || '',
-                    chainId: chainId
-                })
-                setOnprogress(40);
+                    // - token deploy
+                    tokenDeploy = await deployTokenAction({
+                        privateKey: privateKey || '',
+                        chainId: chainId
+                    })
+                    setOnprogress(40);
 
-                // - paymaster deploy
-                paymasterDeploy = await deployPaymasterAction({
-                    privateKey: privateKey || '',
-                    chainId: chainId,
-                    profileAddress: profileDeploy || '',
-                    tokenAddress: tokenDeploy || ''
-                })
-                setOnprogress(80);
+                    // - paymaster deploy
+                    paymasterDeploy = await deployPaymasterAction({
+                        privateKey: privateKey || '',
+                        chainId: chainId,
+                        profileAddress: profileDeploy || '',
+                        tokenAddress: tokenDeploy || ''
+                    })
+                    setOnprogress(80);
 
+                    //community config json update
+                    await updateCommunityConfigAction(profileDeploy || '', paymasterDeploy || '', config, tokenDeploy || '');
+                    setOnprogress(100);
 
-                //community config json update
-                await new Promise(resolve => setTimeout(resolve, 10000));
-                setOnprogress(100);
+                }
 
-                console.log("profileDeploy--->", profileDeploy, "paymasterDeploy--->", paymasterDeploy)
+                toast.success('Contract deployed successfully', {
+                    description: 'Now you community is Active',
+                });
 
+                router.push(`/${config.community.alias}/treasury`);
+            } catch (error) {
+                console.error('Error deploying contract:', error);
+                toast.error('Error deploying contract');
             }
 
         });
@@ -259,7 +266,7 @@ export function CheckoutFlow({
                         <div className="flex gap-4">
                             <Button
                                 className="flex-1"
-                                disabled={userAccountBalance < (option === 'byoc' ? BYOC_COST : TOKEN_PUBLISH_COST)}
+                                // disabled={userAccountBalance < (option === 'byoc' ? BYOC_COST : TOKEN_PUBLISH_COST)}
                                 onClick={deployContract}
                             >
                                 Confirm & Publish
