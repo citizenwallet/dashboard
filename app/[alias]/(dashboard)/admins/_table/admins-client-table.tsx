@@ -2,7 +2,7 @@
 
 import { DataTable } from '@/components/ui/data-table';
 import {
-  UserT,
+  UserRow,
   UserCommunityAccessT,
   CommunityAccessRoleT
 } from '@/services/top-db/users';
@@ -12,7 +12,7 @@ import { useOptimistic, useTransition } from 'react';
 import { removeUserFromCommunityAction } from '@/app/[alias]/(dashboard)/admins/action';
 
 interface AdminsClientTableProps {
-  data: (UserCommunityAccessT & { user: UserT })[];
+  data: (UserCommunityAccessT & { user: UserRow })[];
   communityRole?: CommunityAccessRoleT;
   alias: string;
 }

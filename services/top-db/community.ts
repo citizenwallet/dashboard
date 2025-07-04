@@ -8,7 +8,7 @@ import {
   SupabaseClient
 } from '@supabase/supabase-js';
 
-export interface CommunityT {
+export interface CommunityRow {
   alias: string;
   chain_id: number;
   active: boolean;
@@ -23,7 +23,7 @@ const LIMIT = 15;
 export const getCommunitiesByChainId = async (
   client: SupabaseClient,
   chainId?: number
-): Promise<PostgrestResponse<CommunityT>> => {
+): Promise<PostgrestResponse<CommunityRow>> => {
   let query = client
     .from(TABLE_NAME)
     .select('*')
@@ -40,7 +40,7 @@ export const getCommunitiesByChainId = async (
 export const getCommunityByAlias = async (
   client: SupabaseClient,
   alias: string
-): Promise<PostgrestMaybeSingleResponse<CommunityT>> => {
+): Promise<PostgrestMaybeSingleResponse<CommunityRow>> => {
   return await client
     .from(TABLE_NAME)
     .select('*')
@@ -53,7 +53,7 @@ export const getCommunities = async (
   client: SupabaseClient,
   query?: string,
   page: number = 1
-): Promise<PostgrestResponse<CommunityT>> => {
+): Promise<PostgrestResponse<CommunityRow>> => {
   const limit = LIMIT;
   const offset = (page - 1) * limit;
 
@@ -76,8 +76,8 @@ export const getCommunities = async (
 export const updateCommunityJson = async (
   client: SupabaseClient,
   alias: string,
-  data: Pick<CommunityT, 'json'>
-): Promise<PostgrestSingleResponse<CommunityT>> => {
+  data: Pick<CommunityRow, 'json'>
+): Promise<PostgrestSingleResponse<CommunityRow>> => {
   const { json } = data;
 
   return await client
@@ -89,7 +89,18 @@ export const updateCommunityJson = async (
 
 export const createCommunity = async (
   client: SupabaseClient,
-  community: CommunityT
-): Promise<PostgrestResponse<CommunityT>> => {
+  community: CommunityRow
+): Promise<PostgrestResponse<CommunityRow>> => {
   return await client.from(TABLE_NAME).insert(community).select();
+};
+
+export const activeCommunity = async (
+  client: SupabaseClient,
+  alias: string
+): Promise<PostgrestResponse<CommunityRow>> => {
+  return await client
+    .from(TABLE_NAME)
+    .update({ active: true, updated_at: new Date() })
+    .eq('alias', alias)
+    .select();
 };

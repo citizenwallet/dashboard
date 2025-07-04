@@ -12,7 +12,7 @@ const USERS_COMMUNITY_ACCESS_TABLE_NAME = 'users_community_access';
 type UserRoleT = 'admin' | 'user'; // app level
 export type CommunityAccessRoleT = 'owner' | 'member';
 
-export interface UserT {
+export interface UserRow {
   id: string;
   email: string;
   name: string;
@@ -37,7 +37,7 @@ export const getUserByEmail = async (args: {
   email: string;
 }): Promise<
   PostgrestMaybeSingleResponse<
-    UserT & { users_community_access: UserCommunityAccessT[] }
+    UserRow & { users_community_access: UserCommunityAccessT[] }
   >
 > => {
   const { client, email } = args;
@@ -54,9 +54,9 @@ export const getUserByEmail = async (args: {
     .maybeSingle();
 };
 
-export const addUserToApp = async (args: {
+export const addUserRowoApp = async (args: {
   client: SupabaseClient;
-  data: Pick<UserT, 'email' | 'name' | 'avatar'>;
+  data: Pick<UserRow, 'email' | 'name' | 'avatar'>;
 }) => {
   const { client, data } = args;
   const { email, name, avatar } = data;
@@ -68,7 +68,7 @@ export const addUserToApp = async (args: {
     .single();
 };
 
-export const addUserToCommunity = async (args: {
+export const addUserRowoCommunity = async (args: {
   client: SupabaseClient;
   data: Pick<UserCommunityAccessT, 'user_id' | 'chain_id' | 'alias' | 'role'>;
 }) => {
@@ -110,7 +110,7 @@ export const removeUserFromCommunity = async (args: {
 export const getUsersOfCommunity = async (args: {
   alias: string;
   client: SupabaseClient;
-}): Promise<PostgrestResponse<UserCommunityAccessT & { user: UserT }>> => {
+}): Promise<PostgrestResponse<UserCommunityAccessT & { user: UserRow }>> => {
   const { alias, client } = args;
 
   return client

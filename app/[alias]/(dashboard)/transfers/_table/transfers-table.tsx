@@ -1,15 +1,13 @@
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
-import { getTransfersOfTokenAction } from '../actions';
 import UrlPagination from '@/components/custom/pagination-via-url';
-import { TransferClientTable } from './transfers-client-table';
 import { Separator } from '@/components/ui/separator';
 import { PAGE_SIZE } from '@/services/chain-db/transfers';
 import { Config } from '@citizenwallet/sdk';
+import { getTransfersOfTokenAction } from '../actions';
+import { TransferClientTable } from './transfers-client-table';
 
 interface TransferTableProps {
   query: string;
   page: number;
-  alias: string;
   from?: string;
   to?: string;
   config: Config;
@@ -18,11 +16,11 @@ interface TransferTableProps {
 export default async function TransferTable({
   query,
   page,
-  alias,
   from,
-  to
+  to,
+  config
 }: TransferTableProps) {
-  const { community: config } = await fetchCommunityByAliasAction(alias);
+
 
   const { data, count: totalCount } = await getTransfersOfTokenAction({
     config,

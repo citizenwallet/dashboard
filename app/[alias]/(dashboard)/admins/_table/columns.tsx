@@ -2,7 +2,7 @@
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 import {
-  UserT,
+  UserRow,
   UserCommunityAccessT,
   CommunityAccessRoleT
 } from '@/services/top-db/users';
@@ -32,8 +32,8 @@ interface CreateColumnsProps {
 
 export const createColumns = (
   props: CreateColumnsProps
-): ColumnDef<UserCommunityAccessT & { user: UserT }>[] => {
-  const baseColumns: ColumnDef<UserCommunityAccessT & { user: UserT }>[] = [
+): ColumnDef<UserCommunityAccessT & { user: UserRow }>[] => {
+  const baseColumns: ColumnDef<UserCommunityAccessT & { user: UserRow }>[] = [
     {
       header: 'Member',
       cell: ({ row }) => {
@@ -93,7 +93,7 @@ export const createColumns = (
     }
   ];
 
-  const ownerColumns: ColumnDef<UserCommunityAccessT & { user: UserT }>[] = [
+  const ownerColumns: ColumnDef<UserCommunityAccessT & { user: UserRow }>[] = [
     {
       id: 'remove',
       cell: function RemoveCell({ row }) {
@@ -181,7 +181,7 @@ export const createColumns = (
 };
 
 export const skeletonColumns: ColumnDef<
-  UserCommunityAccessT & { admin: UserT }
+  UserCommunityAccessT & { admin: UserRow }
 >[] = [
   {
     header: 'Member',
@@ -205,5 +205,5 @@ export const skeletonColumns: ColumnDef<
   }
 ];
 
-export const placeholderData: (UserCommunityAccessT & { admin: UserT })[] =
+export const placeholderData: (UserCommunityAccessT & { admin: UserRow })[] =
   Array(5);

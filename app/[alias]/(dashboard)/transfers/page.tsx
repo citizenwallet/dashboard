@@ -1,9 +1,10 @@
-import { Suspense } from 'react';
-import TransferTable from './_table/transfers-table';
-import { skeletonColumns, placeholderData } from './_table/columns';
-import { DataTable } from '@/components/ui/data-table';
 import { DatePickerWithPresets } from '@/components/custom/date-picker-with-presets';
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
+import { DataTable } from '@/components/ui/data-table';
+import { getServiceRoleClient } from '@/services/top-db';
+import { getCommunityByAlias } from '@/services/top-db/community';
+import { Suspense } from 'react';
+import { placeholderData, skeletonColumns } from './_table/columns';
+import TransferTable from './_table/transfers-table';
 
 export default async function Page(props: {
   params: Promise<{ alias: string }>;
@@ -16,7 +17,14 @@ export default async function Page(props: {
   }>;
 }) {
   const { alias } = await props.params;
-  const { community: config } = await fetchCommunityByAliasAction(alias);
+  const client = getServiceRoleClient();
+  const { data, error } = await getCommunityByAlias(client, alias);
+
+  if (error || !data) {
+    throw new Error('Failed to get community by alias');
+  }
+
+  const config = data.json;
 
   const {
     query: queryParam,
@@ -46,7 +54,6 @@ export default async function Page(props: {
         <TransferTable
           query={query}
           page={parseInt(page)}
-          alias={alias}
           from={from}
           to={to}
           config={config}

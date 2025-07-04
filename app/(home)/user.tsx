@@ -8,11 +8,11 @@ import {
   DropdownMenuTrigger
 } from '@/components/ui/dropdown-menu';
 import { signOutAction } from '@/app/_actions/user-actions';
-import { UserT } from '@/services/top-db/users';
+import { UserRow } from '@/services/top-db/users';
 import { Avatar, AvatarImage, AvatarFallback } from '@radix-ui/react-avatar';
 
 interface UserProps {
-  user: UserT | null;
+  user: UserRow | null;
 }
 
 export default function User(props: UserProps) {

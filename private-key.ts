@@ -1,9 +1,17 @@
-import { Wallet } from 'ethers';
 import { CommunityConfig, getAccountAddress } from '@citizenwallet/sdk';
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
+import { Wallet } from 'ethers';
+import { getServiceRoleClient } from './services/top-db';
+import { getCommunityByAlias } from './services/top-db/community';
 
 async function main() {
-  const { community: config } = await fetchCommunityByAliasAction('seldesalm');
+  const client = getServiceRoleClient();
+  const { data, error } = await getCommunityByAlias(client, 'seldesalm');
+
+  if (error || !data) {
+    throw new Error('Failed to get community by alias');
+  }
+
+  const config = data.json;
   const communityConfig = new CommunityConfig(config);
 
   const privateKey = Wallet.createRandom();

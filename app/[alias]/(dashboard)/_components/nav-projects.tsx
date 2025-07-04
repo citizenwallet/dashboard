@@ -3,8 +3,8 @@
 import {
   Collapsible,
   CollapsibleContent,
-  CollapsibleTrigger
-} from '@/components/ui/collapsible';
+  CollapsibleTrigger,
+} from "@/components/ui/collapsible";
 import {
   SidebarGroup,
   SidebarMenu,
@@ -14,13 +14,14 @@ import {
   SidebarMenuSubButton,
   SidebarMenuSubItem
 } from '@/components/ui/sidebar';
-import { ChevronRight, type LucideIcon } from 'lucide-react';
+import { ChevronRight, CircleCheck, type LucideIcon } from 'lucide-react';
 import Link from 'next/link';
 
 export function NavProjects({
   projects
 }: {
   projects: {
+    nextIcon?: LucideIcon;
     name: string;
     url: string;
     icon: LucideIcon;
@@ -34,9 +35,16 @@ export function NavProjects({
   return (
     <SidebarGroup>
       <SidebarMenu>
+
         {projects.map((item) => (
-          <Collapsible key={item.name} asChild className="group/collapsible">
+          <Collapsible
+            key={item.name}
+            asChild
+            className="group/collapsible"
+          >
+
             {item.items && item.items.length > 0 ? (
+
               <SidebarMenuItem>
                 <CollapsibleTrigger asChild>
                   <SidebarMenuButton tooltip={item.name}>
@@ -60,18 +68,29 @@ export function NavProjects({
                   </SidebarMenuSub>
                 </CollapsibleContent>
               </SidebarMenuItem>
+
             ) : (
+
               <SidebarMenuItem key={item.name}>
                 <SidebarMenuButton asChild>
                   <Link href={item.url}>
                     <item.icon />
                     <span>{item.name}</span>
+                    {item.nextIcon &&
+                      <div className="w-full flex items-end justify-end">
+                        <item.nextIcon className={`${item.nextIcon === CircleCheck ? 'text-green-500' : 'text-orange-500'}`} />
+                      </div>
+                    }
                   </Link>
                 </SidebarMenuButton>
               </SidebarMenuItem>
+
             )}
+
           </Collapsible>
         ))}
+
+
       </SidebarMenu>
     </SidebarGroup>
   );
