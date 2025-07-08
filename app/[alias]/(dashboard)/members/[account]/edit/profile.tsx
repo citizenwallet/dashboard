@@ -28,10 +28,12 @@ import {
   CommunityConfig,
   Config,
   checkUsernameAvailability,
-  waitForTxSuccess
+  waitForTxSuccess,
+  hasRole as CWCheckRoleAccess,
+  PROFILE_ADMIN_ROLE
 } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Wallet } from 'ethers';
+import { JsonRpcProvider, Wallet } from 'ethers';
 import { Save, Trash2, Upload, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -43,9 +45,9 @@ import * as z from 'zod';
 import type { Profile } from '../action';
 import {
   pinJsonToIPFSAction,
-  unpinAction,
   updateProfileImageAction
 } from '../action';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const formSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -90,6 +92,8 @@ export default function Profile({
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [, sessionActions] = useSession(config);
+  const [hasProfileAdminRole, setHasProfileAdminRole] = useState(false);
+  const [isLoadingProfileAdminRole, setIsLoadingProfileAdminRole] = useState(true);
 
 
   useEffect(() => {
@@ -125,6 +129,39 @@ export default function Profile({
     community,
     memberData?.username
   ]);
+
+  //check profile admin role
+  useEffect(() => {
+    const checkProfileAdminRole = async () => {
+      try {
+
+        const community = new CommunityConfig(config);
+        const signerAccountAddress = await sessionActions.getAccountAddress();
+
+        const tokenAddress = community.primaryToken.address;
+        const primaryRpcUrl = community.primaryRPCUrl;
+        const rpc = new JsonRpcProvider(primaryRpcUrl);
+
+        const hasRole = await CWCheckRoleAccess(
+          tokenAddress,
+          PROFILE_ADMIN_ROLE,
+          signerAccountAddress || '',
+          rpc
+        );
+
+        setHasProfileAdminRole(hasRole);
+        setIsEditing(false);
+
+      } catch (error) {
+        console.error('Error checking profile admin role:', error);
+
+      } finally {
+        setIsLoadingProfileAdminRole(false);
+      }
+    };
+
+    checkProfileAdminRole();
+  }, [config, sessionActions]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
@@ -224,17 +261,20 @@ export default function Profile({
     try {
       setIsLoading(true);
 
-      if (userData.avatarUrl) {
-        await unpinAction(userData.avatarUrl);
-      }
-
       const community = new CommunityConfig(config);
       const bundler = new BundlerService(community);
 
       const privateKey = sessionActions.storage.getKey('session_private_key');
+
+      if (!privateKey) {
+        toast.error('Please login to add a member');
+        setIsLoading(false);
+        router.push(`/${config.community.alias}/login`);
+        return;
+      }
       const signerAccountAddress = await sessionActions.getAccountAddress();
 
-      const signer = new Wallet(privateKey as string);
+      const signer = new Wallet(privateKey);
 
       const txHash = await bundler.burnProfile(
         signer,
@@ -245,6 +285,7 @@ export default function Profile({
       await waitForTxSuccess(community, txHash);
 
       await new Promise(resolve => setTimeout(resolve, 250));
+
       toast.success('Profile deleted successfully', {
         onAutoClose: () => {
           router.push(`/${config.community.alias}/members`);
@@ -286,6 +327,11 @@ export default function Profile({
       return false;
     }
   };
+
+  if (isLoadingProfileAdminRole) {
+    return <Skeleton className="h-4 w-24" />;
+  }
+
   return (
     <Card className="shadow-lg border-0">
       <CardContent className="pt-6">
@@ -389,7 +435,7 @@ export default function Profile({
       </CardContent>
 
       {/* it can access only admin and community owner  */}
-      {hasAdminRole && (
+      {hasAdminRole && hasProfileAdminRole && (
         <CardFooter className="flex justify-between pt-6">
           {isEditing && (
             <div className="flex gap-3">

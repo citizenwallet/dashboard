@@ -18,10 +18,12 @@ import {
   CommunityConfig,
   Config,
   checkUsernameAvailability,
-  waitForTxSuccess
+  waitForTxSuccess,
+  hasRole as CWCheckRoleAccess,
+  PROFILE_ADMIN_ROLE
 } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { Wallet } from 'ethers';
+import { JsonRpcProvider, Wallet } from 'ethers';
 import { Upload, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -32,6 +34,7 @@ import { useDebounce } from 'use-debounce';
 import * as z from 'zod';
 import type { Profile } from '../action';
 import { pinJsonToIPFSAction, updateProfileImageAction } from '../action';
+import { Skeleton } from '@/components/ui/skeleton';
 
 const profileFormSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -56,6 +59,8 @@ export default function Profile({
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
   const [, sessionActions] = useSession(config);
+  const [hasProfileAdminRole, setHasProfileAdminRole] = useState(false);
+  const [isLoadingProfileAdminRole, setIsLoadingProfileAdminRole] = useState(true);
 
 
   const form = useForm<z.infer<typeof profileFormSchema>>({
@@ -92,6 +97,38 @@ export default function Profile({
       checkUsername();
     }
   }, [debouncedUsername, usernameEdit, community]);
+
+  //check profile admin role
+  useEffect(() => {
+    const checkProfileAdminRole = async () => {
+      try {
+
+        const community = new CommunityConfig(config);
+        const signerAccountAddress = await sessionActions.getAccountAddress();
+
+        const tokenAddress = community.primaryToken.address;
+        const primaryRpcUrl = community.primaryRPCUrl;
+        const rpc = new JsonRpcProvider(primaryRpcUrl);
+
+        const hasRole = await CWCheckRoleAccess(
+          tokenAddress,
+          PROFILE_ADMIN_ROLE,
+          signerAccountAddress || '',
+          rpc
+        );
+
+        setHasProfileAdminRole(hasRole);
+
+      } catch (error) {
+        console.error('Error checking profile admin role:', error);
+
+      } finally {
+        setIsLoadingProfileAdminRole(false);
+      }
+    };
+
+    checkProfileAdminRole();
+  }, [config, sessionActions]);
 
   const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
@@ -182,6 +219,10 @@ export default function Profile({
       setIsLoading(false);
     }
   };
+
+  if (isLoadingProfileAdminRole) {
+    return <Skeleton className="h-4 w-24" />;
+  }
 
   return (
     <Card className="shadow-lg border-0">
@@ -275,25 +316,27 @@ export default function Profile({
           </form>
         </Form>
       </CardContent>
-      <CardFooter className="flex justify-between pt-6">
-        <Button
-          variant="destructive"
-          className="gap-2"
-          onClick={() => {
-            router.push(`/${config.community.alias}/members`);
-          }}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="outline"
-          className="gap-2"
-          disabled={!isAvailable || isLoading}
-          onClick={form.handleSubmit(onSubmit)}
-        >
-          {isLoading ? 'Saving...' : 'Add Member'}
-        </Button>
-      </CardFooter>
+      {hasProfileAdminRole && (
+        <CardFooter className="flex justify-between pt-6">
+          <Button
+            variant="destructive"
+            className="gap-2"
+            onClick={() => {
+              router.push(`/${config.community.alias}/members`);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="outline"
+            className="gap-2"
+            disabled={!isAvailable || isLoading}
+            onClick={form.handleSubmit(onSubmit)}
+          >
+            {isLoading ? 'Saving...' : 'Add Member'}
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 }
