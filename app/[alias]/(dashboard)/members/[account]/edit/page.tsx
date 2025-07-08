@@ -1,7 +1,3 @@
-import {
-  getAuthUserRoleInAppAction,
-  getAuthUserRoleInCommunityAction
-} from '@/app/_actions/user-actions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getServiceRoleClient } from '@/services/chain-db';
 import { getMemberByAccount } from '@/services/chain-db/members';
@@ -38,7 +34,7 @@ export default async function page(props: PageProps) {
             key={account + alias}
             fallback={<Skeleton className="h-[125px] w-full rounded-xl" />}
           >
-            <AsyncPage config={config} account={account} alias={alias} />
+            <AsyncPage config={config} account={account} />
           </Suspense>
         </div>
       </div>
@@ -48,12 +44,10 @@ export default async function page(props: PageProps) {
 
 async function AsyncPage({
   config,
-  account,
-  alias
+  account
 }: {
   config: Config;
   account: string;
-  alias: string;
 }) {
   const supabase = getServiceRoleClient(config.community.profile.chain_id);
   const profileContract = config.community.profile.address;
@@ -66,15 +60,7 @@ async function AsyncPage({
     return <div>Member not found</div>;
   }
 
-  //check admin role
-  const roleInApp = await getAuthUserRoleInAppAction();
-  const roleResult = await getAuthUserRoleInCommunityAction({ alias });
-  let hasAdminRole = false;
-
-  if (roleInApp == 'admin' || roleResult == 'owner') {
-    hasAdminRole = true;
-  }
   return (
-    <Profile memberData={data} hasAdminRole={hasAdminRole} config={config} />
+    <Profile memberData={data} config={config} />
   );
 }

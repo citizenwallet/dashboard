@@ -57,16 +57,14 @@ const formSchema = z.object({
 
 export default function Profile({
   memberData,
-  hasAdminRole,
   config
 }: {
   memberData?: MemberT;
-  hasAdminRole: boolean;
   config: Config;
 }) {
 
   const community = useMemo(() => new CommunityConfig(config), [config]);
-  const [isEditing, setIsEditing] = useState(hasAdminRole);
+  const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -434,8 +432,8 @@ export default function Profile({
         </Form>
       </CardContent>
 
-      {/* it can access only admin and community owner  */}
-      {hasAdminRole && hasProfileAdminRole && (
+      {/* it can access only profile admin role  */}
+      {hasProfileAdminRole && (
         <CardFooter className="flex justify-between pt-6">
           {isEditing && (
             <div className="flex gap-3">
