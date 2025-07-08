@@ -1,5 +1,9 @@
 'use server';
 
+import {
+  getAuthUserRoleInAppAction,
+  getAuthUserRoleInCommunityAction
+} from '@/app/_actions/user-actions';
 import { getServiceRoleClient } from '@/services/chain-db';
 import { MemberT } from '@/services/chain-db/members';
 import {
@@ -23,6 +27,16 @@ export const grantRoleAction = async (args: {
   account: string;
 }) => {
   const { config, account } = args;
+
+  const roleInApp = await getAuthUserRoleInAppAction();
+  const roleResult = await getAuthUserRoleInCommunityAction({
+    alias: config.community.alias
+  });
+
+  if (roleInApp != 'admin' && roleResult != 'owner') {
+    throw new Error('You are not authorized to grant role');
+  }
+
   const community = new CommunityConfig(config);
   const supabase = getServiceRoleClient(community.primaryToken.chain_id);
 
@@ -45,6 +59,16 @@ export const revokeRoleAction = async (args: {
   account: string;
 }) => {
   const { config, account } = args;
+
+  const roleInApp = await getAuthUserRoleInAppAction();
+  const roleResult = await getAuthUserRoleInCommunityAction({
+    alias: config.community.alias
+  });
+
+  if (roleInApp != 'admin' && roleResult != 'owner') {
+    throw new Error('You are not authorized to revoke role');
+  }
+
   const community = new CommunityConfig(config);
 
   const supabase = getServiceRoleClient(community.primaryToken.chain_id);
