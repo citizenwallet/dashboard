@@ -31,7 +31,7 @@ import { useSession } from 'state/session/action';
 import { useDebounce } from 'use-debounce';
 import * as z from 'zod';
 import type { Profile } from '../action';
-import { pinJsonToIPFSAction, updateProfileAction, updateProfileImageAction } from '../action';
+import { pinJsonToIPFSAction, updateProfileImageAction } from '../action';
 
 const profileFormSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -147,9 +147,15 @@ export default function Profile({
       const profileCid = result.IpfsHash;
 
       const privateKey = sessionActions.storage.getKey('session_private_key');
+      if (!privateKey) {
+        toast.error('Please login to add a member');
+        setIsLoading(false);
+        router.push(`/${config.community.alias}/login`);
+        return;
+      }
       const signerAccountAddress = await sessionActions.getAccountAddress();
 
-      const signer = new Wallet(privateKey as string);
+      const signer = new Wallet(privateKey);
 
       const bundler = new BundlerService(community);
 
@@ -161,16 +167,9 @@ export default function Profile({
         profileCid
       );
 
-      const isSuccess = await waitForTxSuccess(community, txHash);
+      await waitForTxSuccess(community, txHash);
 
-      if (isSuccess) {
-        await updateProfileAction(
-          profile,
-          config.community.alias,
-          config,
-          profile?.account || ''
-        );
-      }
+      await new Promise(resolve => setTimeout(resolve, 250));
 
       toast.success('Profile added successfully');
       router.push(`/${config.community.alias}/members`);

@@ -25,10 +25,11 @@ import { ColumnDef } from '@tanstack/react-table';
 import { ethers, JsonRpcProvider, Wallet } from 'ethers';
 import { Check, Copy, Trash, X } from 'lucide-react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { deleteProfileAction, unpinAction } from '../[account]/action';
 import { useSession } from 'state/session/action';
+import { unpinAction } from '../[account]/action';
 
 
 const IDRow = ({ account }: { account: string }) => {
@@ -234,7 +235,7 @@ export const createColumns = (
         const [isDialogOpen, setIsDialogOpen] = useState(false);
         const [isPending, setIsPending] = useState(false);
         const [, sessionActions] = useSession(config);
-
+        const router = useRouter();
 
         const { image, account, username } = row.original;
         const isAnonymous = username?.includes('anonymous');
@@ -259,6 +260,12 @@ export const createColumns = (
             const bundler = new BundlerService(community);
 
             const privateKey = sessionActions.storage.getKey('session_private_key');
+            if (!privateKey) {
+              toast.error('Please login to remove a member');
+              setIsPending(false);
+              router.push(`/${config.community.alias}/login`);
+              return;
+            }
             const signerAccountAddress = await sessionActions.getAccountAddress();
 
             const signer = new Wallet(privateKey as string);
@@ -269,17 +276,12 @@ export const createColumns = (
               account
             );
 
-            const isSuccess = await waitForTxSuccess(community, txHash);
+            await waitForTxSuccess(community, txHash);
 
-            if (isSuccess) {
-              await deleteProfileAction(
-                config.community.alias,
-                config,
-                account
-              );
-              toast.success('Member removed successfully');
+            await new Promise(resolve => setTimeout(resolve, 250));
 
-            }
+            toast.success('Member removed successfully');
+            router.refresh();
 
             handleCloseDialog();
           } catch (error) {
