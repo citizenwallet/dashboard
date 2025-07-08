@@ -1,8 +1,4 @@
 import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
-import {
-  getAuthUserRoleInAppAction,
-  getAuthUserRoleInCommunityAction
-} from '@/app/_actions/user-actions';
 import { DataTable } from '@/components/ui/data-table';
 import { getServiceRoleClient } from '@/services/chain-db';
 import {
@@ -35,7 +31,7 @@ export default async function page(props: RolePageProps) {
       </div>
 
       <Suspense fallback={<Fallback />}>
-        <PageLoader config={config} page={page} alias={alias} />
+        <PageLoader config={config} page={page} />
       </Suspense>
     </div>
   );
@@ -43,12 +39,10 @@ export default async function page(props: RolePageProps) {
 
 async function PageLoader({
   config,
-  page,
-  alias
+  page
 }: {
   config: Config;
   page?: string;
-  alias: string;
 }) {
   const supabase = getServiceRoleClient(config.community.profile.chain_id);
   const members = await getAllMembers({
@@ -62,14 +56,6 @@ async function PageLoader({
     page: parseInt(page || '1')
   });
 
-  //check admin role
-  const roleInApp = await getAuthUserRoleInAppAction();
-  const roleResult = await getAuthUserRoleInCommunityAction({ alias });
-  let hasAdminRole = false;
-
-  if (roleInApp == 'admin' || roleResult == 'owner') {
-    hasAdminRole = true;
-  }
 
   const filteredMembers = members.data?.filter((member) => {
     return member.username.toLowerCase() !== 'anonymous';
@@ -82,7 +68,6 @@ async function PageLoader({
       minterMembers={minterMembers.data as MinterMembers[] | null}
       count={minterMembers.count || 0}
       config={config}
-      hasAdminRole={hasAdminRole}
     />
 
   );

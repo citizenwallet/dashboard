@@ -58,14 +58,12 @@ export default function RolePage({
   members,
   minterMembers,
   count,
-  config,
-  hasAdminRole
+  config
 }: {
   members: MemberT[];
   minterMembers: MinterMembers[] | null;
   count: number;
   config: Config;
-  hasAdminRole: boolean;
 }) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -194,7 +192,7 @@ export default function RolePage({
   };
 
   const handleGrantAccess = () => {
-    if (!hasAdminRole) {
+    if (!hasMinterRole) {
       toast.error('You do not have permission to revoke access.');
       return;
     }
@@ -217,7 +215,7 @@ export default function RolePage({
 
   return (
     <>
-      {hasAdminRole && hasMinterRole && (
+      {hasMinterRole && (
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <div className="flex justify-start mb-4">
@@ -429,7 +427,7 @@ export default function RolePage({
                       };
 
                       const revokeAccess = async (account: string) => {
-                        if (!hasAdminRole) {
+                        if (!hasMinterRole) {
                           toast.error(
                             'You do not have permission to revoke access.'
                           );
