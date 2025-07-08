@@ -236,7 +236,8 @@ export const createColumns = (
         const [, sessionActions] = useSession(config);
 
 
-        const { image, account } = row.original;
+        const { image, account, username } = row.original;
+        const isAnonymous = username?.includes('anonymous');
 
         const handleOpenDialog = () => {
           setIsDialogOpen(true);
@@ -294,43 +295,47 @@ export const createColumns = (
 
         return (
           <>
-            <div className="flex items-center gap-2">
-              <Button
-                variant="outline"
-                className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                disabled={isPending}
-                onClick={handleOpenDialog}
-              >
-                <Trash size={16} />
-                Remove
-              </Button>
-            </div>
-
-            <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-              <DialogContent className="sm:max-w-md">
-                <DialogHeader>
-                  <DialogTitle>Remove Member</DialogTitle>
-                  <DialogDescription>
-                    Are you sure you want to remove this member?
-                  </DialogDescription>
-                </DialogHeader>
-                <DialogFooter className="sm:justify-start gap-2">
+            {!isAnonymous && (
+              <>
+                <div className="flex items-center gap-2">
                   <Button
+                    variant="outline"
+                    className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
                     disabled={isPending}
-                    onClick={onRemoveMember}
-                    type="button"
-                    variant="destructive"
+                    onClick={handleOpenDialog}
                   >
-                    {isPending ? 'Removing...' : 'Remove'}
+                    <Trash size={16} />
+                    Remove
                   </Button>
-                  <DialogClose asChild>
-                    <Button type="button" variant="outline" disabled={isPending}>
-                      Cancel
-                    </Button>
-                  </DialogClose>
-                </DialogFooter>
-              </DialogContent>
-            </Dialog>
+                </div>
+
+                <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+                  <DialogContent className="sm:max-w-md">
+                    <DialogHeader>
+                      <DialogTitle>Remove Member</DialogTitle>
+                      <DialogDescription>
+                        Are you sure you want to remove this member?
+                      </DialogDescription>
+                    </DialogHeader>
+                    <DialogFooter className="sm:justify-start gap-2">
+                      <Button
+                        disabled={isPending}
+                        onClick={onRemoveMember}
+                        type="button"
+                        variant="destructive"
+                      >
+                        {isPending ? 'Removing...' : 'Remove'}
+                      </Button>
+                      <DialogClose asChild>
+                        <Button type="button" variant="outline" disabled={isPending}>
+                          Cancel
+                        </Button>
+                      </DialogClose>
+                    </DialogFooter>
+                  </DialogContent>
+                </Dialog>
+              </>
+            )}
           </>
         );
       }
