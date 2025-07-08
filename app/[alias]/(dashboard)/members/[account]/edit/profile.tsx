@@ -31,23 +31,21 @@ import {
   waitForTxSuccess
 } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Wallet } from 'ethers';
 import { Save, Trash2, Upload, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { useSession } from 'state/session/action';
 import { useDebounce } from 'use-debounce';
 import * as z from 'zod';
 import type { Profile } from '../action';
 import {
-  deleteProfileAction,
   pinJsonToIPFSAction,
   unpinAction,
-  updateProfileAction,
   updateProfileImageAction
 } from '../action';
-import { useSession } from 'state/session/action';
-import { Wallet } from 'ethers';
 
 const formSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -181,10 +179,16 @@ export default function Profile({
 
 
       const privateKey = sessionActions.storage.getKey('session_private_key');
+      if (!privateKey) {
+        toast.error('Please login to add a member');
+        setIsLoading(false);
+        router.push(`/${config.community.alias}/login`);
+        return;
+      }
       const signerAccountAddress = await sessionActions.getAccountAddress();
 
 
-      const signer = new Wallet(privateKey as string);
+      const signer = new Wallet(privateKey);
 
       const bundler = new BundlerService(community);
 
@@ -196,16 +200,9 @@ export default function Profile({
         profileCid
       );
 
-      const isSuccess = await waitForTxSuccess(community, txHash);
+      await waitForTxSuccess(community, txHash);
 
-      if (isSuccess) {
-        await updateProfileAction(
-          profile,
-          config.community.alias,
-          config,
-          memberData?.account || ''
-        );
-      }
+      await new Promise(resolve => setTimeout(resolve, 250));
 
       toast.success('Profile updated successfully', {
         onAutoClose: () => {
@@ -245,21 +242,15 @@ export default function Profile({
         memberData?.account || ''
       );
 
-      const isSuccess = await waitForTxSuccess(community, txHash);
+      await waitForTxSuccess(community, txHash);
 
-      if (isSuccess) {
-        await deleteProfileAction(
-          config.community.alias,
-          config,
-          memberData?.account || ''
-        );
+      await new Promise(resolve => setTimeout(resolve, 250));
+      toast.success('Profile deleted successfully', {
+        onAutoClose: () => {
+          router.push(`/${config.community.alias}/members`);
+        }
+      });
 
-        toast.success('Profile deleted successfully', {
-          onAutoClose: () => {
-            router.push(`/${config.community.alias}/members`);
-          }
-        });
-      }
 
     } catch (error) {
       console.error('Error deleting profile:', error);
