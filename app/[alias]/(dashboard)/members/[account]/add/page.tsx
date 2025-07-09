@@ -1,6 +1,13 @@
+import { auth } from '@/auth';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getCommunity } from '@/services/cw';
-import { Config } from '@citizenwallet/sdk';
+import {
+  CommunityConfig,
+  Config,
+  hasRole as CWCheckRoleAccess,
+  PROFILE_ADMIN_ROLE
+} from '@citizenwallet/sdk';
+import { JsonRpcProvider } from 'ethers';
 import { Suspense } from 'react';
 import Profile from './profile';
 
@@ -47,5 +54,24 @@ async function AsyncPage({
   config: Config;
   account: string;
 }) {
-  return <Profile config={config} account={account} />;
+
+  const session = await auth();
+  const community = new CommunityConfig(config);
+  const tokenAddress = community.primaryToken.address;
+  const primaryRpcUrl = community.primaryRPCUrl;
+  const rpc = new JsonRpcProvider(primaryRpcUrl);
+  let hasRole = false;
+
+  try {
+    hasRole = await CWCheckRoleAccess(
+      tokenAddress,
+      PROFILE_ADMIN_ROLE,
+      session?.user?.address || '',
+      rpc
+    );
+  } catch (error) {
+    console.error(error);
+  }
+
+  return <Profile config={config} account={account} hasProfileAdminRole={hasRole} />;
 }

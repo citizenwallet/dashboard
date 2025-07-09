@@ -1,8 +1,5 @@
 import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
-import {
-  getAuthUserRoleInAppAction,
-  getAuthUserRoleInCommunityAction
-} from '@/app/_actions/user-actions';
+import { auth } from '@/auth';
 import { DataTable } from '@/components/ui/data-table';
 import { getServiceRoleClient } from '@/services/chain-db';
 import {
@@ -10,9 +7,18 @@ import {
   getMinterMembers,
   MemberT
 } from '@/services/chain-db/members';
-import { Config } from '@citizenwallet/sdk';
+import {
+  CommunityConfig,
+  Config,
+  hasRole as CWCheckRoleAccess,
+  MINTER_ROLE
+} from '@citizenwallet/sdk';
+import { JsonRpcProvider } from 'ethers';
 import { Suspense } from 'react';
-import { placeholderData, skeletonColumns } from './_table/columns';
+import {
+  placeholderData,
+  skeletonColumns
+} from './_table/columns';
 import { MinterMembers } from './action';
 import RolePage from './RolePage';
 
@@ -35,7 +41,7 @@ export default async function page(props: RolePageProps) {
       </div>
 
       <Suspense fallback={<Fallback />}>
-        <PageLoader config={config} page={page} alias={alias} />
+        <PageLoader config={config} page={page} />
       </Suspense>
     </div>
   );
@@ -43,12 +49,10 @@ export default async function page(props: RolePageProps) {
 
 async function PageLoader({
   config,
-  page,
-  alias
+  page
 }: {
   config: Config;
   page?: string;
-  alias: string;
 }) {
   const supabase = getServiceRoleClient(config.community.profile.chain_id);
   const members = await getAllMembers({
@@ -62,18 +66,29 @@ async function PageLoader({
     page: parseInt(page || '1')
   });
 
-  //check admin role
-  const roleInApp = await getAuthUserRoleInAppAction();
-  const roleResult = await getAuthUserRoleInCommunityAction({ alias });
-  let hasAdminRole = false;
-
-  if (roleInApp == 'admin' || roleResult == 'owner') {
-    hasAdminRole = true;
-  }
 
   const filteredMembers = members.data?.filter((member) => {
     return member.username.toLowerCase() !== 'anonymous';
   });
+
+
+  const session = await auth();
+  const community = new CommunityConfig(config);
+  const tokenAddress = community.primaryToken.address;
+  const primaryRpcUrl = community.primaryRPCUrl;
+  const rpc = new JsonRpcProvider(primaryRpcUrl);
+  let hasRole = false;
+
+  try {
+    hasRole = await CWCheckRoleAccess(
+      tokenAddress,
+      MINTER_ROLE,
+      session?.user?.address || '',
+      rpc
+    );
+  } catch (error) {
+    console.error(error);
+  }
 
   return (
 
@@ -82,7 +97,7 @@ async function PageLoader({
       minterMembers={minterMembers.data as MinterMembers[] | null}
       count={minterMembers.count || 0}
       config={config}
-      hasAdminRole={hasAdminRole}
+      hasMinterRole={hasRole}
     />
 
   );

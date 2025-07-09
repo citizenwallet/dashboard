@@ -8,12 +8,13 @@ import { createColumns } from './columns';
 interface MembersClientTableProps {
   data: MemberT[];
   config: Config;
+  hasProfileAdminRole: boolean;
 }
 
-export function MembersClientTable({ data, config }: MembersClientTableProps) {
+export function MembersClientTable({ data, config, hasProfileAdminRole }: MembersClientTableProps) {
   const communityConfig = new CommunityConfig(config);
 
-  const columns = createColumns(communityConfig, config);
+  const columns = createColumns(communityConfig, config, hasProfileAdminRole);
 
   return <DataTable columns={columns} data={data} />;
 }

@@ -24,22 +24,25 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { MemberT } from '@/services/chain-db/members';
 import {
+  BundlerService,
   CommunityConfig,
   Config,
-  checkUsernameAvailability
+  checkUsernameAvailability,
+  waitForTxSuccess
 } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
+import { Wallet } from 'ethers';
 import { Save, Trash2, Upload, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
+import { useSession } from 'state/session/action';
 import { useDebounce } from 'use-debounce';
 import * as z from 'zod';
 import type { Profile } from '../action';
 import {
-  deleteProfileAction,
-  updateProfileAction,
+  pinJsonToIPFSAction,
   updateProfileImageAction
 } from '../action';
 
@@ -51,15 +54,16 @@ const formSchema = z.object({
 
 export default function Profile({
   memberData,
-  hasAdminRole,
-  config
+  config,
+  hasProfileAdminRole
 }: {
   memberData?: MemberT;
-  hasAdminRole: boolean;
   config: Config;
+  hasProfileAdminRole: boolean;
 }) {
+
   const community = useMemo(() => new CommunityConfig(config), [config]);
-  const [isEditing, setIsEditing] = useState(hasAdminRole);
+  const [isEditing, setIsEditing] = useState(false);
   const router = useRouter();
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -84,6 +88,8 @@ export default function Profile({
   const [debouncedUsername] = useDebounce(form.watch('username'), 300);
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+  const [, sessionActions] = useSession(config);
+
 
   useEffect(() => {
     if (debouncedUsername && usernameEdit && isEditing) {
@@ -118,6 +124,7 @@ export default function Profile({
     community,
     memberData?.username
   ]);
+
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
@@ -166,7 +173,36 @@ export default function Profile({
         username: values.username || ''
       };
 
-      await updateProfileAction(profile, config.community.alias, config);
+
+      const result = await pinJsonToIPFSAction(profile);
+      const profileCid = result.IpfsHash;
+
+
+      const privateKey = sessionActions.storage.getKey('session_private_key');
+      if (!privateKey) {
+        toast.error('Please login to add a member');
+        setIsLoading(false);
+        router.push(`/${config.community.alias}/login`);
+        return;
+      }
+      const signerAccountAddress = await sessionActions.getAccountAddress();
+
+
+      const signer = new Wallet(privateKey);
+
+      const bundler = new BundlerService(community);
+
+      const txHash = await bundler.setProfile(
+        signer,
+        signerAccountAddress || '',
+        memberData?.account || '',
+        values.username || '',
+        profileCid
+      );
+
+      await waitForTxSuccess(community, txHash);
+
+      await new Promise(resolve => setTimeout(resolve, 250));
 
       toast.success('Profile updated successfully', {
         onAutoClose: () => {
@@ -174,6 +210,7 @@ export default function Profile({
         }
       });
       setIsEditing(false);
+
     } catch (error) {
       console.error('Error updating profile:', error);
       toast.error('Error updating profile');
@@ -186,18 +223,39 @@ export default function Profile({
   const handleDelete = async () => {
     try {
       setIsLoading(true);
-      await deleteProfileAction(
-        userData.avatarUrl || '',
-        config.community.alias,
-        config,
+
+      const community = new CommunityConfig(config);
+      const bundler = new BundlerService(community);
+
+      const privateKey = sessionActions.storage.getKey('session_private_key');
+
+      if (!privateKey) {
+        toast.error('Please login to add a member');
+        setIsLoading(false);
+        router.push(`/${config.community.alias}/login`);
+        return;
+      }
+      const signerAccountAddress = await sessionActions.getAccountAddress();
+
+      const signer = new Wallet(privateKey);
+
+      const txHash = await bundler.burnProfile(
+        signer,
+        signerAccountAddress || '',
         memberData?.account || ''
       );
+
+      await waitForTxSuccess(community, txHash);
+
+      await new Promise(resolve => setTimeout(resolve, 250));
 
       toast.success('Profile deleted successfully', {
         onAutoClose: () => {
           router.push(`/${config.community.alias}/members`);
         }
       });
+
+
     } catch (error) {
       console.error('Error deleting profile:', error);
       toast.error('Error deleting profile');
@@ -232,6 +290,8 @@ export default function Profile({
       return false;
     }
   };
+
+
   return (
     <Card className="shadow-lg border-0">
       <CardContent className="pt-6">
@@ -334,8 +394,8 @@ export default function Profile({
         </Form>
       </CardContent>
 
-      {/* it can access only admin and community owner  */}
-      {hasAdminRole && (
+      {/* it can access only profile admin role  */}
+      {hasProfileAdminRole && (
         <CardFooter className="flex justify-between pt-6">
           {isEditing && (
             <div className="flex gap-3">

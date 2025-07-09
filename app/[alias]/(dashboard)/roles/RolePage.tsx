@@ -30,7 +30,14 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { cn, formatAddress } from '@/lib/utils';
 import { MemberT } from '@/services/chain-db/members';
-import { Config } from '@citizenwallet/sdk';
+import {
+  BundlerService,
+  CommunityConfig,
+  Config,
+  MINTER_ROLE,
+  waitForTxSuccess
+} from '@citizenwallet/sdk';
+import { Wallet } from 'ethers';
 import {
   Check,
   ChevronsUpDown,
@@ -39,8 +46,10 @@ import {
   Plus,
   Trash
 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useCallback, useRef, useState } from 'react';
 import { toast } from 'sonner';
+import { useSession } from 'state/session/action';
 import { grantRoleAction, MinterMembers, revokeRoleAction } from './action';
 
 export default function RolePage({
@@ -48,13 +57,13 @@ export default function RolePage({
   minterMembers,
   count,
   config,
-  hasAdminRole
+  hasMinterRole
 }: {
   members: MemberT[];
   minterMembers: MinterMembers[] | null;
   count: number;
   config: Config;
-  hasAdminRole: boolean;
+  hasMinterRole: boolean;
 }) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -62,8 +71,12 @@ export default function RolePage({
 
   const [open, setOpen] = useState(false);
   const [memberAccount, setMemberAccount] = useState('');
+  const [, sessionActions] = useSession(config);
+  const router = useRouter();
+
 
   const totalPages = Math.ceil(Number(count) / 25);
+
 
   const IDRow = ({ account }: { account: string }) => {
     const [isCopied, setIsCopied] = useState(false);
@@ -97,20 +110,54 @@ export default function RolePage({
   };
 
   const grantAccess = async () => {
-    setIsLoading(true);
-    const res = await grantRoleAction({ config, account: memberAccount });
+    try {
+      setIsLoading(true);
+      const community = new CommunityConfig(config);
+      const bundler = new BundlerService(community);
 
-    if (res.success) {
-      toast.success('Access granted successfully.');
-    } else {
+      const tokenAddress = community.primaryToken.address;
+
+      const privateKey = sessionActions.storage.getKey('session_private_key');
+      if (!privateKey) {
+        toast.error('Please login to add a member');
+        setIsLoading(false);
+        router.push(`/${config.community.alias}/login`);
+        return;
+      }
+      const signerAccountAddress = await sessionActions.getAccountAddress();
+
+      const signer = new Wallet(privateKey);
+
+      const hash = await bundler.grantRole(
+        signer,
+        tokenAddress,
+        signerAccountAddress || '',
+        MINTER_ROLE,
+        memberAccount
+      );
+      const isSuccess = await waitForTxSuccess(community, hash);
+
+      if (isSuccess) {
+        await grantRoleAction({ config, account: memberAccount });
+        toast.success('Access granted successfully.');
+      } else {
+        toast.error('Failed to grant access.');
+      }
+
+    } catch (error) {
+      console.error(error);
       toast.error('Failed to grant access.');
+    } finally {
+
+      setIsLoading(false);
+      setIsAddDialogOpen(false);
     }
-    setIsLoading(false);
-    setIsAddDialogOpen(false);
+
+
   };
 
   const handleGrantAccess = () => {
-    if (!hasAdminRole) {
+    if (!hasMinterRole) {
       toast.error('You do not have permission to revoke access.');
       return;
     }
@@ -126,9 +173,11 @@ export default function RolePage({
     }
   }, []);
 
+
+
   return (
     <>
-      {hasAdminRole && (
+      {hasMinterRole && (
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <div className="flex justify-start mb-4">
@@ -340,37 +389,69 @@ export default function RolePage({
                       };
 
                       const revokeAccess = async (account: string) => {
-                        if (!hasAdminRole) {
+                        if (!hasMinterRole) {
                           toast.error(
                             'You do not have permission to revoke access.'
                           );
                           return;
                         }
                         setIsPending(true);
-                        const res = await revokeRoleAction({
-                          config,
-                          account: account
-                        });
-                        if (res.success) {
+
+                        const community = new CommunityConfig(config);
+                        const bundler = new BundlerService(community);
+                        const tokenAddress = community.primaryToken.address;
+
+                        const privateKey = sessionActions.storage.getKey('session_private_key');
+                        if (!privateKey) {
+                          toast.error('Please login to add a member');
+                          setIsLoading(false);
+                          router.push(`/${config.community.alias}/login`);
+                          return;
+                        }
+                        const signerAccountAddress = await sessionActions.getAccountAddress();
+
+                        const signer = new Wallet(privateKey);
+
+
+                        const hash = await bundler.revokeRole(
+                          signer,
+                          tokenAddress,
+                          signerAccountAddress || '',
+                          MINTER_ROLE,
+                          account
+                        );
+                        const isSuccess = await waitForTxSuccess(community, hash);
+
+                        if (isSuccess) {
+                          await revokeRoleAction({
+                            config,
+                            account: account
+                          });
+
                           toast.success('Access revoked successfully.');
                         } else {
                           toast.error('Failed to revoke access.');
                         }
+
+
                         setIsPending(false);
                         setIsDialogOpen(false);
                       };
+
                       return (
                         <>
                           <div className="flex items-center gap-2">
-                            <Button
-                              variant="outline"
-                              className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
-                              disabled={isPending}
-                              onClick={handleOpenDialog}
-                            >
-                              <Trash size={16} />
-                              Revoke Access
-                            </Button>
+                            {hasMinterRole && (
+                              <Button
+                                variant="outline"
+                                className="border-red-500 text-red-500 hover:bg-red-500 hover:text-white"
+                                disabled={isPending}
+                                onClick={handleOpenDialog}
+                              >
+                                <Trash size={16} />
+                                Revoke Access
+                              </Button>
+                            )}
                           </div>
 
                           <Dialog

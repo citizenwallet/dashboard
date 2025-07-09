@@ -1,12 +1,15 @@
-import {
-  getAuthUserRoleInAppAction,
-  getAuthUserRoleInCommunityAction
-} from '@/app/_actions/user-actions';
+import { auth } from '@/auth';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getServiceRoleClient } from '@/services/chain-db';
 import { getMemberByAccount } from '@/services/chain-db/members';
 import { getCommunity } from '@/services/cw';
-import { Config } from '@citizenwallet/sdk';
+import {
+  CommunityConfig,
+  Config,
+  hasRole as CWCheckRoleAccess,
+  PROFILE_ADMIN_ROLE
+} from '@citizenwallet/sdk';
+import { JsonRpcProvider } from 'ethers';
 import { Suspense } from 'react';
 import Profile from './profile';
 
@@ -38,7 +41,7 @@ export default async function page(props: PageProps) {
             key={account + alias}
             fallback={<Skeleton className="h-[125px] w-full rounded-xl" />}
           >
-            <AsyncPage config={config} account={account} alias={alias} />
+            <AsyncPage config={config} account={account} />
           </Suspense>
         </div>
       </div>
@@ -48,12 +51,10 @@ export default async function page(props: PageProps) {
 
 async function AsyncPage({
   config,
-  account,
-  alias
+  account
 }: {
   config: Config;
   account: string;
-  alias: string;
 }) {
   const supabase = getServiceRoleClient(config.community.profile.chain_id);
   const profileContract = config.community.profile.address;
@@ -66,15 +67,26 @@ async function AsyncPage({
     return <div>Member not found</div>;
   }
 
-  //check admin role
-  const roleInApp = await getAuthUserRoleInAppAction();
-  const roleResult = await getAuthUserRoleInCommunityAction({ alias });
-  let hasAdminRole = false;
 
-  if (roleInApp == 'admin' || roleResult == 'owner') {
-    hasAdminRole = true;
+  const session = await auth();
+  const community = new CommunityConfig(config);
+  const tokenAddress = community.primaryToken.address;
+  const primaryRpcUrl = community.primaryRPCUrl;
+  const rpc = new JsonRpcProvider(primaryRpcUrl);
+  let hasRole = false;
+
+  try {
+    hasRole = await CWCheckRoleAccess(
+      tokenAddress,
+      PROFILE_ADMIN_ROLE,
+      session?.user?.address || '',
+      rpc
+    );
+  } catch (error) {
+    console.error(error);
   }
+
   return (
-    <Profile memberData={data} hasAdminRole={hasAdminRole} config={config} />
+    <Profile memberData={data} config={config} hasProfileAdminRole={hasRole} />
   );
 }
