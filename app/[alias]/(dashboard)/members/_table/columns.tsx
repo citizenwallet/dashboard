@@ -49,7 +49,8 @@ const IDRow = ({ account }: { account: string }) => {
 
 export const createColumns = (
   communityConfig: CommunityConfig,
-  config: Config
+  config: Config,
+  hasProfileAdminRole: boolean
 ): ColumnDef<MemberT>[] => [
     {
       header: 'ID',
@@ -156,7 +157,7 @@ export const createColumns = (
     },
     {
       header: 'Actions',
-      cell: ({ row }) => <ActionColumn row={row} config={config} />
+      cell: ({ row }) => <ActionColumn row={row} config={config} hasProfileAdminRole={hasProfileAdminRole} />
     }
   ];
 

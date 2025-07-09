@@ -1,6 +1,13 @@
+import { auth } from '@/auth';
 import UrlSearch from '@/components/custom/url-button-search';
 import { DataTable } from '@/components/ui/data-table';
 import { getCommunity } from '@/services/cw';
+import {
+  CommunityConfig,
+  hasRole as CWCheckRoleAccess,
+  PROFILE_ADMIN_ROLE
+} from '@citizenwallet/sdk';
+import { JsonRpcProvider } from 'ethers';
 import { Suspense } from 'react';
 import AddMember from './_components/add-member';
 import SwitcherButton from './_components/switcher-button';
@@ -26,6 +33,25 @@ export default async function Page(props: {
   const query = queryParam || '';
   const page = pageParam || '1';
   const showAllMembers = showAllParam || 'false';
+
+  const session = await auth();
+  const community = new CommunityConfig(config);
+  const tokenAddress = community.primaryToken.address;
+  const primaryRpcUrl = community.primaryRPCUrl;
+  const rpc = new JsonRpcProvider(primaryRpcUrl);
+  let hasRole = false;
+
+  try {
+    hasRole = await CWCheckRoleAccess(
+      tokenAddress,
+      PROFILE_ADMIN_ROLE,
+      session?.user?.address || '',
+      rpc
+    );
+  } catch (error) {
+    console.error(error);
+  }
+
 
   return (
     <div className="flex flex-1 w-full flex-col h-full">
@@ -53,6 +79,7 @@ export default async function Page(props: {
           page={Number(page)}
           config={config}
           showAllMembers={showAllMembers === 'true'}
+          hasProfileAdminRole={hasRole}
         />
       </Suspense>
     </div>
