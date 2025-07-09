@@ -1,8 +1,15 @@
+import { auth } from '@/auth';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getServiceRoleClient } from '@/services/chain-db';
 import { getMemberByAccount } from '@/services/chain-db/members';
 import { getCommunity } from '@/services/cw';
-import { Config } from '@citizenwallet/sdk';
+import {
+  CommunityConfig,
+  Config,
+  hasRole as CWCheckRoleAccess,
+  PROFILE_ADMIN_ROLE
+} from '@citizenwallet/sdk';
+import { JsonRpcProvider } from 'ethers';
 import { Suspense } from 'react';
 import Profile from './profile';
 
@@ -60,7 +67,26 @@ async function AsyncPage({
     return <div>Member not found</div>;
   }
 
+
+  const session = await auth();
+  const community = new CommunityConfig(config);
+  const tokenAddress = community.primaryToken.address;
+  const primaryRpcUrl = community.primaryRPCUrl;
+  const rpc = new JsonRpcProvider(primaryRpcUrl);
+  let hasRole = false;
+
+  try {
+    hasRole = await CWCheckRoleAccess(
+      tokenAddress,
+      PROFILE_ADMIN_ROLE,
+      session?.user?.address || '',
+      rpc
+    );
+  } catch (error) {
+    console.error(error);
+  }
+
   return (
-    <Profile memberData={data} config={config} />
+    <Profile memberData={data} config={config} hasProfileAdminRole={hasRole} />
   );
 }
