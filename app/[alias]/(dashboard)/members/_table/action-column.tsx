@@ -10,69 +10,40 @@ import {
     DialogHeader,
     DialogTitle
 } from '@/components/ui/dialog';
-import { Skeleton } from '@/components/ui/skeleton';
 import { MemberT } from '@/services/chain-db/members';
 import {
     BundlerService,
     CommunityConfig,
     Config,
-    hasRole as CWCheckRoleAccess,
-    PROFILE_ADMIN_ROLE,
-    waitForTxSuccess,
+    waitForTxSuccess
 } from '@citizenwallet/sdk';
 import { Row } from '@tanstack/react-table';
-import { JsonRpcProvider, Wallet } from 'ethers';
+import { Wallet } from 'ethers';
 import { Trash } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { toast } from 'sonner';
 import { useSession } from 'state/session/action';
 
 
-export default function ActionColumn({ row, config }: { row: Row<MemberT>, config: Config }) {
-
+export default function ActionColumn({
+    row,
+    config,
+    hasProfileAdminRole
+}: {
+    row: Row<MemberT>,
+    config: Config,
+    hasProfileAdminRole: boolean
+}) {
 
     const [isDialogOpen, setIsDialogOpen] = useState(false);
     const [isPending, setIsPending] = useState(false);
-    const [hasProfileAdminRole, setHasProfileAdminRole] = useState(false);
-    const [isLoading, setIsLoading] = useState(true);
     const [, sessionActions] = useSession(config);
 
     const { account, username } = row.original;
     const isAnonymous = username?.includes('anonymous');
     const router = useRouter();
 
-    useEffect(() => {
-        const checkProfileAdminRole = async () => {
-            try {
-                setIsLoading(true);
-
-                const community = new CommunityConfig(config);
-                const signerAccountAddress = await sessionActions.getAccountAddress();
-
-                const tokenAddress = community.primaryToken.address;
-                const primaryRpcUrl = community.primaryRPCUrl;
-                const rpc = new JsonRpcProvider(primaryRpcUrl);
-
-                const hasRole = await CWCheckRoleAccess(
-                    tokenAddress,
-                    PROFILE_ADMIN_ROLE,
-                    signerAccountAddress || '',
-                    rpc
-                );
-
-                setHasProfileAdminRole(hasRole);
-
-            } catch (error) {
-                console.error('Error checking profile admin role:', error);
-
-            } finally {
-                setIsLoading(false);
-            }
-        };
-
-        checkProfileAdminRole();
-    }, [config, sessionActions]);
 
     const handleOpenDialog = () => {
         setIsDialogOpen(true);
@@ -126,10 +97,6 @@ export default function ActionColumn({ row, config }: { row: Row<MemberT>, confi
         }
     };
 
-
-    if (isLoading) {
-        return <Skeleton className="h-4 w-24" />;
-    }
 
     return (
         <>
