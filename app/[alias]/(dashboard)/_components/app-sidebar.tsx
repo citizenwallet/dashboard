@@ -1,5 +1,6 @@
 'use client';
 
+import { Button } from '@/components/ui/button';
 import {
   Sidebar,
   SidebarContent,
@@ -28,13 +29,12 @@ import {
   Webhook,
   Wrench
 } from 'lucide-react';
+import Image from 'next/image';
 import Link from 'next/link';
 import type * as React from 'react';
 import { CommunitySwitcher } from './community-switcher';
 import { NavProjects } from './nav-projects';
 import { NavUser } from './nav-user';
-import { Button } from '@/components/ui/button';
-import Image from 'next/image';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   communities: Config[];
@@ -42,6 +42,8 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   active: boolean;
   user: UserRow | null;
   hasAccess: boolean;
+  userAccountBalance: number;
+  userAddress: string;
 }
 
 export function AppSidebar({
@@ -50,6 +52,8 @@ export function AppSidebar({
   active,
   user,
   hasAccess,
+  userAccountBalance,
+  userAddress,
   ...props
 }: AppSidebarProps) {
   const profileActive =
@@ -57,6 +61,7 @@ export function AppSidebar({
   const currencyActive =
     !isEmpty(config.community.primary_token.address) &&
     !isEmpty(config.community.profile.address);
+
 
   const data = {
     user: {
@@ -67,85 +72,85 @@ export function AppSidebar({
     projects:
       active === false
         ? [
-            {
-              name: 'Profile',
-              url: `/${config?.community.alias}/profile`,
-              icon: University,
-              nextIcon: profileActive ? CircleCheck : CircleDashed
-            },
-            {
-              name: 'Currency',
-              url: `/${config?.community.alias}/configuration`,
-              icon: Settings,
-              nextIcon: currencyActive ? CircleCheck : CircleDashed
-            },
-            {
-              name: 'Admins',
-              url: `/${config?.community.alias}/admins`,
-              icon: Shield
-            }
-          ]
+          {
+            name: 'Profile',
+            url: `/${config?.community.alias}/profile`,
+            icon: University,
+            nextIcon: profileActive ? CircleCheck : CircleDashed
+          },
+          {
+            name: 'Currency',
+            url: `/${config?.community.alias}/configuration`,
+            icon: Settings,
+            nextIcon: currencyActive ? CircleCheck : CircleDashed
+          },
+          {
+            name: 'Admins',
+            url: `/${config?.community.alias}/admins`,
+            icon: Shield
+          }
+        ]
         : [
-            {
-              name: 'Overview',
-              url: `/${config?.community.alias}`,
-              icon: Home
-            },
-            {
-              name: 'Members',
-              url: `/${config?.community.alias}/members`,
-              icon: Users
-            },
-            {
-              name: 'Transfers',
-              url: `/${config?.community.alias}/transfers`,
-              icon: LucideLineChart
-            },
-            {
-              name: 'Treasury',
-              url: `/${config?.community.alias}/treasury`,
-              icon: Landmark,
-              items: [
-                {
-                  name: 'History',
-                  url: `/${config?.community.alias}/treasury`,
-                  icon: List
-                },
-                {
-                  name: 'Minters',
-                  url: `/${config?.community.alias}/roles`,
-                  icon: Hammer
-                }
-              ]
-            },
-            {
-              name: 'Profile',
-              url: `/${config?.community.alias}/profile`,
-              icon: University
-            },
-            {
-              name: 'Currency',
-              url: `/${config?.community.alias}/configuration`,
-              icon: Settings
-            },
-            {
-              name: 'Admins',
-              url: `/${config?.community.alias}/admins`,
-              icon: Shield
-            },
-            {
-              name: 'Developer',
-              url: `/${config?.community.alias}`,
-              icon: Wrench,
-              items: [
-                {
-                  name: 'Webhooks',
-                  url: `/${config?.community.alias}/webhooks`,
-                  icon: Webhook
-                }
-              ]
-            }
-          ]
+          {
+            name: 'Overview',
+            url: `/${config?.community.alias}`,
+            icon: Home
+          },
+          {
+            name: 'Members',
+            url: `/${config?.community.alias}/members`,
+            icon: Users
+          },
+          {
+            name: 'Transfers',
+            url: `/${config?.community.alias}/transfers`,
+            icon: LucideLineChart
+          },
+          {
+            name: 'Treasury',
+            url: `/${config?.community.alias}/treasury`,
+            icon: Landmark,
+            items: [
+              {
+                name: 'History',
+                url: `/${config?.community.alias}/treasury`,
+                icon: List
+              },
+              {
+                name: 'Minters',
+                url: `/${config?.community.alias}/roles`,
+                icon: Hammer
+              }
+            ]
+          },
+          {
+            name: 'Profile',
+            url: `/${config?.community.alias}/profile`,
+            icon: University
+          },
+          {
+            name: 'Currency',
+            url: `/${config?.community.alias}/configuration`,
+            icon: Settings
+          },
+          {
+            name: 'Admins',
+            url: `/${config?.community.alias}/admins`,
+            icon: Shield
+          },
+          {
+            name: 'Developer',
+            url: `/${config?.community.alias}`,
+            icon: Wrench,
+            items: [
+              {
+                name: 'Webhooks',
+                url: `/${config?.community.alias}/webhooks`,
+                icon: Webhook
+              }
+            ]
+          }
+        ]
   };
 
   return (
@@ -175,8 +180,12 @@ export function AppSidebar({
             width={28}
             height={28}
           />
-          <p className="flex-1 px-4 py-2">0</p>
-          <Button variant="default" size="sm">
+          <p className="flex-1 px-4 py-2">{userAccountBalance.toFixed(2)}</p>
+          <Button variant="default" size="sm"
+            onClick={() => {
+              window.open(`/onramp?account=${userAddress}`, '_blank');
+            }}
+          >
             <PlusIcon />
           </Button>
         </div>
