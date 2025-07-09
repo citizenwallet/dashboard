@@ -1,4 +1,5 @@
 import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
+import { auth } from '@/auth';
 import { DataTable } from '@/components/ui/data-table';
 import { getServiceRoleClient } from '@/services/chain-db';
 import {
@@ -6,9 +7,18 @@ import {
   getMinterMembers,
   MemberT
 } from '@/services/chain-db/members';
-import { Config } from '@citizenwallet/sdk';
+import {
+  CommunityConfig,
+  Config,
+  hasRole as CWCheckRoleAccess,
+  MINTER_ROLE
+} from '@citizenwallet/sdk';
+import { JsonRpcProvider } from 'ethers';
 import { Suspense } from 'react';
-import { placeholderData, skeletonColumns } from './_table/columns';
+import {
+  placeholderData,
+  skeletonColumns
+} from './_table/columns';
 import { MinterMembers } from './action';
 import RolePage from './RolePage';
 
@@ -61,6 +71,25 @@ async function PageLoader({
     return member.username.toLowerCase() !== 'anonymous';
   });
 
+
+  const session = await auth();
+  const community = new CommunityConfig(config);
+  const tokenAddress = community.primaryToken.address;
+  const primaryRpcUrl = community.primaryRPCUrl;
+  const rpc = new JsonRpcProvider(primaryRpcUrl);
+  let hasRole = false;
+
+  try {
+    hasRole = await CWCheckRoleAccess(
+      tokenAddress,
+      MINTER_ROLE,
+      session?.user?.address || '',
+      rpc
+    );
+  } catch (error) {
+    console.error(error);
+  }
+
   return (
 
     <RolePage
@@ -68,6 +97,7 @@ async function PageLoader({
       minterMembers={minterMembers.data as MinterMembers[] | null}
       count={minterMembers.count || 0}
       config={config}
+      hasMinterRole={hasRole}
     />
 
   );

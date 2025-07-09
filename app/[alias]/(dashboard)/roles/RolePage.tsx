@@ -28,18 +28,16 @@ import {
   PopoverTrigger
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
-import { Skeleton } from '@/components/ui/skeleton';
 import { cn, formatAddress } from '@/lib/utils';
 import { MemberT } from '@/services/chain-db/members';
 import {
   BundlerService,
   CommunityConfig,
   Config,
-  hasRole as CWCheckRoleAccess,
   MINTER_ROLE,
   waitForTxSuccess
 } from '@citizenwallet/sdk';
-import { JsonRpcProvider, Wallet } from 'ethers';
+import { Wallet } from 'ethers';
 import {
   Check,
   ChevronsUpDown,
@@ -49,7 +47,7 @@ import {
   Trash
 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
-import { useCallback, useEffect, useRef, useState } from 'react';
+import { useCallback, useRef, useState } from 'react';
 import { toast } from 'sonner';
 import { useSession } from 'state/session/action';
 import { grantRoleAction, MinterMembers, revokeRoleAction } from './action';
@@ -58,12 +56,14 @@ export default function RolePage({
   members,
   minterMembers,
   count,
-  config
+  config,
+  hasMinterRole
 }: {
   members: MemberT[];
   minterMembers: MinterMembers[] | null;
   count: number;
   config: Config;
+  hasMinterRole: boolean;
 }) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -72,46 +72,11 @@ export default function RolePage({
   const [open, setOpen] = useState(false);
   const [memberAccount, setMemberAccount] = useState('');
   const [, sessionActions] = useSession(config);
-  const [hasMinterRole, setHasMinterRole] = useState(false);
-  const [isLoadingMinterRole, setIsLoadingMinterRole] = useState(true);
   const router = useRouter();
 
 
   const totalPages = Math.ceil(Number(count) / 25);
 
-
-  //check profile admin role
-  useEffect(() => {
-    const checkProfileAdminRole = async () => {
-      try {
-
-        const community = new CommunityConfig(config);
-        const signerAccountAddress = await sessionActions.getAccountAddress();
-
-        const tokenAddress = community.primaryToken.address;
-        const primaryRpcUrl = community.primaryRPCUrl;
-        const rpc = new JsonRpcProvider(primaryRpcUrl);
-
-        const hasRole = await CWCheckRoleAccess(
-          tokenAddress,
-          MINTER_ROLE,
-          signerAccountAddress || '',
-          rpc
-        );
-
-        setHasMinterRole(hasRole);
-
-
-      } catch (error) {
-        console.error('Error checking minter role:', error);
-
-      } finally {
-        setIsLoadingMinterRole(false);
-      }
-    };
-
-    checkProfileAdminRole();
-  }, [config, sessionActions]);
 
   const IDRow = ({ account }: { account: string }) => {
     const [isCopied, setIsCopied] = useState(false);
@@ -209,9 +174,6 @@ export default function RolePage({
   }, []);
 
 
-  if (isLoadingMinterRole) {
-    return <Skeleton className="h-4 w-24" />;
-  }
 
   return (
     <>
