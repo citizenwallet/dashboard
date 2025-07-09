@@ -28,12 +28,10 @@ import {
   CommunityConfig,
   Config,
   checkUsernameAvailability,
-  waitForTxSuccess,
-  hasRole as CWCheckRoleAccess,
-  PROFILE_ADMIN_ROLE
+  waitForTxSuccess
 } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
-import { JsonRpcProvider, Wallet } from 'ethers';
+import { Wallet } from 'ethers';
 import { Save, Trash2, Upload, User } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useEffect, useMemo, useRef, useState } from 'react';
@@ -47,7 +45,6 @@ import {
   pinJsonToIPFSAction,
   updateProfileImageAction
 } from '../action';
-import { Skeleton } from '@/components/ui/skeleton';
 
 const formSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -57,10 +54,12 @@ const formSchema = z.object({
 
 export default function Profile({
   memberData,
-  config
+  config,
+  hasProfileAdminRole
 }: {
   memberData?: MemberT;
   config: Config;
+  hasProfileAdminRole: boolean;
 }) {
 
   const community = useMemo(() => new CommunityConfig(config), [config]);
@@ -90,8 +89,6 @@ export default function Profile({
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
   const [, sessionActions] = useSession(config);
-  const [hasProfileAdminRole, setHasProfileAdminRole] = useState(false);
-  const [isLoadingProfileAdminRole, setIsLoadingProfileAdminRole] = useState(true);
 
 
   useEffect(() => {
@@ -128,38 +125,6 @@ export default function Profile({
     memberData?.username
   ]);
 
-  //check profile admin role
-  useEffect(() => {
-    const checkProfileAdminRole = async () => {
-      try {
-
-        const community = new CommunityConfig(config);
-        const signerAccountAddress = await sessionActions.getAccountAddress();
-
-        const tokenAddress = community.primaryToken.address;
-        const primaryRpcUrl = community.primaryRPCUrl;
-        const rpc = new JsonRpcProvider(primaryRpcUrl);
-
-        const hasRole = await CWCheckRoleAccess(
-          tokenAddress,
-          PROFILE_ADMIN_ROLE,
-          signerAccountAddress || '',
-          rpc
-        );
-
-        setHasProfileAdminRole(hasRole);
-        setIsEditing(false);
-
-      } catch (error) {
-        console.error('Error checking profile admin role:', error);
-
-      } finally {
-        setIsLoadingProfileAdminRole(false);
-      }
-    };
-
-    checkProfileAdminRole();
-  }, [config, sessionActions]);
 
   const onSubmit = async (values: z.infer<typeof formSchema>) => {
     try {
@@ -326,9 +291,6 @@ export default function Profile({
     }
   };
 
-  if (isLoadingProfileAdminRole) {
-    return <Skeleton className="h-4 w-24" />;
-  }
 
   return (
     <Card className="shadow-lg border-0">
