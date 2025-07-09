@@ -95,6 +95,7 @@ export default async function DashboardLayout({
         hasAccess={hasAccess}
         userAccountBalance={balance ? Number(formatUnits(balance, ctzn_communityConfig.getToken().decimals)) : 0}
         userAddress={session?.user?.address ?? ''}
+        ctzn_config={ctzn_config}
       />
       <SidebarInset className="flex flex-col h-screen overflow-hidden">
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">

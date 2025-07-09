@@ -11,7 +11,7 @@ import {
 } from '@/components/ui/sidebar';
 import { isEmpty } from '@/lib/utils';
 import { UserRow } from '@/services/top-db/users';
-import { Config } from '@citizenwallet/sdk';
+import { CommunityConfig, Config, getAccountBalance } from '@citizenwallet/sdk';
 import {
   ArrowLeft,
   CircleCheck,
@@ -32,9 +32,11 @@ import {
 import Image from 'next/image';
 import Link from 'next/link';
 import type * as React from 'react';
+import { useEffect, useState } from 'react';
 import { CommunitySwitcher } from './community-switcher';
 import { NavProjects } from './nav-projects';
 import { NavUser } from './nav-user';
+import { formatUnits } from 'ethers';
 
 interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   communities: Config[];
@@ -44,6 +46,7 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   hasAccess: boolean;
   userAccountBalance: number;
   userAddress: string;
+  ctzn_config: Config;
 }
 
 export function AppSidebar({
@@ -52,10 +55,60 @@ export function AppSidebar({
   active,
   user,
   hasAccess,
-  userAccountBalance,
+  userAccountBalance: initialBalance,
   userAddress,
+  ctzn_config,
   ...props
 }: AppSidebarProps) {
+  const [balance, setBalance] = useState(initialBalance);
+  const [isWindowFocused, setIsWindowFocused] = useState(true);
+
+  useEffect(() => {
+    // Update window focus state
+    const handleFocus = () => setIsWindowFocused(true);
+    const handleBlur = () => setIsWindowFocused(false);
+
+    window.addEventListener('focus', handleFocus);
+    window.addEventListener('blur', handleBlur);
+
+    // Set initial focus state
+    setIsWindowFocused(document.hasFocus());
+
+    return () => {
+      window.removeEventListener('focus', handleFocus);
+      window.removeEventListener('blur', handleBlur);
+    };
+  }, []);
+
+  useEffect(() => {
+    let intervalId: NodeJS.Timeout | null = null;
+
+    const updateBalance = async () => {
+      try {
+        const ctzn_communityConfig = new CommunityConfig(ctzn_config);
+        const balance = await getAccountBalance(
+          ctzn_communityConfig,
+          userAddress
+        );
+        const formattedBalance = balance ? Number(formatUnits(balance, ctzn_communityConfig.getToken().decimals)) : 0;
+        setBalance(formattedBalance);
+      } catch (error) {
+        console.error('Failed to update balance:', error);
+      }
+    };
+
+    if (isWindowFocused) {
+      intervalId = setInterval(updateBalance, 5000);
+      updateBalance();
+    }
+
+    return () => {
+      if (intervalId) {
+        clearInterval(intervalId);
+      }
+    };
+  }, [isWindowFocused, initialBalance, ctzn_config, userAddress]);
+
   const profileActive =
     !isEmpty(config.community.logo) && !isEmpty(config.community.url);
   const currencyActive =
@@ -180,7 +233,7 @@ export function AppSidebar({
             width={28}
             height={28}
           />
-          <p className="flex-1 px-4 py-2">{userAccountBalance.toFixed(2)}</p>
+          <p className="flex-1 px-4 py-2">{balance.toFixed(2)}</p>
           <Button variant="default" size="sm"
             onClick={() => {
               window.open(`/onramp?account=${userAddress}`, '_blank');
