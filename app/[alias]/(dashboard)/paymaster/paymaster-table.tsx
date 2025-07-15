@@ -17,73 +17,34 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Paymaster } from "@/services/chain-db/paymaster";
+import { Config } from '@citizenwallet/sdk';
 import { Row } from "@tanstack/react-table";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useState } from 'react';
+import { toast } from 'sonner';
+import { ContractRow } from './_components/ContractRow';
+import { updatePaymasterNameAction } from './action';
 
 const PAGE_SIZE = 25;
 
 export default function PaymasterTable(
     {
-        initialData
+        initialData,
+        config
     }: {
-        initialData: Paymaster[]
+        initialData: Paymaster[],
+        config: Config
     }
 ) {
-
 
     const [paymasterdata, setPaymasterdata] = useState<Paymaster[]>(initialData);
     const [loadingId, setLoadingId] = useState<string | null>(null);
     const [editingItemId, setEditingItemId] = useState<string | null>(null);
-    const [editingField, setEditingField] = useState<
-        'contract' | 'name' | 'published' | null
-    >(null);
+    const [editingField, setEditingField] = useState<'name' | null>(null);
 
-    const [editingContract, setEditingContract] = useState<string>('');
     const [editingName, setEditingName] = useState<string>('');
 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
-
-
-    //for contract editing
-    const handleContractClick = (paymaster: Paymaster) => {
-        setEditingItemId(paymaster.contract);
-        setEditingField('contract');
-        setEditingContract(paymaster.contract || '');
-    };
-    const handleContractKeyDown = (
-        e: React.KeyboardEvent<HTMLInputElement>,
-        paymaster: Paymaster
-    ) => {
-        if (e.key === 'Enter') {
-            handleContractSave(paymaster);
-        } else if (e.key === 'Escape') {
-            setEditingItemId(null);
-            setEditingField(null);
-        }
-    };
-    const handleContractSave = async (paymaster: Paymaster) => {
-        if (editingContract === paymaster.contract) {
-            setEditingItemId(null);
-            setEditingField(null);
-            return;
-        }
-
-        try {
-
-            const updatedPaymaster = paymasterdata.map((p: Paymaster) =>
-                p.contract === paymaster.contract ? { ...p, contract: editingContract } : p
-            );
-            setPaymasterdata(updatedPaymaster);
-
-        } catch (error) {
-            console.error(`Failed to update place name:`, error);
-        }
-        // Save logic would go here
-    };
-    const handleContractChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-        setEditingContract(e.target.value);
-    };
 
 
     //for name editing
@@ -97,7 +58,7 @@ export default function PaymasterTable(
         paymaster: Paymaster
     ) => {
         if (e.key === 'Enter') {
-            handleContractSave(paymaster);
+            handleNameSave(paymaster);
         } else if (e.key === 'Escape') {
             setEditingItemId(null);
             setEditingField(null);
@@ -111,16 +72,29 @@ export default function PaymasterTable(
         }
 
         try {
+            setLoadingId(paymaster.contract);
+            await updatePaymasterNameAction({
+                config: config,
+                paymaster: paymaster.contract,
+                name: editingName
+            });
 
-            const updatedPaymaster = paymasterdata.map((p: Paymaster) =>
-                p.contract === paymaster.contract ? { ...p, contract: editingContract } : p
-            );
-            setPaymasterdata(updatedPaymaster);
+            setPaymasterdata(paymasterdata.map((p: Paymaster) =>
+                p.contract === paymaster.contract ? { ...p, name: editingName } : p
+            ));
+
+            setEditingItemId(null);
+            setEditingField(null);
+
+            toast.success('Paymaster whitelist name updated');
 
         } catch (error) {
             console.error(`Failed to update place name:`, error);
+            toast.error('Failed to update paymaster whitelist name');
+        } finally {
+            setLoadingId(null);
         }
-        // Save logic would go here
+
     };
     const handleNameChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         setEditingName(e.target.value);
@@ -191,29 +165,8 @@ export default function PaymasterTable(
                             accessorKey: "contract",
                             cell: ({ row }: { row: Row<Paymaster> }) => {
                                 return (
-                                    <div className="p-2">
-                                        {editingItemId === row.original.contract && editingField === 'contract' ? (
-                                            <input
-                                                type="text"
-                                                value={editingContract}
-                                                onChange={handleContractChange}
-                                                onKeyDown={(e) => handleContractKeyDown(e, row.original)}
-                                                onBlur={() => handleContractSave(row.original)}
-                                                autoFocus
-                                                data-item-id={row.original.contract}
-                                                className="w-full rounded border border-gray-300 p-1"
-                                                placeholder="Enter contract"
-                                            />
-                                        ) : (
-                                            <div
-                                                onClick={() => handleContractClick(row.original)}
-                                                className="cursor-pointer rounded p-1 hover:bg-gray-100"
-                                            >
-                                                {row.original.contract}
-                                            </div>
-                                        )}
-                                    </div>
-                                );
+                                    <ContractRow account={row.original.contract} />
+                                )
                             }
                         },
                         {
@@ -301,3 +254,6 @@ export default function PaymasterTable(
         </>
     )
 }
+
+
+
