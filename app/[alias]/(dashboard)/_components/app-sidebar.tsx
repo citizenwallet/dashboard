@@ -100,14 +100,15 @@ export function AppSidebar({
             name: 'Webhooks',
             url: `/${config?.community.alias}/webhooks`,
             icon: Webhook
-          }
+          },
+          ...(isAdmin ? [{
+            name: 'paymaster',
+            url: `/${config?.community.alias}/paymaster`,
+            icon: CreditCard
+          }] : [])
         ]
       },
-      ...(isAdmin ? [{
-        name: 'paymaster',
-        url: `/${config?.community.alias}/paymaster`,
-        icon: CreditCard
-      }] : [])
+
     ]
   };
 
