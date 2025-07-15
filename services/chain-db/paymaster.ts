@@ -55,3 +55,13 @@ export const getPaymasterByAddress = async (args: {
     .eq('contract', address)
     .eq('alias', alias);
 };
+
+export const upsertPaymasterWhitelist = async (args: {
+  client: SupabaseClient;
+  data: Paymaster[];
+}) => {
+  const { client, data } = args;
+  return client
+    .from(TABLE_NAME)
+    .upsert(data, { onConflict: 'contract,paymaster' });
+};
