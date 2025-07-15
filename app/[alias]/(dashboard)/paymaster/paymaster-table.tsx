@@ -19,13 +19,18 @@ import { Separator } from '@/components/ui/separator';
 import { Paymaster } from "@/services/chain-db/paymaster";
 import { CommunityConfig, Config } from '@citizenwallet/sdk';
 import { Row } from "@tanstack/react-table";
-import { Loader2, Plus, RefreshCcw, Trash2 } from "lucide-react";
+import { isAddress } from 'ethers';
+import { Loader2, Plus, Trash2, Upload } from "lucide-react";
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
-import { ContractRow } from './_components/ContractRow';
-import { checkPaymasterWhitelistAddressExistsAction, updatePaymasterNameAction } from './action';
 import { useDebounce } from 'use-debounce';
-import { isAddress } from 'ethers';
+import { ContractRow } from './_components/ContractRow';
+import {
+    checkPaymasterWhitelistAddressExistsAction,
+    refreshPaymasterWhitelistAction,
+    updatePaymasterNameAction
+} from './action';
 
 const PAGE_SIZE = 25;
 
@@ -38,7 +43,7 @@ export default function PaymasterTable(
         config: Config
     }
 ) {
-
+    const router = useRouter();
     const [paymasterdata, setPaymasterdata] = useState<Paymaster[]>(initialData);
     const [loadingId, setLoadingId] = useState<string | null>(null);
     const [editingItemId, setEditingItemId] = useState<string | null>(null);
@@ -52,6 +57,7 @@ export default function PaymasterTable(
     const [newWhitelistedAddress, setNewWhitelistedAddress] = useState<string>('');
     const [isValidAddress, setIsValidAddress] = useState<boolean>(true);
     const [newName, setNewName] = useState<string>('');
+    const [uploading, setUploading] = useState(false);
 
 
     //for name editing
@@ -161,15 +167,38 @@ export default function PaymasterTable(
         setIsRefresh(true);
     }
 
+    const handleRefresh = async () => {
+        try {
+            setUploading(true);
+            const result = await refreshPaymasterWhitelistAction({
+                config: config,
+                data: paymasterdata
+            });
+            if (result.success) {
+                toast.success('Whitelist uploaded');
+                router.refresh();
+            } else {
+                toast.error('Failed to upload whitelist');
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to upload whitelist');
+        } finally {
+            setUploading(false);
+        }
+
+    }
+
+
     return (
         <>
             <div className="flex justify-between mb-4 items-center gap-2">
 
                 {isRefresh ? (
                     <div className="flex justify-start">
-                        <Button className="flex items-center gap-2 bg-green-500 hover:bg-green-600">
-                            <RefreshCcw size={16} />
-                            Refresh whitelist
+                        <Button className="flex items-center gap-2 bg-green-500 hover:bg-green-600" onClick={handleRefresh} disabled={uploading}>
+                            {uploading ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload size={16} />}
+                            Upload whitelist
                         </Button>
                     </div>
                 ) : (
@@ -304,16 +333,21 @@ export default function PaymasterTable(
                             header: "Actions",
                             cell: ({ row }) => {
                                 return (
-                                    <Button
-                                        variant="outline" size="sm"
-                                        className="flex items-center gap-2"
-                                        onClick={() => handleDelete(row.original.contract)}>
-                                        {loadingId === row.original.contract ?
-                                            <Loader2 className="w-4 h-4 animate-spin" /> :
-                                            <Trash2 className="w-4 h-4" />
-                                        }
+                                    <>
+                                        {
+                                            !row.original.required &&
+                                            <Button
+                                                variant="outline" size="sm"
+                                                className="flex items-center gap-2"
+                                                onClick={() => handleDelete(row.original.contract)}>
+                                                {loadingId === row.original.contract ?
+                                                    <Loader2 className="w-4 h-4 animate-spin" /> :
+                                                    <Trash2 className="w-4 h-4" />
+                                                }
 
-                                    </Button>
+                                            </Button>
+                                        }
+                                    </>
                                 )
                             }
                         }
