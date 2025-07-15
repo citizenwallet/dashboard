@@ -27,3 +27,17 @@ export const getPaymasterByAlias = async (args: {
     .range(offset, offset + PAGE_SIZE - 1)
     .limit(PAGE_SIZE);
 };
+
+export const updatePaymasterName = async (args: {
+  client: SupabaseClient;
+  contract: string;
+  name: string;
+  alias: string;
+}) => {
+  const { client, contract, name, alias } = args;
+  return client
+    .from(TABLE_NAME)
+    .update({ name })
+    .eq('contract', contract)
+    .eq('alias', alias);
+};
