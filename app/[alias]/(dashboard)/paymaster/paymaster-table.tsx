@@ -17,13 +17,15 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Separator } from '@/components/ui/separator';
 import { Paymaster } from "@/services/chain-db/paymaster";
-import { Config } from '@citizenwallet/sdk';
+import { CommunityConfig, Config } from '@citizenwallet/sdk';
 import { Row } from "@tanstack/react-table";
-import { Loader2, Plus, Trash2 } from "lucide-react";
-import { useState } from 'react';
+import { Loader2, Plus, RefreshCcw, Trash2 } from "lucide-react";
+import { useEffect, useState } from 'react';
 import { toast } from 'sonner';
 import { ContractRow } from './_components/ContractRow';
-import { updatePaymasterNameAction } from './action';
+import { checkPaymasterWhitelistAddressExistsAction, updatePaymasterNameAction } from './action';
+import { useDebounce } from 'use-debounce';
+import { isAddress } from 'ethers';
 
 const PAGE_SIZE = 25;
 
@@ -45,6 +47,11 @@ export default function PaymasterTable(
     const [editingName, setEditingName] = useState<string>('');
 
     const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
+    const [isRefresh, setIsRefresh] = useState(false);
+
+    const [newWhitelistedAddress, setNewWhitelistedAddress] = useState<string>('');
+    const [isValidAddress, setIsValidAddress] = useState<boolean>(true);
+    const [newName, setNewName] = useState<string>('');
 
 
     //for name editing
@@ -100,62 +107,134 @@ export default function PaymasterTable(
         setEditingName(e.target.value);
     };
 
-    const handleDelete = (contract: string) => {
-        setLoadingId(contract);
+    const handleDelete = async (contract: string) => {
+        setPaymasterdata(paymasterdata.filter((p: Paymaster) => p.contract !== contract));
+        checkIfChanges();
+    }
+
+    const checkIfChanges = () => {
+        const hasExistingChanges = paymasterdata == initialData;
+        setIsRefresh(hasExistingChanges);
+    }
+
+    //for checking if whitelisted address is already in the database
+    const [debouncedNewWhitelistedAddress] = useDebounce(newWhitelistedAddress, 1000);
+    useEffect(() => {
+        const validateAddress = async () => {
+            if (debouncedNewWhitelistedAddress) {
+                const isValid = isAddress(debouncedNewWhitelistedAddress);
+                if (isValid) {
+                    setIsValidAddress(true);
+                    const exists = await checkPaymasterWhitelistAddressExistsAction({
+                        config: config,
+                        address: debouncedNewWhitelistedAddress
+                    });
+                    if (exists.data && exists.data.length > 0) {
+                        setIsValidAddress(false);
+                        toast.error('Whitelisted address already exists');
+                    } else {
+                        setIsValidAddress(true);
+                    }
+                } else {
+                    setIsValidAddress(false);
+                    toast.error('Invalid whitelisted address');
+                }
+            }
+        };
+        validateAddress();
+    }, [debouncedNewWhitelistedAddress, config]);
+
+
+    const handleAdd = () => {
+
+        const community = new CommunityConfig(config);
+        const paymaster = community.primaryAccountConfig.paymaster_address;
+
+        setPaymasterdata([...paymasterdata, {
+            contract: debouncedNewWhitelistedAddress,
+            name: newName,
+            required: false,
+            paymaster: paymaster,
+            alias: config.community.alias
+        }]);
+        setIsAddDialogOpen(false);
+        setIsRefresh(true);
     }
 
     return (
         <>
+            <div className="flex justify-between mb-4 items-center gap-2">
 
-            <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
-                <DialogTrigger asChild>
-                    <div className="flex justify-end mb-4">
-                        <Button>
-                            <Plus size={16} />
-                            Add Whitelisted Address
+                {isRefresh ? (
+                    <div className="flex justify-start">
+                        <Button className="flex items-center gap-2 bg-green-500 hover:bg-green-600">
+                            <RefreshCcw size={16} />
+                            Refresh whitelist
                         </Button>
                     </div>
-                </DialogTrigger>
+                ) : (
+                    <div className="flex justify-start"></div>
+                )}
 
-                <DialogContent className="sm:max-w-md">
-                    <DialogHeader>
-                        <DialogTitle>Add new whitelisted address</DialogTitle>
-                        <DialogDescription>Add a new whitelisted address</DialogDescription>
-                    </DialogHeader>
-                    <Label htmlFor="whitelistedAddress" className="text-sm font-medium">
-                        Enter whitelisted address
-                    </Label>
+                <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
+                    <DialogTrigger asChild>
+                        <div className="flex justify-end mb-4">
+                            <Button>
+                                <Plus size={16} />
+                                Add Whitelisted Address
+                            </Button>
+                        </div>
+                    </DialogTrigger>
 
-                    <Input
-                        name="whitelistedAddress"
-                        type="search"
-                        placeholder="Enter whitelisted address"
-                    />
+                    <DialogContent className="sm:max-w-md">
+                        <DialogHeader>
+                            <DialogTitle>Add new whitelisted address</DialogTitle>
+                            <DialogDescription>Add a new whitelisted address</DialogDescription>
+                        </DialogHeader>
+                        <Label htmlFor="whitelistedAddress" className="text-sm font-medium">
+                            Enter whitelisted address
+                        </Label>
+
+                        <Input
+                            name="whitelistedAddress"
+                            type="search"
+                            placeholder="Enter whitelisted address"
+                            onChange={(e) => setNewWhitelistedAddress(e.target.value)}
+                            className={`${isValidAddress ? '' : 'border-red-500'}`}
+                        />
 
 
-                    <Label htmlFor="name" className="text-sm font-medium mt-4">
-                        Enter Name
-                    </Label>
+                        <Label htmlFor="name" className="text-sm font-medium mt-4">
+                            Enter Name
+                        </Label>
 
-                    <Input
-                        name="name"
-                        type="search"
-                        placeholder="Enter name"
-                    />
+                        <Input
+                            name="name"
+                            type="search"
+                            placeholder="Enter name"
+                            onChange={(e) => setNewName(e.target.value)}
+                        />
 
-                    <DialogFooter>
+                        <DialogFooter>
 
-                        <Button className="mb-2 md:mb-0">
-                            <Plus size={16} />
-                            Add
-                        </Button>
+                            <Button className="mb-2 md:mb-0"
+                                disabled={!isValidAddress}
+                                onClick={handleAdd}>
+                                <Plus size={16} />
+                                Add
+                            </Button>
 
-                        <Button variant="outline" >
-                            Cancel
-                        </Button>
-                    </DialogFooter>
-                </DialogContent>
-            </Dialog>
+                            <Button variant="outline" >
+                                Cancel
+                            </Button>
+                        </DialogFooter>
+                    </DialogContent>
+                </Dialog>
+
+
+            </div >
+
+
 
             <div className="flex-1 overflow-hidden">
                 <div className="h-full overflow-y-auto rounded-md border">
