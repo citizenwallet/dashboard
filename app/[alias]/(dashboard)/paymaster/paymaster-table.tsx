@@ -21,16 +21,18 @@ import { Row } from "@tanstack/react-table";
 import { Loader2, Plus, Trash2 } from "lucide-react";
 import { useState } from 'react';
 
-export default function PaymasterTable() {
+const PAGE_SIZE = 25;
+
+export default function PaymasterTable(
+    {
+        initialData
+    }: {
+        initialData: Paymaster[]
+    }
+) {
 
 
-    const [paymasterdata, setPaymasterdata] = useState<Paymaster[]>([{
-        contract: "0x1234567890123456789012345678901234567890",
-        paymaster: "0x1234567890123456789012345678901234567890",
-        alias: "Paymaster",
-        name: "Paymaster",
-        published: "0x1234567890123456789012345678901234567890efwefwef"
-    }]);
+    const [paymasterdata, setPaymasterdata] = useState<Paymaster[]>(initialData);
     const [loadingId, setLoadingId] = useState<string | null>(null);
     const [editingItemId, setEditingItemId] = useState<string | null>(null);
     const [editingField, setEditingField] = useState<
@@ -187,7 +189,7 @@ export default function PaymasterTable() {
                         {
                             header: "Whitelisted Address",
                             accessorKey: "contract",
-                            cell: ({ row }: { row: Row<any> }) => {
+                            cell: ({ row }: { row: Row<Paymaster> }) => {
                                 return (
                                     <div className="p-2">
                                         {editingItemId === row.original.contract && editingField === 'contract' ? (
@@ -198,7 +200,7 @@ export default function PaymasterTable() {
                                                 onKeyDown={(e) => handleContractKeyDown(e, row.original)}
                                                 onBlur={() => handleContractSave(row.original)}
                                                 autoFocus
-                                                data-item-id={row.original.id}
+                                                data-item-id={row.original.contract}
                                                 className="w-full rounded border border-gray-300 p-1"
                                                 placeholder="Enter contract"
                                             />
@@ -217,7 +219,7 @@ export default function PaymasterTable() {
                         {
                             header: "Name",
                             accessorKey: "name",
-                            cell: ({ row }: { row: Row<any> }) => {
+                            cell: ({ row }: { row: Row<Paymaster> }) => {
                                 return (
                                     <div className="p-2">
                                         {editingItemId === row.original.contract && editingField === 'name' ? (
@@ -228,7 +230,7 @@ export default function PaymasterTable() {
                                                 onKeyDown={(e) => handleNameKeyDown(e, row.original)}
                                                 onBlur={() => handleNameSave(row.original)}
                                                 autoFocus
-                                                data-item-id={row.original.id}
+                                                data-item-id={row.original.contract}
                                                 className="w-full rounded border border-gray-300 p-1"
                                                 placeholder="Enter name"
                                             />
@@ -247,7 +249,7 @@ export default function PaymasterTable() {
                         {
                             header: "Published",
                             accessorKey: "published",
-                            cell: ({ row }: { row: Row<any> }) => {
+                            cell: ({ row }: { row: Row<Paymaster> }) => {
                                 return (
                                     <div className="p-2">
                                         {row.original.published ?
@@ -292,9 +294,9 @@ export default function PaymasterTable() {
 
             <div className="sticky bottom-0 left-0 right-0 bg-background flex flex-col sm:flex-row justify-between items-center gap-2 pb-4">
                 <p className="text-sm text-gray-500 whitespace-nowrap">
-                    Total: 11
+                    Total: {paymasterdata.length}
                 </p>
-                <UrlPagination totalPages={11} />
+                <UrlPagination totalPages={Math.ceil(paymasterdata.length / PAGE_SIZE)} />
             </div>
         </>
     )
