@@ -11,6 +11,7 @@ export interface Paymaster {
   alias: string;
   name: string;
   published?: string;
+  required: boolean;
 }
 
 export const getPaymasterByAlias = async (args: {
@@ -39,5 +40,18 @@ export const updatePaymasterName = async (args: {
     .from(TABLE_NAME)
     .update({ name })
     .eq('contract', contract)
+    .eq('alias', alias);
+};
+
+export const getPaymasterByAddress = async (args: {
+  client: SupabaseClient;
+  address: string;
+  alias: string;
+}) => {
+  const { client, address, alias } = args;
+  return client
+    .from(TABLE_NAME)
+    .select('*')
+    .eq('contract', address)
     .eq('alias', alias);
 };
