@@ -60,6 +60,7 @@ export default function PaymasterTable(
     const [uploading, setUploading] = useState(false);
 
 
+
     //for name editing
     const handleNameClick = (paymaster: Paymaster) => {
         setEditingItemId(paymaster.contract);
@@ -189,6 +190,21 @@ export default function PaymasterTable(
 
     }
 
+
+    useEffect(() => {
+        const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+            if (isRefresh) {
+                e.preventDefault();
+                e.returnValue = "";
+            }
+        };
+
+        window.addEventListener("beforeunload", handleBeforeUnload);
+
+        return () => {
+            window.removeEventListener("beforeunload", handleBeforeUnload);
+        };
+    }, [isRefresh]);
 
     return (
         <>
