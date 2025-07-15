@@ -12,6 +12,7 @@ import { UserT } from '@/services/top-db/users';
 import { Config } from '@citizenwallet/sdk';
 import {
   ArrowLeft,
+  CreditCard,
   Hammer,
   Home,
   Landmark,
@@ -33,6 +34,7 @@ interface AppSidebarProps extends React.ComponentProps<typeof Sidebar> {
   config: Config;
   user: UserT | null;
   hasAccess: boolean;
+  isAdmin: boolean;
 }
 
 export function AppSidebar({
@@ -40,8 +42,11 @@ export function AppSidebar({
   config,
   user,
   hasAccess,
+  isAdmin,
   ...props
 }: AppSidebarProps) {
+
+
   const data = {
     user: {
       name: user?.name ?? '',
@@ -97,7 +102,12 @@ export function AppSidebar({
             icon: Webhook
           }
         ]
-      }
+      },
+      ...(isAdmin ? [{
+        name: 'paymaster',
+        url: `/${config?.community.alias}/paymaster`,
+        icon: CreditCard
+      }] : [])
     ]
   };
 
