@@ -11,25 +11,10 @@ import {
   updatePaymasterName,
   upsertPaymasterWhitelist
 } from '@/services/chain-db/paymaster';
-import { CommunityConfig, Config } from '@citizenwallet/sdk';
-import { ethers } from 'ethers';
+import { BundlerService, CommunityConfig, Config } from '@citizenwallet/sdk';
+import { ethers, Wallet } from 'ethers';
 import { revalidatePath } from 'next/cache';
 import { PAYMASTER_ABI } from './contract/paymaster_contract';
-
-const CHAIN_ID_TO_RPC_URL = (chainId: string) => {
-  switch (chainId) {
-    case '137':
-      return process.env.POLYGON_RPC_URL;
-    case '100':
-      return process.env.GNOSIS_RPC_URL;
-    case '42220':
-      return process.env.CELO_RPC_URL;
-    case '42161':
-      return process.env.ARBITRUM_RPC_URL;
-    default:
-      return process.env.BASE_RPC_URL;
-  }
-};
 
 export const updatePaymasterNameAction = async (args: {
   config: Config;
@@ -100,6 +85,8 @@ export const refreshPaymasterWhitelistAction = async (args: {
 
   try {
     const communityConfig = new CommunityConfig(config);
+    const bundler = new BundlerService(communityConfig);
+
     const chainId = communityConfig.primaryToken.chain_id;
     const paymasteraddress =
       communityConfig.primaryAccountConfig.paymaster_address;
@@ -112,36 +99,48 @@ export const refreshPaymasterWhitelistAction = async (args: {
       throw new Error('You are not authorized to upload paymaster whitelist');
     }
 
-    if (!process.env.WHITELIST_ACCOUNT_WALLET_PRIVATE_KEY) {
-      throw new Error('WHITELIST_ACCOUNT_WALLET_PRIVATE_KEY is not set');
+    if (
+      !process.env.WHITELIST_ACCOUNT_WALLET_PRIVATE_KEY ||
+      !process.env.WHITELIST_ACCOUNT_ADDRESS
+    ) {
+      throw new Error(
+        'WHITELIST_ACCOUNT_WALLET_PRIVATE_KEY or WHITELIST_ACCOUNT_ADDRESS is not set'
+      );
     }
 
-    const provider = new ethers.JsonRpcProvider(
-      CHAIN_ID_TO_RPC_URL(chainId.toString())
+    const signer = new Wallet(
+      process.env.WHITELIST_ACCOUNT_WALLET_PRIVATE_KEY as string
     );
+    const signerAccountAddress = process.env
+      .WHITELIST_ACCOUNT_ADDRESS as string;
 
-    const wallet = new ethers.Wallet(
-      process.env.WHITELIST_ACCOUNT_WALLET_PRIVATE_KEY,
-      provider
-    );
-
-    const paymasterContract = new ethers.Contract(
-      paymasteraddress,
-      PAYMASTER_ABI,
-      wallet
-    );
-
+    // Prepare the whitelist data
     const whitelist = data.map((item) => item.contract);
 
-    const tx = await paymasterContract.updateWhitelist(whitelist);
+    // Call the bundler with the encoded data
+    const hash = await bundler.call(
+      signer,
+      paymasteraddress,
+      signerAccountAddress,
+      ethers.getBytes(
+        ethers.Interface.from(PAYMASTER_ABI).encodeFunctionData(
+          'updateWhitelist',
+          [whitelist]
+        )
+      )
+    );
 
-    const receipt = await tx.wait();
-    const txHash = receipt.hash;
+    // Wait for transaction success
+    const isSuccess = await bundler.awaitSuccess(hash);
+
+    if (!isSuccess) {
+      throw new Error('Failed to update paymaster whitelist');
+    }
 
     const supabase = getServiceRoleClient(chainId);
     const newdata = data.map((item) => ({
       ...item,
-      published: txHash
+      published: hash
     }));
 
     await upsertPaymasterWhitelist({
