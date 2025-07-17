@@ -5,7 +5,7 @@ import { MemberT } from './members';
 import { ethers } from 'ethers';
 
 const TABLE_NAME = 'a_transfers';
-export const PAGE_SIZE = 25;
+export const PAGE_SIZE = 20;
 
 export interface TransferT {
   id: string;
@@ -24,6 +24,12 @@ export interface TransferWithMembersT extends TransferT {
   to_member: MemberT;
 }
 
+export interface TransferWithMembersResponseT
+  extends Pick<TransferT, 'hash' | 'value' | 'description' | 'created_at'> {
+  from_member: MemberT;
+  to_member: MemberT;
+}
+
 export const getTransfersOfToken = async (args: {
   client: SupabaseClient;
   token: string;
@@ -31,7 +37,7 @@ export const getTransfersOfToken = async (args: {
   page: number;
   from?: string;
   to?: string;
-}): Promise<PostgrestResponse<TransferWithMembersT>> => {
+}): Promise<PostgrestResponse<TransferWithMembersResponseT>> => {
   const { client, token, query, page, from, to } = args;
 
   const offset = (page - 1) * PAGE_SIZE;
@@ -40,14 +46,16 @@ export const getTransfersOfToken = async (args: {
   let queryBuilder = client
     .from(TABLE_NAME)
     .select(
-      `
-      *,
+      `hash,
+      value,
+      description,
       from_member:a_members!from_member_id!inner(*),
-      to_member:a_members!to_member_id!inner(*)
+      to_member:a_members!to_member_id!inner(*),
+      created_at
     `,
-      { count: 'exact' }
+      { count: 'planned' }
     )
-    .ilike('token_contract', token);
+    .eq('token_contract', token);
 
   if (from) {
     // Convert to start of day in ISO format with UTC timezone
@@ -72,7 +80,8 @@ export const getTransfersOfToken = async (args: {
   return queryBuilder
     .order('created_at', { ascending: false })
     .range(offset, offset + PAGE_SIZE - 1)
-    .limit(PAGE_SIZE);
+    .limit(PAGE_SIZE)
+    .returns<TransferWithMembersResponseT[]>();
 };
 
 export const getTreasuryTransfersOfToken = async (args: {
