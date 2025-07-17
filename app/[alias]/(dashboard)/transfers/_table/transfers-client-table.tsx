@@ -1,12 +1,12 @@
 'use client';
 
 import { DataTable } from '@/components/ui/data-table';
-import { Config, CommunityConfig } from '@citizenwallet/sdk';
-import { TransferWithMembersT } from '@/services/chain-db/transfers';
+import { TransferWithMembersResponseT } from '@/services/chain-db/transfers';
+import { CommunityConfig, Config } from '@citizenwallet/sdk';
 import { createColumns } from './columns';
 
 interface TransferClientTableProps {
-  data: TransferWithMembersT[];
+  data: TransferWithMembersResponseT[];
   config: Config;
 }
 
