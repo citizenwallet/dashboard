@@ -1,140 +1,140 @@
 'use client';
 
-import { ColumnDef } from '@tanstack/react-table';
-import { CommunityConfig } from '@citizenwallet/sdk';
-import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
-import { TransferWithMembersT } from '@/services/chain-db/transfers';
-import { formatAddress } from '@/lib/utils';
 import { CommunityLogo } from '@/components/icons';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Skeleton } from '@/components/ui/skeleton';
+import { formatAddress } from '@/lib/utils';
+import { TransferWithMembersResponseT, TransferWithMembersT } from '@/services/chain-db/transfers';
+import { CommunityConfig } from '@citizenwallet/sdk';
+import { ColumnDef } from '@tanstack/react-table';
 
 export const createColumns = (
   communityConfig: CommunityConfig
-): ColumnDef<TransferWithMembersT>[] => [
-  {
-    header: 'ID',
-    accessorKey: 'id',
-    cell: ({ row }) => {
-      const hash = row.original.hash;
-      const hashFormatted = formatAddress(hash);
+): ColumnDef<TransferWithMembersResponseT>[] => [
+    {
+      header: 'ID',
+      accessorKey: 'id',
+      cell: ({ row }) => {
+        const hash = row.original.hash;
+        const hashFormatted = formatAddress(hash);
 
-      return <span className="text-xs font-mono">{hashFormatted}</span>;
+        return <span className="text-xs font-mono">{hashFormatted}</span>;
+      },
+      size: 120 // Fixed width for hash
     },
-    size: 120 // Fixed width for hash
-  },
-  {
-    header: 'From',
-    accessorKey: 'from_member',
-    cell: ({ row }) => {
-      const { image, username, name, account } = row.original.from_member;
+    {
+      header: 'From',
+      accessorKey: 'from_member',
+      cell: ({ row }) => {
+        const { image, username, name, account } = row.original.from_member;
 
-      const isAnonymous = username?.includes('anonymous');
-      const isZeroAddress =
-        account === '0x0000000000000000000000000000000000000000';
+        const isAnonymous = username?.includes('anonymous');
+        const isZeroAddress =
+          account === '0x0000000000000000000000000000000000000000';
 
-      return (
-        <div className="flex items-center gap-2 min-w-[200px]">
-          <Avatar className="h-8 w-8 flex-shrink-0">
-            <AvatarImage src={image} alt={username} />
-            <AvatarFallback>{username.slice(0, 2)}</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">
-              {isZeroAddress
-                ? `@${communityConfig.primaryToken.symbol}`
-                : `@${username}`}
-            </span>
-            {isAnonymous ? (
-              <span className="text-xs font-mono">
+        return (
+          <div className="flex items-center gap-2 min-w-[200px]">
+            <Avatar className="h-8 w-8 flex-shrink-0">
+              <AvatarImage src={image} alt={username} />
+              <AvatarFallback>{username.slice(0, 2)}</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground">
                 {isZeroAddress
-                  ? communityConfig.community.name
-                  : formatAddress(account)}
+                  ? `@${communityConfig.primaryToken.symbol}`
+                  : `@${username}`}
               </span>
-            ) : (
-              <span className="text-xs font-mono">{name}</span>
-            )}
+              {isAnonymous ? (
+                <span className="text-xs font-mono">
+                  {isZeroAddress
+                    ? communityConfig.community.name
+                    : formatAddress(account)}
+                </span>
+              ) : (
+                <span className="text-xs font-mono">{name}</span>
+              )}
+            </div>
           </div>
-        </div>
-      );
-    }
-  },
-  {
-    header: 'To',
-    accessorKey: 'to_member',
-    cell: ({ row }) => {
-      const { image, username, name, account } = row.original.to_member;
+        );
+      }
+    },
+    {
+      header: 'To',
+      accessorKey: 'to_member',
+      cell: ({ row }) => {
+        const { image, username, name, account } = row.original.to_member;
 
-      const isAnonymous = username?.includes('anonymous');
-      const isZeroAddress =
-        account === '0x0000000000000000000000000000000000000000';
+        const isAnonymous = username?.includes('anonymous');
+        const isZeroAddress =
+          account === '0x0000000000000000000000000000000000000000';
 
-      return (
-        <div className="flex items-center gap-2 min-w-[200px]">
-          <Avatar className="h-8 w-8 flex-shrink-0">
-            <AvatarImage src={image} alt={username} />
-            <AvatarFallback>{username.slice(0, 2)}</AvatarFallback>
-          </Avatar>
-          <div className="flex flex-col">
-            <span className="text-xs text-muted-foreground">
-              {isZeroAddress
-                ? `@${communityConfig.primaryToken.symbol}`
-                : `@${username}`}
-            </span>
-            {isAnonymous ? (
-              <span className="text-xs font-mono">
+        return (
+          <div className="flex items-center gap-2 min-w-[200px]">
+            <Avatar className="h-8 w-8 flex-shrink-0">
+              <AvatarImage src={image} alt={username} />
+              <AvatarFallback>{username.slice(0, 2)}</AvatarFallback>
+            </Avatar>
+            <div className="flex flex-col">
+              <span className="text-xs text-muted-foreground">
                 {isZeroAddress
-                  ? communityConfig.community.name
-                  : formatAddress(account)}
+                  ? `@${communityConfig.primaryToken.symbol}`
+                  : `@${username}`}
               </span>
-            ) : (
-              <span className="text-xs font-mono">{name}</span>
-            )}
+              {isAnonymous ? (
+                <span className="text-xs font-mono">
+                  {isZeroAddress
+                    ? communityConfig.community.name
+                    : formatAddress(account)}
+                </span>
+              ) : (
+                <span className="text-xs font-mono">{name}</span>
+              )}
+            </div>
           </div>
-        </div>
-      );
-    }
-  },
-  {
-    header: 'Value',
-    accessorKey: 'value',
-    cell: ({ row }) => {
-      const value = row.original.value;
+        );
+      }
+    },
+    {
+      header: 'Value',
+      accessorKey: 'value',
+      cell: ({ row }) => {
+        const value = row.original.value;
 
-      return (
-        <div className="flex items-center gap-1 min-w-[100px]">
-          <span className="font-medium">{value}</span>
-          <CommunityLogo
-            logoUrl={communityConfig.community.logo}
-            tokenSymbol={communityConfig.primaryToken.symbol}
-            size={6}
-          />
-        </div>
-      );
-    }
-  },
-  {
-    header: 'Description',
-    accessorKey: 'description',
-    cell: ({ row }) => {
-      const description = row.original.description;
+        return (
+          <div className="flex items-center gap-1 min-w-[100px]">
+            <span className="font-medium">{value}</span>
+            <CommunityLogo
+              logoUrl={communityConfig.community.logo}
+              tokenSymbol={communityConfig.primaryToken.symbol}
+              size={6}
+            />
+          </div>
+        );
+      }
+    },
+    {
+      header: 'Description',
+      accessorKey: 'description',
+      cell: ({ row }) => {
+        const description = row.original.description;
 
-      return <div className="min-w-[200px] line-clamp-2">{description}</div>;
-    }
-  },
-  {
-    header: 'Date',
-    accessorKey: 'created_at',
-    cell: ({ row }) => {
-      const createdAt = new Date(row.original.created_at);
+        return <div className="min-w-[200px] line-clamp-2">{description}</div>;
+      }
+    },
+    {
+      header: 'Date',
+      accessorKey: 'created_at',
+      cell: ({ row }) => {
+        const createdAt = new Date(row.original.created_at);
 
-      return (
-        <span className="text-muted-foreground text-sm whitespace-nowrap min-w-[150px]">
-          {createdAt.toLocaleString()}
-        </span>
-      );
+        return (
+          <span className="text-muted-foreground text-sm whitespace-nowrap min-w-[150px]">
+            {createdAt.toLocaleString()}
+          </span>
+        );
+      }
     }
-  }
-];
+  ];
 
 export const skeletonColumns: ColumnDef<TransferWithMembersT>[] = [
   {
