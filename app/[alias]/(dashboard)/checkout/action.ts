@@ -191,12 +191,14 @@ export async function deployTokenAction({
   }
 }
 
-export async function updateCommunityConfigAction(
-  profileAddress: string,
+export async function updateCommunityConfigAction(args:
+{  profileAddress: string,
   paymasterAddress: string,
   config: Config,
-  tokenAddress?: string
+  tokenAddress?: string}
 ) {
+  const { profileAddress, paymasterAddress, config, tokenAddress } = args;
+
   const client = getServiceRoleClient();
 
   const roleInCommunity = await getAuthUserRoleInCommunityAction({
