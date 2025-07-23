@@ -97,11 +97,11 @@ export function CheckoutFlow({
           setOnprogress(80);
 
           //community config json update
-          await updateCommunityConfigAction(
-            profileDeploy || '',
-            paymasterDeploy || '',
+          await updateCommunityConfigAction({
+            profileAddress: profileDeploy || '',
+            paymasterAddress: paymasterDeploy || '',
             config
-          );
+          });
           setOnprogress(100);
         } else if (option == 'create') {
           // - profile deploy
@@ -129,12 +129,12 @@ export function CheckoutFlow({
           setOnprogress(80);
 
           //community config json update
-          await updateCommunityConfigAction(
-            profileDeploy || '',
-            paymasterDeploy || '',
+          await updateCommunityConfigAction({
+            profileAddress: profileDeploy || '',
+            paymasterAddress: paymasterDeploy || '',
             config,
-            tokenDeploy || ''
-          );
+            tokenAddress: tokenDeploy || ''
+          });
           setOnprogress(100);
         }
 
