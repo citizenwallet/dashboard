@@ -138,8 +138,8 @@ export default function CreateForm({ config }: { config: Config }) {
                                         <Coins className="h-12 w-12 text-orange-500/80" />
                                     </div>
                                     <div className="flex flex-col items-center space-y-1 mt-2">
-                                        <span className="text-xl font-medium">{form.getValues('tokenName')}</span>
-                                        <span className="text-lg text-foreground/70">{form.getValues('tokenSymbol')}</span>
+                                        <span className="text-xl font-medium">{form.watch('tokenName')}</span>
+                                        <span className="text-lg text-foreground/70">{form.watch('tokenSymbol')}</span>
                                     </div>
                                 </div>
                             )}
