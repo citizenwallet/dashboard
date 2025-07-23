@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { Config } from '@citizenwallet/sdk';
+import { CommunityConfig, Config } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Coins, Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
@@ -35,11 +35,13 @@ export default function CreateForm({ config }: { config: Config }) {
     const [isLoading, setIsLoading] = useState(false);
     const router = useRouter();
 
+    const myCommunityConfig = new CommunityConfig(config);
+
     const form = useForm<CreateFormValues>({
         resolver: zodResolver(createFormSchema),
         defaultValues: {
-            tokenName: '',
-            tokenSymbol: '',
+            tokenName: myCommunityConfig?.primaryToken?.name || '',
+            tokenSymbol: myCommunityConfig?.primaryToken?.symbol || '',
             icon: undefined,
         },
     });
