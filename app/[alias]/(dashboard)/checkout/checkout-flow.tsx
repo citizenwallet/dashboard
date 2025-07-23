@@ -23,14 +23,13 @@ import {
   deployTokenAction,
   updateCommunityConfigAction
 } from './action';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface CheckoutFlowProps {
   option: 'byoc' | 'create';
   config: Config;
   address?: string;
   ctzn_config: Config;
-  tokenName: string;
-  tokenSymbol: string;
   userAddress: string;
   userAccountBalance: number;
 }
@@ -43,8 +42,6 @@ export function CheckoutFlow({
   config,
   address,
   ctzn_config,
-  tokenName,
-  tokenSymbol,
   userAddress,
   userAccountBalance
 }: CheckoutFlowProps) {
@@ -53,6 +50,8 @@ export function CheckoutFlow({
   const [isPending, startTransition] = useTransition();
   const [onprogress, setOnprogress] = useState<number>(0);
   const router = useRouter();
+
+   const myCommunityConfig = new CommunityConfig(config);
 
   useEffect(() => {
     const createTopupUrl = async () => {
@@ -73,8 +72,8 @@ export function CheckoutFlow({
       let paymasterDeploy: string | undefined;
       let tokenDeploy: string | undefined = address || undefined;
 
-      const communityConfig = new CommunityConfig(config);
-      const chainId = communityConfig.primaryToken.chain_id.toString();
+     
+      const chainId = myCommunityConfig.primaryToken.chain_id.toString();
 
       try {
         if (option == 'byoc') {
@@ -155,13 +154,22 @@ export function CheckoutFlow({
       {/* Pricing Options */}
       <Card>
         <CardContent className="space-y-4">
-          <div className="flex flex-col items-center justify-center p-6 rounded-lg border space-y-2">
+          <div className="flex flex-col items-center justify-center p-6 space-y-4">
             <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center border">
-              <Coins className="h-12 w-12 text-orange-500/80" />
+              <Avatar className="w-full h-full rounded-full">
+                <AvatarImage
+                  src={myCommunityConfig.community.logo}
+                  alt={myCommunityConfig.community.name}
+                  className="object-center"
+                />
+                <AvatarFallback className="rounded-full">
+                  {myCommunityConfig.primaryToken.symbol}
+                </AvatarFallback>
+              </Avatar>
             </div>
             <div className="flex flex-col items-center space-y-1 mt-2">
-              <span className="text-xl font-medium">{tokenName}</span>
-              <span className="text-lg text-foreground/70">{tokenSymbol}</span>
+              <span className="text-xl font-medium">{myCommunityConfig.primaryToken.name}</span>
+              <span className="text-lg text-foreground/70">{myCommunityConfig.primaryToken.symbol}</span>
             </div>
           </div>
         </CardContent>
@@ -273,7 +281,7 @@ export function CheckoutFlow({
             <div className="flex gap-4">
               <Button
                 className="flex-1"
-                // disabled={userAccountBalance < (option === 'byoc' ? BYOC_COST : TOKEN_PUBLISH_COST)}
+                disabled={userAccountBalance < (option === 'byoc' ? BYOC_COST : TOKEN_PUBLISH_COST)}
                 onClick={deployContract}
               >
                 Confirm & Publish

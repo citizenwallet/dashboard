@@ -115,8 +115,6 @@ async function CheckoutLoader({
         config={config}
         address={address}
         ctzn_config={ctzn_config}
-        tokenName={tokenName}
-        tokenSymbol={tokenSymbol}
         userAddress={accountAddress}
         userAccountBalance={balance ? Number(formatUnits(balance, ctzn_communityConfig.getToken().decimals)) : 0}
     />;
