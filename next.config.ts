@@ -28,5 +28,10 @@ export default {
         search: ''
       }
     ]
+  },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '5mb'
+    }
   }
 };
