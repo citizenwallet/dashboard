@@ -40,6 +40,7 @@ import { Loader2 } from 'lucide-react';
 import { isValidAlias } from './alias-utils';
 import { toast } from 'sonner';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 
 interface CreateCommunityFormProps {
   deployOption: DeployOption;
@@ -50,6 +51,7 @@ export default function CreateCommunityForm({
   deployOption
 }: CreateCommunityFormProps) {
   const router = useRouter();
+  const { data: session, update } = useSession();
 
   const [isGeneratingAlias, setIsGeneratingAlias] = useState(false);
   const [isValidatingAlias, setIsValidatingAlias] = useState(false);
@@ -70,16 +72,18 @@ export default function CreateCommunityForm({
   const onSubmit = (data: z.infer<typeof createCommunityFormSchema>) => {
     startSubmitting(async () => {
       try {
-        await createCommunityAction(data.chainId, data.name, data.alias);
-
-        toast.success('Community created successfully', {
-          onAutoClose: () => {
-            router.push(`/${data.alias}`);
-          },
-          onDismiss: () => {
-            router.push(`/${data.alias}`);
-          }
+        const updateChainIds = [
+          ...(session?.user.chainIds || []),
+          parseInt(data.chainId)
+        ];
+        await update({
+          chainIds: updateChainIds
         });
+
+        await createCommunityAction(data.chainId, data.name, data.alias);
+        toast.success('Community created successfully');
+
+        router.push(`/${data.alias}`);
       } catch (error) {
         console.error('Error creating community:', error);
 
