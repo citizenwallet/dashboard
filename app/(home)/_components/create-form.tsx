@@ -12,10 +12,8 @@ import {
 } from '@/components/ui/form';
 import {
   createCommunityFormSchema,
-  mainnetChains,
-  testnetChains,
-  ChainOption
 } from './create-form-schema';
+import { mainnetChains, testnetChains, ChainOption } from '@/lib/chain';
 import { ControllerRenderProps, useForm, UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { z } from 'zod';
@@ -58,7 +56,7 @@ export default function CreateCommunityForm({
   const [isSubmitting, startSubmitting] = useTransition();
 
   const resolvedChains =
-    deployOption === 'demo' ? testnetChains : mainnetChains;
+    deployOption === 'demo' ? testnetChains : mainnetChains.filter(chain => chain.id !== '8453');
 
   const form = useForm<z.infer<typeof createCommunityFormSchema>>({
     resolver: zodResolver(createCommunityFormSchema),
@@ -141,6 +139,7 @@ export default function CreateCommunityForm({
 
       form.clearErrors('alias');
     } catch (error) {
+      console.error('Error validating alias:', error);
     } finally {
       setIsValidatingAlias(false);
     }
@@ -212,7 +211,7 @@ interface SelectBlockchainProps extends FormFieldProps<'chainId'> {
   chains: ChainOption[];
 }
 
-function SelectBlockchain({ field, form, chains }: SelectBlockchainProps) {
+function SelectBlockchain({ field, chains }: SelectBlockchainProps) {
   return (
     <FormItem>
       <FormLabel>Blockchain</FormLabel>
@@ -251,7 +250,6 @@ interface NameInputProps extends FormFieldProps<'name'> {
 
 function NameInput({
   field,
-  form,
   debounceName,
   setIsGeneratingAlias
 }: NameInputProps) {
@@ -285,7 +283,6 @@ interface AliasInputProps extends FormFieldProps<'alias'> {
 
 function AliasInput({
   field,
-  form,
   debounceAlias,
   isGeneratingAlias,
   isValidatingAlias,

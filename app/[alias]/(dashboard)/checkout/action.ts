@@ -21,27 +21,13 @@ import {
 } from './contract/paymaster_contract';
 import { PROFILE_ABI, PROFILE_BYTECODE } from './contract/profile_contract';
 import { TOKEN_ABI, TOKEN_BYTECODE } from './contract/token_contract';
+import { getRpcUrlOfChain } from '@/lib/chain';
 
 interface ProxyDeployParams {
   initializeArgs?: string[];
   privateKey: string;
   chainId: string;
 }
-
-const CHAIN_ID_TO_RPC_URL = (chainId: string) => {
-  switch (chainId) {
-    case '137':
-      return process.env.POLYGON_RPC_URL;
-    case '100':
-      return process.env.GNOSIS_RPC_URL;
-    case '42220':
-      return process.env.CELO_RPC_URL;
-    case '42161':
-      return process.env.ARBITRUM_RPC_URL;
-    default:
-      return process.env.BASE_RPC_URL;
-  }
-};
 
 export async function deployProfileAction({
   initializeArgs = [],
@@ -50,7 +36,7 @@ export async function deployProfileAction({
 }: ProxyDeployParams): Promise<string | undefined> {
   try {
     // Connect to Polygon Amoy
-    const provider = new ethers.JsonRpcProvider(CHAIN_ID_TO_RPC_URL(chainId));
+    const provider = new ethers.JsonRpcProvider(getRpcUrlOfChain(chainId));
 
     // Your deployment wallet
     const wallet = new ethers.Wallet(privateKey, provider);
@@ -114,7 +100,7 @@ export async function deployPaymasterAction({
 }): Promise<string | undefined> {
   try {
     // Get the provider from environment variable
-    const provider = new ethers.JsonRpcProvider(CHAIN_ID_TO_RPC_URL(chainId));
+    const provider = new ethers.JsonRpcProvider(getRpcUrlOfChain(chainId));
 
     // Create a wallet instance
     const wallet = new ethers.Wallet(privateKey, provider);
@@ -172,7 +158,7 @@ export async function deployTokenAction({
 }): Promise<string | undefined> {
   try {
     // Get the provider from environment variable
-    const provider = new ethers.JsonRpcProvider(CHAIN_ID_TO_RPC_URL(chainId));
+    const provider = new ethers.JsonRpcProvider(getRpcUrlOfChain(chainId));
 
     // Create a wallet instance
     const wallet = new ethers.Wallet(privateKey, provider);

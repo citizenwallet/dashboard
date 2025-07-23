@@ -16,6 +16,7 @@ import { useDebounce } from 'use-debounce';
 import { z } from 'zod';
 import { IconUpload } from '../_components/iconUpload';
 import { createByocAction, getTokenMetadataAction, uploadIconAction } from '../action';
+import { chains } from '@/lib/chain';
 
 
 // Form validation schema
@@ -32,12 +33,7 @@ interface TokenMetadata {
     name: string;
 }
 
-const chains = [
-    { id: '100', name: 'Gnosis' },
-    { id: '42220', name: 'Celo' },
-    { id: '42161', name: 'Arbitrum' },
-    { id: '137', name: 'Polygon' }
-];
+
 
 type BYOCFormValues = z.infer<typeof byocFormSchema>;
 

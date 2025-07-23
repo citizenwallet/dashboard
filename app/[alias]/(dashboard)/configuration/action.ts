@@ -11,21 +11,10 @@ import { getServiceRoleClient } from '@/services/top-db';
 import { updateCommunityJson } from '@/services/top-db/community';
 import { CommunityConfig, Config, getTokenMetadata } from '@citizenwallet/sdk';
 import { ethers } from 'ethers';
+import { getRpcUrlOfChain } from '@/lib/chain';
 
-const CHAIN_ID_TO_RPC_URL = (chainId: string) => {
-  switch (chainId) {
-    case '137':
-      return process.env.POLYGON_RPC_URL;
-    case '100':
-      return process.env.GNOSIS_RPC_URL;
-    case '42220':
-      return process.env.CELO_RPC_URL;
-    case '42161':
-      return process.env.ARBITRUM_RPC_URL;
-    default:
-      return process.env.BASE_RPC_URL;
-  }
-};
+
+
 
 export async function uploadIconAction(imageFile: File, alias: string) {
   const client = getServiceRoleClient();
@@ -204,7 +193,7 @@ export async function getTokenMetadataAction(
   tokenAddress: string
 ) {
   const communityConfig = new CommunityConfig(config);
-  const rpcUrl = CHAIN_ID_TO_RPC_URL(
+  const rpcUrl = getRpcUrlOfChain(
     config.community.profile.chain_id.toString()
   );
 

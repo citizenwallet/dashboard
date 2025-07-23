@@ -7,6 +7,7 @@ import { CommunityConfig, Config, getAccountBalance, getTwoFAAddress } from '@ci
 import { formatUnits } from 'ethers';
 import { Suspense } from 'react';
 import { CheckoutFlow } from './checkout-flow';
+import { chains } from '@/lib/chain';
 
 interface CheckoutPageProps {
     params: Promise<{ alias: string }>;
@@ -38,14 +39,6 @@ export default async function CheckoutPage(props: CheckoutPageProps) {
     }
 
     const CTZN_config = ctzn_data.json;
-
-
-    const chains = [
-        { id: '100', name: 'Gnosis' },
-        { id: '42220', name: 'Celo' },
-        { id: '42161', name: 'Arbitrum' },
-        { id: '137', name: 'Polygon' }
-    ];
 
     return (
         <div className="flex flex-1 w-full flex-col h-full">
