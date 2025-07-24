@@ -213,7 +213,7 @@ interface SelectBlockchainProps extends FormFieldProps<'chainId'> {
 
 function SelectBlockchain({ field, chains }: SelectBlockchainProps) {
   return (
-    <FormItem>
+    <FormItem className='hidden'>
       <FormLabel>Blockchain</FormLabel>
       <Select onValueChange={field.onChange} defaultValue={field.value}>
         <FormControl>
