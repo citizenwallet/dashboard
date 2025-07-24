@@ -9,8 +9,8 @@ import {
   activeCommunity,
   updateCommunityJson
 } from '@/services/top-db/community';
-import { Config } from '@citizenwallet/sdk';
-import { ethers } from 'ethers';
+import { Config, BundlerService, CommunityConfig } from '@citizenwallet/sdk';
+import { ethers, Wallet } from 'ethers';
 import {
   ERC1967_ABI,
   ERC1967_BYTECODE
@@ -300,5 +300,38 @@ export async function updateCommunityConfigAction(args: {
   } catch (error) {
     console.error('Error updating community config:', error);
     throw new Error('Failed to update community config');
+  }
+}
+
+export async function sendCtznToReceiverAction(args: {
+  signer: Wallet;
+  senderAddress: string;
+  config: Config;
+  amount: number;
+}) {
+  const { config, amount, signer, senderAddress } = args;
+
+  if (!process.env.SEND_CTZN_TOKEN_ADDRESS) {
+    throw new Error('CTZN receiver address not configured');
+  }
+
+  const receiverAddress = process.env.SEND_CTZN_TOKEN_ADDRESS;
+  const ctznConfig = new CommunityConfig(config);
+  const bundlerService = new BundlerService(ctznConfig);
+
+  try {
+    const hash = await bundlerService.sendERC20Token(
+      signer,
+      ctznConfig.primaryToken.address,
+      senderAddress,
+      receiverAddress,
+      amount.toString(),
+      'Deploying community'
+    );
+
+    return hash;
+  } catch (error) {
+    console.error('Error sending CTZN to receiver:', error);
+    throw new Error('Failed to send CTZN to receiver');
   }
 }

@@ -15,10 +15,12 @@ import {
   deployPaymasterAction,
   deployProfileAction,
   deployTokenAction,
-  updateCommunityConfigAction
+  updateCommunityConfigAction,
+  sendCtznToReceiverAction
 } from './action';
 import Image from 'next/image';
-import { formatUnits } from 'ethers';
+import { formatUnits, Wallet } from 'ethers';
+import { useSession } from 'state/session/action';
 
 interface CheckoutFlowProps {
   option: 'byoc' | 'create';
@@ -43,6 +45,8 @@ export function CheckoutFlow({
   const [topupUrl, setTopupUrl] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [onprogress, setOnprogress] = useState<number>(0);
+
+  const [, sessionActions] = useSession(ctzn_config);
 
   const router = useRouter();
 
@@ -123,7 +127,8 @@ export function CheckoutFlow({
             config
           });
           setOnprogress(100);
-        } else if (option == 'create') {
+        }
+        if (option == 'create') {
           // - profile deploy
           profileDeploy = await deployProfileAction({
             initializeArgs: [userAddress || ''],
@@ -156,18 +161,33 @@ export function CheckoutFlow({
           setOnprogress(100);
         }
 
+        const userPrivateKey = sessionActions.storage.getKey(
+          'session_private_key'
+        );
+        if (!userPrivateKey) {
+          throw new Error('User private key not found');
+        }
+        const signer = new Wallet(userPrivateKey);
+
+        const hash = await sendCtznToReceiverAction({
+          signer,
+          senderAddress: userAddress,
+          config: ctzn_config,
+          amount: publishingCost
+        });
+
         toast.success('Contract deployed successfully', {
           description: 'Now you community is Active'
         });
 
-        // TODO: user send CTZN to receiver address
-        
-
-
         router.push(`/${config.community.alias}/treasury`);
       } catch (error) {
         console.error('Error deploying contract:', error);
-        toast.error('Error deploying contract');
+        if (error instanceof Error) {
+          toast.error(error.message);
+        } else {
+          toast.error('Error deploying contract');
+        }
       }
     });
   };
