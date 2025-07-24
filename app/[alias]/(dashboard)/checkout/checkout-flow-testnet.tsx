@@ -19,14 +19,14 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 interface CheckoutFlowProps {
   option: 'byoc' | 'create';
   config: Config;
-  address?: string;
+  byocTokenAddress?: string;
   userAddress: string;
 }
 
 export function CheckoutFlowTestnet({
   option,
   config,
-  address,
+  byocTokenAddress,
   userAddress
 }: CheckoutFlowProps) {
 
@@ -40,7 +40,7 @@ export function CheckoutFlowTestnet({
     startTransition(async () => {
       let profileDeploy: string | undefined;
       let paymasterDeploy: string | undefined;
-      let tokenDeploy: string | undefined = address || undefined;
+      let tokenDeploy: string | undefined = byocTokenAddress || undefined;
 
       const chainId = myCommunityConfig.primaryToken.chain_id.toString();
 
