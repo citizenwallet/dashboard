@@ -26,6 +26,7 @@ import {
   getPrimaryAccountFactoryOfChain,
   getEntrypointAddressOfChain
 } from '@/lib/chain';
+import { primaryCardManager, primarySessionManager } from '@/lib/address';
 
 interface ProxyDeployParams {
   initializeArgs?: string[];
@@ -145,8 +146,8 @@ export async function deployPaymasterAction({
     const whitelistedAddresses = [
       profileAddress,
       tokenAddress,
-      '0xBA861e2DABd8316cf11Ae7CdA101d110CF581f28', // Card Manager
-      '0xE2F3DC3E638113b9496060349e5332963d9C1152' // Session Manager
+      primaryCardManager,
+      primarySessionManager
     ];
 
     // Initialize the contract with the deployer as sponsor and whitelisted addresses

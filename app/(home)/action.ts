@@ -12,6 +12,7 @@ import {
 } from '@/services/top-db/community';
 import { getAuthUserAction } from '../_actions/user-actions';
 import { addUserRowoCommunity } from '@/services/top-db/users';
+import { primaryCardManager, primarySessionManager } from '@/lib/address';
 
 export const generateUniqueSlugAction = async (baseSlug: string) => {
   let slug = sanitizeAlias(baseSlug);
@@ -107,7 +108,7 @@ export const createCommunityAction = async (
         chain_id: parseInt(chainId)
       },
       primary_card_manager: {
-        address: '',
+        address: primaryCardManager,
         chain_id: parseInt(chainId)
       },
       primary_account_factory: {
@@ -115,7 +116,7 @@ export const createCommunityAction = async (
         chain_id: parseInt(chainId)
       },
       primary_session_manager: {
-        address: '',
+        address: primarySessionManager,
         chain_id: parseInt(chainId)
       }
     },
