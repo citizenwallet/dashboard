@@ -44,40 +44,27 @@ export default async function TreasuryTable({
   const communityConfig = new CommunityConfig(config);
 
   const primaryRpcUrl = communityConfig.primaryRPCUrl;
-  const { chain_id: chainId, address: tokenAddress } =
-    config.community.primary_token;
+  const { address: tokenAddress } = config.community.primary_token;
   const theme = config.community.theme?.primary;
 
-  const [authRoleResult, hasMinterRoleResult, treasuryDataResult] =
-    await Promise.allSettled([
-      getAuthUserRoleInCommunityAction({
-        alias
-      }),
-      CWCheckRoleAccess(
-        tokenAddress,
-        MINTER_ROLE,
-        process.env[`SERVER_${chainId}_ACCOUNT_ADDRESS`] ?? '',
-        new JsonRpcProvider(primaryRpcUrl)
-      ),
-      getTreasuryTransfersOfTokenAction({
-        config,
-        query,
-        page,
-        from,
-        to
-      })
-    ]);
+  const authRole = await getAuthUserRoleInCommunityAction({
+    alias
+  });
 
-  const authRole =
-    authRoleResult.status === 'fulfilled' ? authRoleResult.value : null;
-  const hasMinterRole =
-    hasMinterRoleResult.status === 'fulfilled'
-      ? hasMinterRoleResult.value
-      : false;
-  const treasuryData =
-    treasuryDataResult.status === 'fulfilled'
-      ? treasuryDataResult.value
-      : { data: [], count: 0 };
+  const hasMinterRole = await CWCheckRoleAccess(
+    tokenAddress,
+    MINTER_ROLE,
+    process.env.SERVER_ACCOUNT_ADDRESS ?? '',
+    new JsonRpcProvider(primaryRpcUrl)
+  );
+
+  const treasuryData = await getTreasuryTransfersOfTokenAction({
+    config,
+    query,
+    page,
+    from,
+    to
+  });
 
   const { data, count: totalCount } = treasuryData;
 
