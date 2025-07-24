@@ -10,9 +10,7 @@ import {
   FormLabel,
   FormMessage
 } from '@/components/ui/form';
-import {
-  createCommunityFormSchema,
-} from './create-form-schema';
+import { createCommunityFormSchema } from './create-form-schema';
 import { mainnetChains, testnetChains, ChainOption } from '@/lib/chain';
 import { ControllerRenderProps, useForm, UseFormReturn } from 'react-hook-form';
 import { zodResolver } from '@hookform/resolvers/zod';
@@ -56,7 +54,9 @@ export default function CreateCommunityForm({
   const [isSubmitting, startSubmitting] = useTransition();
 
   const resolvedChains =
-    deployOption === 'demo' ? testnetChains : mainnetChains.filter(chain => chain.id !== '8453');
+    deployOption === 'demo'
+      ? testnetChains
+      : mainnetChains.filter((chain) => chain.id !== '8453');
 
   const form = useForm<z.infer<typeof createCommunityFormSchema>>({
     resolver: zodResolver(createCommunityFormSchema),
@@ -212,8 +212,10 @@ interface SelectBlockchainProps extends FormFieldProps<'chainId'> {
 }
 
 function SelectBlockchain({ field, chains }: SelectBlockchainProps) {
+  const isTestnet = chains === testnetChains;
+
   return (
-    <FormItem className='hidden'>
+    <FormItem className={`${isTestnet ? 'hidden' : ''}`}>
       <FormLabel>Blockchain</FormLabel>
       <Select onValueChange={field.onChange} defaultValue={field.value}>
         <FormControl>
