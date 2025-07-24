@@ -147,7 +147,7 @@ async function CheckoutLoader({
         address={address}
         ctzn_config={ctzn_config}
         userAddress={accountAddress}
-        userAccountBalance={balanceFormatted}
+        initialCtznBalance={balanceFormatted}
       />
     );
   }
