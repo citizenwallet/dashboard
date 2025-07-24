@@ -51,7 +51,7 @@ export default function RolePage({
   hasAdminRole
 }: {
   members: MemberT[];
-  minterMembers: MinterMembers[];
+  minterMembers: MinterMembers[] | null;
   count: number;
   config: Config;
   hasAdminRole: boolean;
@@ -413,7 +413,7 @@ export default function RolePage({
                     }
                   }
                 ]}
-                data={minterMembers}
+                data={minterMembers || []}
               />
             </div>
           </div>

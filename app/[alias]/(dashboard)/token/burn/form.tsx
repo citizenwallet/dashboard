@@ -46,6 +46,7 @@ import { isAddress } from 'ethers';
 import { formatAddress } from '@/lib/utils';
 import MemberListItem from '../_components/member-list-item';
 import { formatUnits } from 'ethers';
+import { useRouter } from 'next/navigation';
 
 interface BurnTokenFormProps {
   alias: string;
@@ -55,7 +56,7 @@ interface BurnTokenFormProps {
 export default function BurnTokenForm({ config }: BurnTokenFormProps) {
   const [isPending, startTransition] = useTransition();
   const [memberBalance, setMemberBalance] = useState<string>('0');
-  // const router = useRouter();
+  const router = useRouter();
 
   const form = useForm<z.infer<typeof burnTokenFormSchema>>({
     resolver: zodResolver(burnTokenFormSchema),
@@ -75,7 +76,7 @@ export default function BurnTokenForm({ config }: BurnTokenFormProps) {
         });
 
         toast.success(`Success 🔥`);
-        //    router.back();
+        router.push(`/${config.community.alias}/treasury`);
       } catch (error) {
         if (error instanceof Error) {
           toast.error(error.message);

@@ -87,13 +87,15 @@ async function PageLoader({
   });
 
   return (
+
     <RolePage
       members={filteredMembers as MemberT[]}
-      minterMembers={minterMembers.data as MinterMembers[]}
+      minterMembers={minterMembers.data as MinterMembers[] | null}
       count={minterMembers.count || 0}
       config={config}
       hasAdminRole={hasAdminRole}
     />
+
   );
 }
 

@@ -67,85 +67,85 @@ export function AppSidebar({
     projects:
       active === false
         ? [
-            {
-              name: 'Profile',
-              url: `/${config?.community.alias}/profile`,
-              icon: University,
-              nextIcon: profileActive ? CircleCheck : CircleDashed
-            },
-            {
-              name: 'Currency',
-              url: `/${config?.community.alias}/configuration`,
-              icon: Settings,
-              nextIcon: currencyActive ? CircleCheck : CircleDashed
-            },
-            {
-              name: 'Admins',
-              url: `/${config?.community.alias}/admins`,
-              icon: Shield
-            }
-          ]
+          {
+            name: 'Profile',
+            url: `/${config?.community.alias}/profile`,
+            icon: University,
+            nextIcon: profileActive ? CircleCheck : CircleDashed
+          },
+          {
+            name: 'Currency',
+            url: `/${config?.community.alias}/configuration`,
+            icon: Settings,
+            nextIcon: currencyActive ? CircleCheck : CircleDashed
+          },
+          {
+            name: 'Admins',
+            url: `/${config?.community.alias}/admins`,
+            icon: Shield
+          }
+        ]
         : [
-            {
-              name: 'Overview',
-              url: `/${config?.community.alias}`,
-              icon: Home
-            },
-            {
-              name: 'Members',
-              url: `/${config?.community.alias}/members`,
-              icon: Users
-            },
-            {
-              name: 'Transfers',
-              url: `/${config?.community.alias}/transfers`,
-              icon: LucideLineChart
-            },
-            {
-              name: 'Treasury',
-              url: `/${config?.community.alias}/treasury`,
-              icon: Landmark,
-              items: [
-                {
-                  name: 'History',
-                  url: `/${config?.community.alias}/treasury`,
-                  icon: List
-                },
-                {
-                  name: 'Minters',
-                  url: `/${config?.community.alias}/roles`,
-                  icon: Hammer
-                }
-              ]
-            },
-            {
-              name: 'Profile',
-              url: `/${config?.community.alias}/profile`,
-              icon: University
-            },
-            {
-              name: 'Currency',
-              url: `/${config?.community.alias}/configuration`,
-              icon: Settings
-            },
-            {
-              name: 'Admins',
-              url: `/${config?.community.alias}/admins`,
-              icon: Shield
-            },
-            {
-              name: 'Developer',
-              url: `/${config?.community.alias}`,
-              icon: Wrench,
-              items: [
-                {
-                  name: 'Webhooks',
-                  url: `/${config?.community.alias}/webhooks`,
-                  icon: Webhook
-                }
-              ]
-            }
-          ]
+          {
+            name: 'Overview',
+            url: `/${config?.community.alias}`,
+            icon: Home
+          },
+          {
+            name: 'Members',
+            url: `/${config?.community.alias}/members`,
+            icon: Users
+          },
+          {
+            name: 'Transfers',
+            url: `/${config?.community.alias}/transfers`,
+            icon: LucideLineChart
+          },
+          {
+            name: 'Treasury',
+            url: `/${config?.community.alias}/treasury`,
+            icon: Landmark,
+            items: [
+              {
+                name: 'History',
+                url: `/${config?.community.alias}/treasury`,
+                icon: List
+              },
+              {
+                name: 'Minters',
+                url: `/${config?.community.alias}/roles`,
+                icon: Hammer
+              }
+            ]
+          },
+          {
+            name: 'Profile',
+            url: `/${config?.community.alias}/profile`,
+            icon: University
+          },
+          {
+            name: 'Currency',
+            url: `/${config?.community.alias}/configuration`,
+            icon: Settings
+          },
+          {
+            name: 'Admins',
+            url: `/${config?.community.alias}/admins`,
+            icon: Shield
+          },
+          {
+            name: 'Developer',
+            url: `/${config?.community.alias}`,
+            icon: Wrench,
+            items: [
+              {
+                name: 'Webhooks',
+                url: `/${config?.community.alias}/webhooks`,
+                icon: Webhook
+              }
+            ]
+          }
+        ]
   };
 
   return (
