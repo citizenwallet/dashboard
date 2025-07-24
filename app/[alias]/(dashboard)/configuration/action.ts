@@ -161,12 +161,12 @@ export async function createTokenAction(
           address: tokenAddress,
           chain_id: config.community.primary_token.chain_id,
           decimals: 18,
-          standard: 'erc20'
+          standard: 'erc20',
+          logo: icon
         }
       },
       community: {
         ...config.community,
-        logo: icon,
         primary_token: {
           ...config.community.primary_token,
           address: tokenAddress
