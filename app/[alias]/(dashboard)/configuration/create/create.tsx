@@ -117,8 +117,7 @@ export default function CreateForm({ config }: { config: Config }) {
                                         <FormLabel>Symbol (typically 2-4 characters)</FormLabel>
                                         <FormControl>
                                             <Input
-                                                placeholder="MYT"
-                                                maxLength={4}
+                                                placeholder="MYT"                                             
                                                 {...field}
                                                 onChange={(e) => {
                                                     // Convert to uppercase as user types
