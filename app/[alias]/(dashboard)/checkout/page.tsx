@@ -78,10 +78,6 @@ async function CheckoutLoader({
     ctzn_config: Config
 }) {
 
-    const communityConfig = new CommunityConfig(config);
-    const tokenName = communityConfig.primaryToken.name;
-    const tokenSymbol = communityConfig.primaryToken.symbol;
-
     const session = await auth();
     if (!session) {
         throw new Error('You are not logged in');
