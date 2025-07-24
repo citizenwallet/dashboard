@@ -14,7 +14,7 @@ import {
   deployTokenAction,
   updateCommunityConfigAction
 } from './action';
-import Image from 'next/image';
+import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
 interface CheckoutFlowProps {
   option: 'byoc' | 'create';
@@ -120,13 +120,16 @@ export function CheckoutFlowTestnet({
         <CardContent className="space-y-4">
           <div className="flex flex-col items-center justify-center p-6 space-y-4">
             <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center border">
-              <Image
-                src={myCommunityConfig?.primaryToken?.logo || ''}
-                alt={myCommunityConfig?.primaryToken?.name || ''}
-                width={96}
-                height={96}
-                className="rounded-full object-cover"
-              />
+              <Avatar className="w-full h-full rounded-full">
+                <AvatarImage
+                  src={myCommunityConfig.community.logo}
+                  alt={myCommunityConfig.community.name}
+                  className="object-center"
+                />
+                <AvatarFallback className="rounded-full">
+                  {myCommunityConfig.primaryToken.symbol}
+                </AvatarFallback>
+              </Avatar>
             </div>
             <div className="flex flex-col items-center space-y-1 mt-2">
               <span className="text-xl font-medium">
