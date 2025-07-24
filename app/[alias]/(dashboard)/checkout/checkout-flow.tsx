@@ -26,7 +26,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 interface CheckoutFlowProps {
   option: 'byoc' | 'create';
   config: Config;
-  address?: string;
+  byocTokenAddress?: string;
   ctzn_config: Config;
   userAddress: string;
   initialCtznBalance: number;
@@ -38,7 +38,7 @@ const TOKEN_PUBLISH_COST = 200;
 export function CheckoutFlow({
   option,
   config,
-  address,
+  byocTokenAddress,
   ctzn_config,
   userAddress,
   initialCtznBalance
@@ -98,7 +98,7 @@ export function CheckoutFlow({
     startTransition(async () => {
       let profileDeploy: string | undefined;
       let paymasterDeploy: string | undefined;
-      let tokenDeploy: string | undefined = address || undefined;
+      let tokenDeploy: string | undefined = byocTokenAddress || undefined;
 
       const chainId = myCommunityConfig.primaryToken.chain_id.toString();
 

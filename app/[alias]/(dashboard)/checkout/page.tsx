@@ -129,7 +129,7 @@ async function CheckoutLoader({
       <CheckoutFlowTestnet
         option={option}
         config={config}
-        address={address}
+        byocTokenAddress={address}
         userAddress={accountAddress}
       />
         );
@@ -144,7 +144,7 @@ async function CheckoutLoader({
       <CheckoutFlow
         option={option}
         config={config}
-        address={address}
+        byocTokenAddress={address}
         ctzn_config={ctzn_config}
         userAddress={accountAddress}
         initialCtznBalance={balanceFormatted}
