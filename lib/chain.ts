@@ -62,18 +62,23 @@ export const testnetChains: ChainOption[] = [
   }
 ];
 
-export const chains: ChainOption[] = [...mainnetChains, ...testnetChains]
+export const chains: ChainOption[] = [...mainnetChains, ...testnetChains];
 
 export const getRpcUrlOfChain = (chainId: string) => {
-  const chain = chains.find(chain => chain.id === chainId);
+  const chain = chains.find((chain) => chain.id === chainId);
   if (!chain) {
     throw new Error(`Chain with id ${chainId} not found`);
   }
+
+  if (!chain.rpcUrl) {
+    throw new Error(`RPC URL not configured for chain ${chainId}`);
+  }
+
   return chain.rpcUrl;
 };
 
 export const getPrimaryAccountFactoryOfChain = (chainId: string) => {
-  const chain = chains.find(chain => chain.id === chainId);
+  const chain = chains.find((chain) => chain.id === chainId);
   if (!chain) {
     throw new Error(`Chain with id ${chainId} not found`);
   }
@@ -81,7 +86,7 @@ export const getPrimaryAccountFactoryOfChain = (chainId: string) => {
 };
 
 export const getEntrypointAddressOfChain = (chainId: string) => {
-  const chain = chains.find(chain => chain.id === chainId);
+  const chain = chains.find((chain) => chain.id === chainId);
   if (!chain) {
     throw new Error(`Chain with id ${chainId} not found`);
   }
