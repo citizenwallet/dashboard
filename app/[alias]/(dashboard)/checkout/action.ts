@@ -29,21 +29,25 @@ import {
 
 interface ProxyDeployParams {
   initializeArgs?: string[];
-  privateKey: string;
   chainId: string;
 }
 
+const deploymentKey = process.env.SERVER_PRIVATE_KEY;
+
 export async function deployProfileAction({
   initializeArgs = [],
-  privateKey,
   chainId
 }: ProxyDeployParams): Promise<string | undefined> {
   try {
+    if (!deploymentKey) {
+      throw new Error('Deployment key not configured');
+    }
+
     // Connect to Polygon Amoy
     const provider = new ethers.JsonRpcProvider(getRpcUrlOfChain(chainId));
 
     // Your deployment wallet
-    const wallet = new ethers.Wallet(privateKey, provider);
+    const wallet = new ethers.Wallet(deploymentKey, provider);
 
     // 1. Deploy Implementation Contract
     const implementationFactory = new ethers.ContractFactory(
@@ -88,26 +92,29 @@ export async function deployProfileAction({
     return proxyAddress;
   } catch (error) {
     console.error('Proxy deployment error:', error);
+    throw new Error('Failed to deploy profile');
   }
 }
 
 export async function deployPaymasterAction({
-  privateKey,
   chainId,
   profileAddress,
   tokenAddress
 }: {
-  privateKey: string;
   chainId: string;
   profileAddress: string;
   tokenAddress: string;
 }): Promise<string | undefined> {
   try {
+    if (!deploymentKey) {
+      throw new Error('Deployment key not configured');
+    }
+
     // Get the provider from environment variable
     const provider = new ethers.JsonRpcProvider(getRpcUrlOfChain(chainId));
 
     // Create a wallet instance
-    const wallet = new ethers.Wallet(privateKey, provider);
+    const wallet = new ethers.Wallet(deploymentKey, provider);
 
     // Create contract factory
     const factory = new ethers.ContractFactory(
@@ -150,22 +157,25 @@ export async function deployPaymasterAction({
     return contractAddress;
   } catch (error) {
     console.error('Contract deployment error:', error);
+    throw new Error('Failed to deploy paymaster');
   }
 }
 
 export async function deployTokenAction({
-  privateKey,
   chainId
 }: {
-  privateKey: string;
   chainId: string;
 }): Promise<string | undefined> {
   try {
+    if (!deploymentKey) {
+      throw new Error('Deployment key not configured');
+    }
+
     // Get the provider from environment variable
     const provider = new ethers.JsonRpcProvider(getRpcUrlOfChain(chainId));
 
     // Create a wallet instance
-    const wallet = new ethers.Wallet(privateKey, provider);
+    const wallet = new ethers.Wallet(deploymentKey, provider);
 
     // Create contract factory
     const factory = new ethers.ContractFactory(
@@ -188,15 +198,16 @@ export async function deployTokenAction({
     return contractAddress;
   } catch (error) {
     console.error('Contract deployment error:', error);
+    throw new Error('Failed to deploy token');
   }
 }
 
-export async function updateCommunityConfigAction(args:
-{  profileAddress: string,
-  paymasterAddress: string,
-  config: Config,
-  tokenAddress?: string}
-) {
+export async function updateCommunityConfigAction(args: {
+  profileAddress: string;
+  paymasterAddress: string;
+  config: Config;
+  tokenAddress?: string;
+}) {
   const { profileAddress, paymasterAddress, config, tokenAddress } = args;
 
   const client = getServiceRoleClient();

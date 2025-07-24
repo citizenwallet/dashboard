@@ -130,10 +130,9 @@ async function CheckoutLoader({
         option={option}
         config={config}
         address={address}
-        ctzn_config={ctzn_config}
         userAddress={accountAddress}
       />
-    );
+        );
   }
 
   if (

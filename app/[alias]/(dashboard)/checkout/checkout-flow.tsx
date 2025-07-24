@@ -15,7 +15,6 @@ import { useRouter } from 'next/navigation';
 import { useEffect, useState, useTransition } from 'react';
 import QRCode from 'react-qr-code';
 import { toast } from 'sonner';
-import { useSession } from 'state/session/action';
 import {
   deployPaymasterAction,
   deployProfileAction,
@@ -44,7 +43,6 @@ export function CheckoutFlow({
   userAddress,
   userAccountBalance
 }: CheckoutFlowProps) {
-  const [, sessionActions] = useSession(ctzn_config);
   const [topupUrl, setTopupUrl] = useState<string | null>(null);
   const [isPending, startTransition] = useTransition();
   const [onprogress, setOnprogress] = useState<number>(0);
@@ -65,8 +63,6 @@ export function CheckoutFlow({
 
   const deployContract = () => {
     startTransition(async () => {
-      const privateKey = sessionActions.storage.getKey('session_private_key');
-
       let profileDeploy: string | undefined;
       let paymasterDeploy: string | undefined;
       let tokenDeploy: string | undefined = address || undefined;
@@ -78,14 +74,14 @@ export function CheckoutFlow({
           //- profile deploy
           profileDeploy = await deployProfileAction({
             initializeArgs: [userAddress || ''],
-            privateKey: privateKey || '',
+           
             chainId: chainId
           });
           setOnprogress(40);
 
           // - paymaster deploy
           paymasterDeploy = await deployPaymasterAction({
-            privateKey: privateKey || '',
+     
             chainId: chainId,
             profileAddress: profileDeploy || '',
             tokenAddress: tokenDeploy || ''
@@ -104,21 +100,21 @@ export function CheckoutFlow({
           // - profile deploy
           profileDeploy = await deployProfileAction({
             initializeArgs: [userAddress || ''],
-            privateKey: privateKey || '',
+           
             chainId: chainId
           });
           setOnprogress(20);
 
           // - token deploy
           tokenDeploy = await deployTokenAction({
-            privateKey: privateKey || '',
+          
             chainId: chainId
           });
           setOnprogress(40);
 
           // - paymaster deploy
           paymasterDeploy = await deployPaymasterAction({
-            privateKey: privateKey || '',
+           
             chainId: chainId,
             profileAddress: profileDeploy || '',
             tokenAddress: tokenDeploy || ''
