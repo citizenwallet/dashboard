@@ -14,13 +14,13 @@ import { ethers } from 'ethers';
 import {
   ERC1967_ABI,
   ERC1967_BYTECODE
-} from './contract/ERC1967Proxy_contract';
+} from './_contract/ERC1967Proxy_contract';
 import {
   PAYMASTER_ABI,
   PAYMASTER_BYTECODE
-} from './contract/paymaster_contract';
-import { PROFILE_ABI, PROFILE_BYTECODE } from './contract/profile_contract';
-import { TOKEN_ABI, TOKEN_BYTECODE } from './contract/token_contract';
+} from './_contract/paymaster_contract';
+import { PROFILE_ABI, PROFILE_BYTECODE } from './_contract/profile_contract';
+import { TOKEN_ABI, TOKEN_BYTECODE } from './_contract/token_contract';
 import {
   getRpcUrlOfChain,
   getPrimaryAccountFactoryOfChain,
