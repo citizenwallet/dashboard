@@ -45,8 +45,8 @@ export const mainnetChains: ChainOption[] = [
     name: 'Base',
     logo: '/chainLogo/Base.png',
     rpcUrl: process.env.BASE_RPC_URL || '',
-    primaryAccountFactory: '0x0000000000000000000000000000000000000000',
-    entrypointAddress: '0x0000000000000000000000000000000000000000'
+    primaryAccountFactory: '0x05e2Fb34b4548990F96B3ba422eA3EF49D5dAa99',
+    entrypointAddress: '0xAE76B1C6818c1DD81E20ccefD3e72B773068ABc9'
   }
 ];
 
