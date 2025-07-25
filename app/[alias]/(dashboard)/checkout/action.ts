@@ -9,7 +9,11 @@ import {
   activeCommunity,
   updateCommunityJson
 } from '@/services/top-db/community';
-import { Config, BundlerService, CommunityConfig } from '@citizenwallet/sdk';
+import {
+  Config,
+  BundlerService,
+  CommunityConfig,
+} from '@citizenwallet/sdk';
 import { ethers, Wallet } from 'ethers';
 import {
   ERC1967_ABI,
@@ -26,7 +30,11 @@ import {
   getPrimaryAccountFactoryOfChain,
   getEntrypointAddressOfChain
 } from '@/lib/chain';
-import { getPrimaryCardManagerOfChain, getSessionModuleAddressOfChain } from '@/lib/chain';
+import {
+  getPrimaryCardManagerOfChain,
+  getSessionModuleAddressOfChain
+} from '@/lib/chain';
+import { getCommunityByAliasAction } from '@/app/_actions/community-actions';
 
 /**
  * Type definition for profile initialization arguments
@@ -252,15 +260,15 @@ export async function deployTokenAction({
 export async function updateCommunityConfigAction(args: {
   profileAddress: string;
   paymasterAddress: string;
-  config: Config;
+  alias: string;
   tokenAddress?: string;
 }) {
-  const { profileAddress, paymasterAddress, config, tokenAddress } = args;
+  const { profileAddress, paymasterAddress, alias, tokenAddress } = args;
 
   const client = getServiceRoleClient();
 
   const roleInCommunity = await getAuthUserRoleInCommunityAction({
-    alias: config.community.alias
+    alias: alias
   });
 
   const roleInApp = await getAuthUserRoleInAppAction();
@@ -272,6 +280,9 @@ export async function updateCommunityConfigAction(args: {
   if (roleInApp === 'user' && !roleInCommunity) {
     throw new Error('You are not a member of this community');
   }
+
+  const community = await getCommunityByAliasAction(alias);
+  const config = community.json;
 
   const primaryAccountFactory = getPrimaryAccountFactoryOfChain(
     config.community.profile.chain_id.toString()
@@ -315,13 +326,13 @@ export async function updateCommunityConfigAction(args: {
               Object.entries(config.tokens).filter(
                 ([key]) =>
                   key !==
-                  `${config.community.profile.chain_id}:${ethers.ZeroAddress}`
+                  `${config.community.profile.chain_id}:${config.community.primary_token.address}`
               )
             ),
 
             [`${config.community.profile.chain_id}:${tokenAddress}`]: {
               ...config.tokens[
-                `${config.community.profile.chain_id}:${ethers.ZeroAddress}`
+                `${config.community.profile.chain_id}:${config.community.primary_token.address}`
               ],
               address: tokenAddress
             }
