@@ -18,7 +18,6 @@ import {
   updateCommunityConfigAction,
   sendCtznToReceiverAction
 } from './action';
-import Image from 'next/image';
 import { formatUnits, Wallet } from 'ethers';
 import { useSession } from 'state/session/action';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
@@ -69,7 +68,7 @@ export function CheckoutFlow({
   };
 
   const { isPolling, startPolling, stopPolling, currentBalance } =
-    pollUserBalance({
+    usePollUserBalance({
       execute: returnUserCtznBalance,
       publishingCost,
       initialBalance: initialCtznBalance
@@ -92,7 +91,7 @@ export function CheckoutFlow({
     return () => {
       stopPolling();
     };
-  }, [option, ctzn_config, userAddress, initialCtznBalance, publishingCost]);
+  }, [option, ctzn_config, userAddress, initialCtznBalance, publishingCost, startPolling, stopPolling]);
 
   const deployContract = () => {
     startTransition(async () => {
@@ -191,7 +190,7 @@ export function CheckoutFlow({
         }
         const signer = new Wallet(userPrivateKey);
 
-        const hash = await sendCtznToReceiverAction({
+        await sendCtznToReceiverAction({
           signer,
           senderAddress: userAddress,
           config: ctzn_config,
@@ -377,7 +376,7 @@ export function CheckoutFlow({
 }
 
 // Add this function inside your CheckoutFlow component
-const pollUserBalance = (args: {
+const usePollUserBalance = (args: {
   execute: () => Promise<number>;
   publishingCost: number;
   initialBalance: number;
