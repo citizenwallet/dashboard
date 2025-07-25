@@ -130,7 +130,7 @@ export function CheckoutFlow({
           await updateCommunityConfigAction({
             profileAddress: profileDeploy,
             paymasterAddress: paymasterDeploy,
-            config
+            alias: config.community.alias
           });
           setOnprogress(100);
         }
@@ -176,7 +176,7 @@ export function CheckoutFlow({
           await updateCommunityConfigAction({
             profileAddress: profileDeploy,
             paymasterAddress: paymasterDeploy,
-            config,
+            alias: config.community.alias,
             tokenAddress: tokenDeploy
           });
           setOnprogress(100);

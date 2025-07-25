@@ -3,7 +3,10 @@
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
 import { Progress } from '@/components/ui/progress';
-import { CommunityConfig, Config } from '@citizenwallet/sdk';
+import {
+  CommunityConfig,
+  Config,
+} from '@citizenwallet/sdk';
 import { Loader2 } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 import { useState, useTransition } from 'react';
@@ -12,7 +15,7 @@ import {
   deployPaymasterAction,
   deployProfileAction,
   deployTokenAction,
-  updateCommunityConfigAction
+  updateCommunityConfigAction,
 } from './action';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 
@@ -76,7 +79,7 @@ export function CheckoutFlowTestnet({
           await updateCommunityConfigAction({
             profileAddress: profileDeploy,
             paymasterAddress: paymasterDeploy,
-            config
+            alias: config.community.alias
           });
           setOnprogress(100);
         }
@@ -122,7 +125,7 @@ export function CheckoutFlowTestnet({
           await updateCommunityConfigAction({
             profileAddress: profileDeploy,
             paymasterAddress: paymasterDeploy,
-            config,
+            alias: config.community.alias,
             tokenAddress: tokenDeploy
           });
           setOnprogress(100);
@@ -134,6 +137,7 @@ export function CheckoutFlowTestnet({
 
         router.push(`/${config.community.alias}/treasury`);
       } catch (error) {
+        setOnprogress(0);
         console.error('Error deploying contract:', error);
         toast.error('Error deploying contract');
       }
