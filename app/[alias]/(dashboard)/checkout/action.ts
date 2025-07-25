@@ -28,17 +28,35 @@ import {
 } from '@/lib/chain';
 import { primaryCardManager, primarySessionManager } from '@/lib/address';
 
-interface ProxyDeployParams {
-  initializeArgs?: string[];
-  chainId: string;
-}
+/**
+ * Type definition for profile initialization arguments
+ * @param _ownerAddress - The address of the profile owner
+ */
+type ProfileInitializeArgs = [_ownerAddress: string];
+
+/**
+ * Type definition for token initialization arguments
+ * @param _ownerAddress - The address of the token owner
+ * @param mintersAddresses - Array of addresses allowed to mint tokens
+ * @param name - The name of the token
+ * @param symbol - The symbol/ticker of the token
+ */
+type TokenInitializeArgs = [
+  _ownerAddress: string,
+  mintersAddresses: string[],
+  name: string,
+  symbol: string
+];
 
 const deploymentKey = process.env.SERVER_PRIVATE_KEY;
 
 export async function deployProfileAction({
-  initializeArgs = [],
+  profileInitializeArgs,
   chainId
-}: ProxyDeployParams): Promise<string | undefined> {
+}: {
+  profileInitializeArgs: ProfileInitializeArgs;
+  chainId: string;
+}): Promise<string | undefined> {
   try {
     if (!deploymentKey) {
       throw new Error('Deployment key not configured');
@@ -65,7 +83,7 @@ export async function deployProfileAction({
 
     // 2. Prepare initialization data if needed
     let initData = '0x';
-    if (initializeArgs.length > 0) {
+    if (profileInitializeArgs.length > 0) {
       const contract = new ethers.Contract(
         implementationAddress,
         PROFILE_ABI,
@@ -73,7 +91,7 @@ export async function deployProfileAction({
       );
       initData = contract.interface.encodeFunctionData(
         'initialize',
-        initializeArgs
+        profileInitializeArgs
       );
     }
 
@@ -163,8 +181,10 @@ export async function deployPaymasterAction({
 }
 
 export async function deployTokenAction({
+  tokenInitializeArgs,
   chainId
 }: {
+  tokenInitializeArgs: TokenInitializeArgs;
   chainId: string;
 }): Promise<string | undefined> {
   try {
@@ -196,7 +216,30 @@ export async function deployTokenAction({
     // Get the contract address
     const contractAddress = await contract.getAddress();
 
-    return contractAddress;
+    // 2. Prepare initialization data if needed
+    let initData = '0x';
+    if (tokenInitializeArgs.length > 0) {
+      const contract = new ethers.Contract(contractAddress, TOKEN_ABI, wallet);
+      initData = contract.interface.encodeFunctionData(
+        'initialize',
+        tokenInitializeArgs
+      );
+    }
+
+    // 3. Deploy ERC1967Proxy
+    const proxyFactory = new ethers.ContractFactory(
+      ERC1967_ABI,
+      ERC1967_BYTECODE,
+      wallet
+    );
+
+    const proxy = await proxyFactory.deploy(contractAddress, initData, {
+      gasLimit: 3000000
+    });
+    await proxy.waitForDeployment();
+    const proxyAddress = await proxy.getAddress();
+
+    return proxyAddress;
   } catch (error) {
     console.error('Contract deployment error:', error);
     throw new Error('Failed to deploy token');
