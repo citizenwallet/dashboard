@@ -26,7 +26,7 @@ import {
   getPrimaryAccountFactoryOfChain,
   getEntrypointAddressOfChain
 } from '@/lib/chain';
-import { primaryCardManager, primarySessionManager } from '@/lib/address';
+import { getPrimaryCardManagerOfChain, getSessionModuleAddressOfChain } from '@/lib/chain';
 
 /**
  * Type definition for profile initialization arguments
@@ -160,12 +160,15 @@ export async function deployPaymasterAction({
       wallet
     );
 
+    const primaryCardManager = getPrimaryCardManagerOfChain(chainId);
+    const sessionModuleAddress = getSessionModuleAddressOfChain(chainId);
+
     // whitelisted addresses
     const whitelistedAddresses = [
       profileAddress,
       tokenAddress,
       primaryCardManager,
-      primarySessionManager
+      sessionModuleAddress
     ];
 
     // Initialize the contract with the deployer as sponsor and whitelisted addresses

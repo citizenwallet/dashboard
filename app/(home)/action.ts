@@ -12,8 +12,13 @@ import {
 } from '@/services/top-db/community';
 import { getAuthUserAction } from '../_actions/user-actions';
 import { addUserRowoCommunity } from '@/services/top-db/users';
-import { primaryCardManager, primarySessionManager, sessionFactoryAddress, sessionProviderAddress } from '@/lib/address';
-import { ConfigSession } from '@citizenwallet/sdk';
+import {
+  getPrimaryCardManagerOfChain,
+  getSessionFactoryAddressOfChain,
+  getSessionModuleAddressOfChain,
+  getSessionProviderAddressOfChain
+} from '@/lib/chain';
+import { ConfigSession, ConfigSafeCard } from '@citizenwallet/sdk';
 
 export const generateUniqueSlugAction = async (baseSlug: string) => {
   let slug = sanitizeAlias(baseSlug);
@@ -74,11 +79,24 @@ export const createCommunityAction = async (
 ) => {
   const client = getServiceRoleClient();
 
+  const primaryCardManager = getPrimaryCardManagerOfChain(chainId);
+  const sessionModuleAddress = getSessionModuleAddressOfChain(chainId);
+  const sessionFactoryAddress = getSessionFactoryAddressOfChain(chainId);
+  const sessionProviderAddress = getSessionProviderAddressOfChain(chainId);
+
+  const cards = {
+    [`${chainId}:${primaryCardManager}`]: {
+      type: 'safe',
+      address: primaryCardManager,
+      chain_id: parseInt(chainId),
+      instance_id: alias
+    }
+  } satisfies { [key: string]: ConfigSafeCard };
 
   const sessions = {
-    [`${chainId}:${primarySessionManager}`]: {
+    [`${chainId}:${sessionModuleAddress}`]: {
       chain_id: parseInt(chainId),
-      module_address: primarySessionManager,
+      module_address: sessionModuleAddress,
       factory_address: sessionFactoryAddress,
       provider_address: sessionProviderAddress
     }
@@ -88,7 +106,7 @@ export const createCommunityAction = async (
   const communityConfig = {
     ipfs: { url: '' },
     scan: { url: '', name: '' },
-    cards: {},
+    cards,
     chains: {
       [chainId]: {
         id: parseInt(chainId),
@@ -127,7 +145,7 @@ export const createCommunityAction = async (
         chain_id: parseInt(chainId)
       },
       primary_session_manager: {
-        address: primarySessionManager,
+        address: sessionModuleAddress,
         chain_id: parseInt(chainId)
       }
     },
