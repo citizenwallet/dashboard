@@ -106,10 +106,13 @@ export function CheckoutFlow({
         if (option == 'byoc') {
           //- profile deploy
           profileDeploy = await deployProfileAction({
-            initializeArgs: [userAddress || ''],
+            profileInitializeArgs: [userAddress],
 
             chainId: chainId
           });
+          if (!profileDeploy) {
+            throw new Error('Failed to deploy profile');
+          }
           setOnprogress(40);
 
           // - paymaster deploy
@@ -118,13 +121,16 @@ export function CheckoutFlow({
             profileAddress: profileDeploy || '',
             tokenAddress: tokenDeploy || ''
           });
+          if (!paymasterDeploy) {
+            throw new Error('Failed to deploy paymaster');
+          }
 
           setOnprogress(80);
 
           //community config json update
           await updateCommunityConfigAction({
-            profileAddress: profileDeploy || '',
-            paymasterAddress: paymasterDeploy || '',
+            profileAddress: profileDeploy,
+            paymasterAddress: paymasterDeploy,
             config
           });
           setOnprogress(100);
@@ -132,32 +138,47 @@ export function CheckoutFlow({
         if (option == 'create') {
           // - profile deploy
           profileDeploy = await deployProfileAction({
-            initializeArgs: [userAddress || ''],
+            profileInitializeArgs: [userAddress],
 
             chainId: chainId
           });
+          if (!profileDeploy) {
+            throw new Error('Failed to deploy profile');
+          }
           setOnprogress(20);
 
           // - token deploy
           tokenDeploy = await deployTokenAction({
+            tokenInitializeArgs: [
+              userAddress,
+              [userAddress],
+              myCommunityConfig.primaryToken.name,
+              myCommunityConfig.primaryToken.symbol
+            ],
             chainId: chainId
           });
+          if (!tokenDeploy) {
+            throw new Error('Failed to deploy token');
+          }
           setOnprogress(40);
 
           // - paymaster deploy
           paymasterDeploy = await deployPaymasterAction({
             chainId: chainId,
-            profileAddress: profileDeploy || '',
-            tokenAddress: tokenDeploy || ''
+            profileAddress: profileDeploy,
+            tokenAddress: tokenDeploy
           });
+          if (!paymasterDeploy) {
+            throw new Error('Failed to deploy paymaster');
+          }
           setOnprogress(80);
 
           //community config json update
           await updateCommunityConfigAction({
-            profileAddress: profileDeploy || '',
-            paymasterAddress: paymasterDeploy || '',
+            profileAddress: profileDeploy,
+            paymasterAddress: paymasterDeploy,
             config,
-            tokenAddress: tokenDeploy || ''
+            tokenAddress: tokenDeploy
           });
           setOnprogress(100);
         }
