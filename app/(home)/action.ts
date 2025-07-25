@@ -12,7 +12,8 @@ import {
 } from '@/services/top-db/community';
 import { getAuthUserAction } from '../_actions/user-actions';
 import { addUserRowoCommunity } from '@/services/top-db/users';
-import { primaryCardManager, primarySessionManager } from '@/lib/address';
+import { primaryCardManager, primarySessionManager, sessionFactoryAddress, sessionProviderAddress } from '@/lib/address';
+import { ConfigSession } from '@citizenwallet/sdk';
 
 export const generateUniqueSlugAction = async (baseSlug: string) => {
   let slug = sanitizeAlias(baseSlug);
@@ -73,6 +74,16 @@ export const createCommunityAction = async (
 ) => {
   const client = getServiceRoleClient();
 
+
+  const sessions = {
+    [`${chainId}:${primarySessionManager}`]: {
+      chain_id: parseInt(chainId),
+      module_address: primarySessionManager,
+      factory_address: sessionFactoryAddress,
+      provider_address: sessionProviderAddress
+    }
+  } satisfies { [key: string]: ConfigSession };
+
   // Generate the community JSON configuration
   const communityConfig = {
     ipfs: { url: '' },
@@ -91,7 +102,7 @@ export const createCommunityAction = async (
     plugins: [],
     version: 4,
     accounts: {},
-    sessions: {},
+    sessions,
     community: {
       url: '',
       logo: '',
