@@ -102,7 +102,7 @@ export function CheckoutFlow({
       const chainId = myCommunityConfig.primaryToken.chain_id.toString();
 
       try {
-        if (option == 'byoc') {
+        if (option === 'byoc') {
           //- profile deploy
           profileDeploy = await deployProfileAction({
             profileInitializeArgs: [userAddress],
@@ -134,7 +134,7 @@ export function CheckoutFlow({
           });
           setOnprogress(100);
         }
-        if (option == 'create') {
+        if (option === 'create') {
           // - profile deploy
           profileDeploy = await deployProfileAction({
             profileInitializeArgs: [userAddress],
