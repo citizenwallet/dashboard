@@ -17,6 +17,7 @@ import {
   chains,
   getSessionFactoryAddressOfChain,
   getSessionProviderAddressOfChain,
+  getRpcUrlOfChain,
   mainnetChains,
   testnetChains
 } from '@/lib/chain';
@@ -126,7 +127,8 @@ async function CheckoutLoader({
        ),
        sessionProviderAddress: getSessionProviderAddressOfChain(
          myCommunityChainId.toString()
-       )
+       ),
+       rpcUrl: getRpcUrlOfChain(myCommunityChainId.toString())
      }
    })
  ]);
