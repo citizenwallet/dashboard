@@ -7,13 +7,15 @@ import { getCommunityByAlias } from '@/services/top-db/community';
 import {
   hasRole as CWCheckRoleAccess,
   CommunityConfig,
-  MINTER_ROLE
+  MINTER_ROLE,
+  getTwoFAAddress
 } from '@citizenwallet/sdk';
 import { JsonRpcProvider } from 'ethers';
 import BurnToken from '../_components/burn-token';
 import MintToken from '../_components/mint-token';
 import { getTreasuryTransfersOfTokenAction } from '../actions';
 import { TransferClientTable } from './treasury-client-table';
+import { auth } from '@/auth';
 
 interface TreasuryTableProps {
   query: string;
@@ -30,17 +32,24 @@ export default async function TreasuryTable({
   from,
   to
 }: TreasuryTableProps) {
-
   const client = getServiceRoleClient();
-  const { data: communityData, error: communityError } = await getCommunityByAlias(client, alias);
+  const { data: communityData, error: communityError } =
+    await getCommunityByAlias(client, alias);
 
   if (communityError || !communityData) {
     throw new Error('Failed to get community by alias');
   }
 
+  const session = await auth();
+  if (!session) {
+    throw new Error('You are not logged in');
+  }
+  const { email } = session.user;
+  if (!email) {
+    throw new Error('You are not logged in');
+  }
+
   const config = communityData.json;
-
-
   const communityConfig = new CommunityConfig(config);
 
   const primaryRpcUrl = communityConfig.primaryRPCUrl;
@@ -51,10 +60,16 @@ export default async function TreasuryTable({
     alias
   });
 
+  const twoFAAddress = await getTwoFAAddress({
+    community: communityConfig,
+    source: email,
+    type: 'email'
+  });
+
   const hasMinterRole = await CWCheckRoleAccess(
     tokenAddress,
     MINTER_ROLE,
-    process.env.SERVER_ACCOUNT_ADDRESS ?? '',
+    twoFAAddress ?? '',
     new JsonRpcProvider(primaryRpcUrl)
   );
 
