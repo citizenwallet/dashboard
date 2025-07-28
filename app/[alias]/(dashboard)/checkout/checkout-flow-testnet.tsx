@@ -47,7 +47,7 @@ export function CheckoutFlowTestnet({
       const chainId = myCommunityConfig.primaryToken.chain_id.toString();
 
       try {
-        if (option == 'byoc') {
+        if (option === 'byoc') {
           //- profile deploy
           profileDeploy = await deployProfileAction({
             profileInitializeArgs: [userAddress],
@@ -83,7 +83,7 @@ export function CheckoutFlowTestnet({
           });
           setOnprogress(100);
         }
-        if (option == 'create') {
+        if (option === 'create') {
           // - profile deploy
           profileDeploy = await deployProfileAction({
             profileInitializeArgs: [userAddress],
