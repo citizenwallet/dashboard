@@ -27,7 +27,9 @@ interface CheckoutFlowProps {
   config: Config;
   byocTokenAddress?: string;
   ctzn_config: Config;
-  userAddress: string;
+  ctznAccountAddress: string;
+  myCommunityAccountAddress: string;
+
   initialCtznBalance: number;
 }
 
@@ -39,7 +41,8 @@ export function CheckoutFlow({
   config,
   byocTokenAddress,
   ctzn_config,
-  userAddress,
+  ctznAccountAddress,
+  myCommunityAccountAddress,
   initialCtznBalance
 }: CheckoutFlowProps) {
   const [topupUrl, setTopupUrl] = useState<string | null>(null);
@@ -57,7 +60,7 @@ export function CheckoutFlow({
   const returnUserCtznBalance = async (): Promise<number> => {
     try {
       const ctznConfig = new CommunityConfig(ctzn_config);
-      const balance = await getAccountBalance(ctznConfig, userAddress);
+      const balance = await getAccountBalance(ctznConfig, ctznAccountAddress);
       return balance
         ? Number(formatUnits(balance, ctznConfig.getToken().decimals))
         : 0;
@@ -79,7 +82,7 @@ export function CheckoutFlow({
       const communityConfig = new CommunityConfig(ctzn_config);
 
       setTopupUrl(
-        `ethereum:0x0D9B0790E97e3426C161580dF4Ee853E4A7C4607@${communityConfig.primaryToken.chain_id}/transfer?address=${userAddress}&uint256=${publishingCost}`
+        `ethereum:0x0D9B0790E97e3426C161580dF4Ee853E4A7C4607@${communityConfig.primaryToken.chain_id}/transfer?address=${ctznAccountAddress}&uint256=${publishingCost}`
       );
     };
     createTopupUrl();
@@ -91,7 +94,7 @@ export function CheckoutFlow({
     return () => {
       stopPolling();
     };
-  }, [option, ctzn_config, userAddress, initialCtznBalance, publishingCost, startPolling, stopPolling]);
+  }, [option, ctzn_config, ctznAccountAddress, initialCtznBalance, publishingCost, startPolling, stopPolling]);
 
   const deployContract = () => {
     startTransition(async () => {
@@ -105,7 +108,7 @@ export function CheckoutFlow({
         if (option === 'byoc') {
           //- profile deploy
           profileDeploy = await deployProfileAction({
-            profileInitializeArgs: [userAddress],
+            profileInitializeArgs: [myCommunityAccountAddress],
 
             chainId: chainId
           });
@@ -114,11 +117,16 @@ export function CheckoutFlow({
           }
           setOnprogress(40);
 
+          if (!tokenDeploy) {
+            throw new Error('Token address not found');
+          }
+
           // - paymaster deploy
           paymasterDeploy = await deployPaymasterAction({
             chainId: chainId,
-            profileAddress: profileDeploy || '',
-            tokenAddress: tokenDeploy || ''
+            profileAddress: profileDeploy,
+            tokenAddress: tokenDeploy,
+            ownerAddress: myCommunityAccountAddress
           });
           if (!paymasterDeploy) {
             throw new Error('Failed to deploy paymaster');
@@ -137,7 +145,7 @@ export function CheckoutFlow({
         if (option === 'create') {
           // - profile deploy
           profileDeploy = await deployProfileAction({
-            profileInitializeArgs: [userAddress],
+            profileInitializeArgs: [myCommunityAccountAddress],
 
             chainId: chainId
           });
@@ -149,8 +157,8 @@ export function CheckoutFlow({
           // - token deploy
           tokenDeploy = await deployTokenAction({
             tokenInitializeArgs: [
-              userAddress,
-              [userAddress],
+              myCommunityAccountAddress,
+              [myCommunityAccountAddress],
               myCommunityConfig.primaryToken.name,
               myCommunityConfig.primaryToken.symbol
             ],
@@ -165,7 +173,8 @@ export function CheckoutFlow({
           paymasterDeploy = await deployPaymasterAction({
             chainId: chainId,
             profileAddress: profileDeploy,
-            tokenAddress: tokenDeploy
+            tokenAddress: tokenDeploy,
+            ownerAddress: myCommunityAccountAddress
           });
           if (!paymasterDeploy) {
             throw new Error('Failed to deploy paymaster');
@@ -192,7 +201,7 @@ export function CheckoutFlow({
 
         await sendCtznToReceiverAction({
           signer,
-          senderAddress: userAddress,
+          senderAddress: ctznAccountAddress,
           config: ctzn_config,
           amount: publishingCost
         });
@@ -269,7 +278,7 @@ export function CheckoutFlow({
                       continue.
                     </div>
                     <div className="flex flex-col items-center justify-center space-y-4 p-4 border rounded-lg">
-                      {userAddress && (
+                      {ctznAccountAddress && (
                         <>
                           <div className="space-y-8">
                             {/* Direct top-up section */}
@@ -282,7 +291,7 @@ export function CheckoutFlow({
                                 className="w-full max-w-[200px] gap-2"
                                 onClick={() => {
                                   window.open(
-                                    `/onramp/pay?account=${userAddress}&amount=${publishingCost}`,
+                                    `/onramp/pay?account=${ctznAccountAddress}&amount=${publishingCost}`,
                                     '_blank'
                                   );
                                 }}

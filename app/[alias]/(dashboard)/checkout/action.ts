@@ -9,11 +9,7 @@ import {
   activeCommunity,
   updateCommunityJson
 } from '@/services/top-db/community';
-import {
-  Config,
-  BundlerService,
-  CommunityConfig,
-} from '@citizenwallet/sdk';
+import { Config, BundlerService, CommunityConfig } from '@citizenwallet/sdk';
 import { ethers, Wallet } from 'ethers';
 import {
   ERC1967_ABI,
@@ -54,6 +50,18 @@ type TokenInitializeArgs = [
   mintersAddresses: string[],
   name: string,
   symbol: string
+];
+
+/**
+ * Type definition for paymaster initialization arguments
+ * @param _ownerAddress - The address of the paymaster owner
+ * @param aSponsor - The address of the sponsor
+ * @param whitelistedAddresses - Array of addresses allowed to use the paymaster
+ */
+type PaymasterInitializeArgs = [
+  _ownerAddress: string,
+  aSponsor: string,
+  whitelistedAddresses: string[]
 ];
 
 const deploymentKey = process.env.SERVER_PRIVATE_KEY;
@@ -126,11 +134,13 @@ export async function deployProfileAction({
 export async function deployPaymasterAction({
   chainId,
   profileAddress,
-  tokenAddress
+  tokenAddress,
+  ownerAddress
 }: {
   chainId: string;
   profileAddress: string;
   tokenAddress: string;
+  ownerAddress: string;
 }): Promise<string | undefined> {
   try {
     if (!deploymentKey) {
@@ -144,26 +154,26 @@ export async function deployPaymasterAction({
     const wallet = new ethers.Wallet(deploymentKey, provider);
 
     // Create contract factory
-    const factory = new ethers.ContractFactory(
+    const implementationFactory = new ethers.ContractFactory(
       PAYMASTER_ABI,
       PAYMASTER_BYTECODE,
       wallet
     );
 
     // Deploy the contract with constructor arguments if provided
-    const contract = await factory.deploy({
+    const implementation = await implementationFactory.deploy({
       gasLimit: 3000000
     });
 
     // Wait for deployment to complete
-    await contract.waitForDeployment();
+    await implementation.waitForDeployment();
 
     // Get the contract address
-    const contractAddress = await contract.getAddress();
+    const implementationAddress = await implementation.getAddress();
 
     // Create a new contract instance for interaction
     const paymasterContract = new ethers.Contract(
-      contractAddress,
+      implementationAddress,
       PAYMASTER_ABI,
       wallet
     );
@@ -179,12 +189,32 @@ export async function deployPaymasterAction({
       sessionModuleAddress
     ];
 
-    // Initialize the contract with the deployer as sponsor and whitelisted addresses
-    await paymasterContract.initialize(wallet.address, whitelistedAddresses, {
+    // TODO: to encrypt sponsor private key with DB password
+    const walletForSponsor = Wallet.createRandom();
+    const aSponsor = walletForSponsor.address;
+
+    const initData = paymasterContract.interface.encodeFunctionData(
+      'initialize',
+      [ownerAddress, aSponsor, whitelistedAddresses] as PaymasterInitializeArgs
+    );
+
+    // 3. Deploy ERC1967Proxy
+    const proxyFactory = new ethers.ContractFactory(
+      ERC1967_ABI,
+      ERC1967_BYTECODE,
+      wallet
+    );
+
+    const proxy = await proxyFactory.deploy(implementationAddress, initData, {
       gasLimit: 3000000
     });
 
-    return contractAddress;
+    await proxy.waitForDeployment();
+    const proxyAddress = await proxy.getAddress();
+
+    return proxyAddress;
+
+    // ADD TO t_sponsor table
   } catch (error) {
     console.error('Contract deployment error:', error);
     throw new Error('Failed to deploy paymaster');

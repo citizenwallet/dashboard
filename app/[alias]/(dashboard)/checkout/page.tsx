@@ -13,7 +13,13 @@ import { formatUnits } from 'ethers';
 import { Suspense } from 'react';
 import { CheckoutFlow } from './checkout-flow';
 import { CheckoutFlowTestnet } from './checkout-flow-testnet';
-import { chains, mainnetChains, testnetChains } from '@/lib/chain';
+import {
+  chains,
+  getSessionFactoryAddressOfChain,
+  getSessionProviderAddressOfChain,
+  mainnetChains,
+  testnetChains
+} from '@/lib/chain';
 
 interface CheckoutPageProps {
   params: Promise<{ alias: string }>;
@@ -100,25 +106,48 @@ async function CheckoutLoader({
     throw new Error('You are not logged in');
   }
 
-  const ctzn_communityConfig = new CommunityConfig(ctzn_config);
+ const ctzn_communityConfig = new CommunityConfig(ctzn_config);
+ const myCommunityConfig = new CommunityConfig(config);
+ const myCommunityChainId = myCommunityConfig.primaryToken.chain_id;
 
-  const accountAddress = await getTwoFAAddress({
-    community: ctzn_communityConfig,
-    source: email,
-    type: 'email'
-  });
+ const [ctznAccountAddress, myCommunityAccountAddress] = await Promise.all([
+   getTwoFAAddress({
+     community: ctzn_communityConfig,
+     source: email,
+     type: 'email'
+   }),
+   getTwoFAAddress({
+     community: myCommunityConfig,
+     source: email,
+     type: 'email',
+     options: {
+       sessionFactoryAddress: getSessionFactoryAddressOfChain(
+         myCommunityChainId.toString()
+       ),
+       sessionProviderAddress: getSessionProviderAddressOfChain(
+         myCommunityChainId.toString()
+       )
+     }
+   })
+ ]);
 
-  if (!accountAddress) {
-    throw new Error('Account address not found');
-  }
+ // Check addresses in one block
+ if (!ctznAccountAddress || !myCommunityAccountAddress) {
+   throw new Error(
+     !ctznAccountAddress
+       ? `Cannot get account address for ${ctzn_communityConfig.community.name}`
+       : `Cannot get account address for ${myCommunityConfig.community.name}`
+   );
+ }
 
-  const balance = await getAccountBalance(ctzn_communityConfig, accountAddress);
+
+  const balance = await getAccountBalance(
+    ctzn_communityConfig,
+    ctznAccountAddress
+  );
   const balanceFormatted = balance
     ? Number(formatUnits(balance, ctzn_communityConfig.getToken().decimals))
     : 0;
-
-  const myCommunityConfig = new CommunityConfig(config);
-  const myCommunityChainId = myCommunityConfig.primaryToken.chain_id;
 
   if (
     testnetChains.find(
@@ -130,9 +159,9 @@ async function CheckoutLoader({
         option={option}
         config={config}
         byocTokenAddress={address}
-        userAddress={accountAddress}
+        myCommunityAccountAddress={myCommunityAccountAddress}
       />
-        );
+    );
   }
 
   if (
@@ -146,7 +175,8 @@ async function CheckoutLoader({
         config={config}
         byocTokenAddress={address}
         ctzn_config={ctzn_config}
-        userAddress={accountAddress}
+        ctznAccountAddress={ctznAccountAddress}
+        myCommunityAccountAddress={myCommunityAccountAddress}
         initialCtznBalance={balanceFormatted}
       />
     );
