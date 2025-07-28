@@ -23,14 +23,14 @@ interface CheckoutFlowProps {
   option: 'byoc' | 'create';
   config: Config;
   byocTokenAddress?: string;
-  userAddress: string;
+  myCommunityAccountAddress: string;
 }
 
 export function CheckoutFlowTestnet({
   option,
   config,
   byocTokenAddress,
-  userAddress
+  myCommunityAccountAddress
 }: CheckoutFlowProps) {
   const [isPending, startTransition] = useTransition();
   const [onprogress, setOnprogress] = useState<number>(0);
@@ -50,7 +50,7 @@ export function CheckoutFlowTestnet({
         if (option === 'byoc') {
           //- profile deploy
           profileDeploy = await deployProfileAction({
-            profileInitializeArgs: [userAddress],
+            profileInitializeArgs: [myCommunityAccountAddress],
             chainId: chainId
           });
           if (!profileDeploy) {
@@ -67,7 +67,8 @@ export function CheckoutFlowTestnet({
           paymasterDeploy = await deployPaymasterAction({
             chainId: chainId,
             profileAddress: profileDeploy,
-            tokenAddress: tokenDeploy
+            tokenAddress: tokenDeploy,
+            ownerAddress: myCommunityAccountAddress
           });
           if (!paymasterDeploy) {
             throw new Error('Failed to deploy paymaster');
@@ -86,7 +87,7 @@ export function CheckoutFlowTestnet({
         if (option === 'create') {
           // - profile deploy
           profileDeploy = await deployProfileAction({
-            profileInitializeArgs: [userAddress],
+            profileInitializeArgs: [myCommunityAccountAddress],
             chainId: chainId
           });
           if (!profileDeploy) {
@@ -98,8 +99,8 @@ export function CheckoutFlowTestnet({
           // - token deploy
           tokenDeploy = await deployTokenAction({
             tokenInitializeArgs: [
-              userAddress,
-              [userAddress],
+              myCommunityAccountAddress,
+              [myCommunityAccountAddress],
               myCommunityConfig.primaryToken.name,
               myCommunityConfig.primaryToken.symbol
             ],
@@ -114,7 +115,8 @@ export function CheckoutFlowTestnet({
           paymasterDeploy = await deployPaymasterAction({
             chainId: chainId,
             profileAddress: profileDeploy,
-            tokenAddress: tokenDeploy
+            tokenAddress: tokenDeploy,
+            ownerAddress: myCommunityAccountAddress
           });
           if (!paymasterDeploy) {
             throw new Error('Failed to deploy paymaster');
