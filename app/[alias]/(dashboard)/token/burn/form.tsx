@@ -390,7 +390,7 @@ export function AmountField({ form, config, memberBalance }: AmountFieldProps) {
             <div className="relative">
               <div className="absolute left-3 top-1/2 -translate-y-1/2">
                 <CommunityLogo
-                  logoUrl={config.community.logo}
+                  logoUrl={primaryToken?.logo ?? config.community.logo}
                   tokenSymbol={primaryToken.symbol}
                 />
               </div>
