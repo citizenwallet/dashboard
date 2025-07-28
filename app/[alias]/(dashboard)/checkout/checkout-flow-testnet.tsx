@@ -153,8 +153,8 @@ export function CheckoutFlowTestnet({
             <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center border">
               <Avatar className="w-full h-full rounded-full">
                 <AvatarImage
-                  src={myCommunityConfig.community.logo}
-                  alt={myCommunityConfig.community.name}
+                  src={myCommunityConfig.primaryToken.logo}
+                  alt={myCommunityConfig.primaryToken.name}
                   className="object-center"
                 />
                 <AvatarFallback className="rounded-full">
