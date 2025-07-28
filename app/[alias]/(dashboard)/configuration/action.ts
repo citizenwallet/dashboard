@@ -9,7 +9,7 @@ import { insertEvent } from '@/services/chain-db/event';
 import { uploadImage } from '@/services/storage';
 import { getServiceRoleClient } from '@/services/top-db';
 import { updateCommunityJson } from '@/services/top-db/community';
-import { CommunityConfig, Config, getTokenMetadata } from '@citizenwallet/sdk';
+import { CommunityConfig, Config, getTokenMetadata, ConfigToken } from '@citizenwallet/sdk';
 import { ethers } from 'ethers';
 import { getRpcUrlOfChain } from '@/lib/chain';
 
@@ -79,12 +79,12 @@ export async function createByocAction(
           address: tokenAddress,
           chain_id: config.community.primary_token.chain_id,
           decimals,
-          standard: 'erc20'
-        }
+          standard: 'erc20',
+          logo: icon
+        } satisfies ConfigToken
       },
       community: {
         ...config.community,
-        logo: icon,
         primary_token: {
           ...config.community.primary_token,
           address: tokenAddress
@@ -163,7 +163,7 @@ export async function createTokenAction(
           decimals: 18,
           standard: 'erc20',
           logo: icon
-        }
+        } satisfies ConfigToken
       },
       community: {
         ...config.community,
