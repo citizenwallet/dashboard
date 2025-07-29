@@ -138,7 +138,8 @@ export function CheckoutFlow({
           await updateCommunityConfigAction({
             profileAddress: profileDeploy,
             paymasterAddress: paymasterDeploy,
-            alias: config.community.alias
+            alias: config.community.alias,
+            tokenAddress: tokenDeploy
           });
           setOnprogress(100);
         }
