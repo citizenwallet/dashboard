@@ -1,7 +1,12 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { getServiceRoleClient } from '@/services/top-db';
 import { getCommunityByAlias } from '@/services/top-db/community';
-import { CommunityConfig, Config, getTwoFAAddress } from '@citizenwallet/sdk';
+import {
+  CommunityConfig,
+  Config,
+  getTwoFAAddress,
+  hasProfileAdminRole as CWHasProfileAdminRole
+} from '@citizenwallet/sdk';
 import { Suspense } from 'react';
 import Profile from './profile';
 import { auth } from '@/auth';
@@ -66,11 +71,17 @@ async function AsyncPage({
   }
 
   const communityConfig = new CommunityConfig(config);
+
   const twoFAAddress = await getTwoFAAddress({
     community: communityConfig,
     source: email,
     type: 'email'
   });
 
-  return <Profile config={config} account={account} userAddress={twoFAAddress ?? ''} />;
+  const hasProfileAdminRole = await CWHasProfileAdminRole(
+    communityConfig,
+    twoFAAddress ?? ''
+  );
+
+  return <Profile config={config} account={account} hasProfileAdminRole={hasProfileAdminRole} />;
 }
