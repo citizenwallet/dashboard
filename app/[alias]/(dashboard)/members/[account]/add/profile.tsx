@@ -14,9 +14,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
+  BundlerService,
   CommunityConfig,
   Config,
-  checkUsernameAvailability
+  checkUsernameAvailability,
+  waitForTxSuccess
 } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Upload, User } from 'lucide-react';
@@ -27,7 +29,11 @@ import { toast } from 'sonner';
 import { useDebounce } from 'use-debounce';
 import * as z from 'zod';
 import type { Profile } from '../action';
-import { updateProfileAction, updateProfileImageAction } from '../action';
+import {
+  pinJsonToIPFSAction,
+  updateProfileImageAction
+} from '../action';
+import { Wallet } from 'ethers';
 
 const profileFormSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -37,10 +43,12 @@ const profileFormSchema = z.object({
 
 export default function Profile({
   config,
-  account
+  account,
+  userAddress
 }: {
   config: Config;
   account: string;
+  userAddress: string;
 }) {
   const community = useMemo(() => new CommunityConfig(config), [config]);
   const router = useRouter();
@@ -137,7 +145,26 @@ export default function Profile({
         username: values.username
       };
 
-      await updateProfileAction(profile, config.community.alias, config);
+      const result = await pinJsonToIPFSAction(profile);
+      const profileCid = result.IpfsHash;
+
+      const signer = Wallet.createRandom();
+      const signerAccountAddress = userAddress;
+
+      const bundler = new BundlerService(community);
+
+      const txHash = await bundler.setProfile(
+        signer,
+        signerAccountAddress,
+        profile.account,
+        profile.username,
+        profileCid
+      );
+
+      await waitForTxSuccess(community, txHash);
+
+      await new Promise((resolve) => setTimeout(resolve, 250));
+
       toast.success('Profile updated successfully');
       router.push(`/${config.community.alias}/members`);
     } catch (error) {
