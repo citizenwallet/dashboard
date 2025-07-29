@@ -9,7 +9,17 @@ import {
   activeCommunity,
   updateCommunityJson
 } from '@/services/top-db/community';
-import { Config, BundlerService, CommunityConfig } from '@citizenwallet/sdk';
+import {
+  Config,
+  BundlerService,
+  CommunityConfig,
+  ConfigContractLocation,
+  ConfigAccount,
+  ConfigToken,
+  ConfigCommunityProfile,
+  getTokenMetadata,
+  ConfigCommunity
+} from '@citizenwallet/sdk';
 import { ethers, Wallet } from 'ethers';
 import {
   ERC1967_ABI,
@@ -291,7 +301,7 @@ export async function updateCommunityConfigAction(args: {
   profileAddress: string;
   paymasterAddress: string;
   alias: string;
-  tokenAddress?: string;
+  tokenAddress: string;
 }) {
   const { profileAddress, paymasterAddress, alias, tokenAddress } = args;
 
@@ -321,23 +331,23 @@ export async function updateCommunityConfigAction(args: {
     config.community.profile.chain_id.toString()
   );
 
-  const updateJson = {
+  const updateJson: Config = {
     ...config,
     community: {
       ...config.community,
       profile: {
         ...config.community.profile,
         address: profileAddress
-      },
+      } satisfies ConfigCommunityProfile,
       primary_token: {
         ...config.community.primary_token,
         address: tokenAddress || config.community.primary_token.address
-      },
+      } satisfies ConfigContractLocation,
       primary_account_factory: {
         ...config.community.primary_account_factory,
         address: primaryAccountFactory
-      }
-    },
+      } satisfies ConfigContractLocation
+    } satisfies ConfigCommunity,
     accounts: {
       ...config.accounts,
       [`${config.community.profile.chain_id}:${primaryAccountFactory}`]: {
@@ -346,7 +356,7 @@ export async function updateCommunityConfigAction(args: {
         paymaster_address: paymasterAddress,
         account_factory_address: primaryAccountFactory,
         paymaster_type: 'cw-safe'
-      }
+      } satisfies ConfigAccount
     },
     tokens: {
       ...(tokenAddress
@@ -365,17 +375,41 @@ export async function updateCommunityConfigAction(args: {
                 `${config.community.profile.chain_id}:${config.community.primary_token.address}`
               ],
               address: tokenAddress
-            }
+            } satisfies ConfigToken
           }
         : config.tokens)
     }
-  } as Config;
+  };
+
+  const tokenMetadata = await getTokenMetadata(
+    new CommunityConfig(updateJson),
+    {
+      tokenAddress: tokenAddress,
+      rpcUrl: getRpcUrlOfChain(config.community.profile.chain_id.toString())
+    }
+  );
+
+  const updatedJsonWithTokenMetadata: Config = {
+    ...updateJson,
+    tokens: {
+      ...updateJson.tokens,
+      [`${config.community.profile.chain_id}:${tokenAddress}`]: {
+        ...updateJson.tokens[
+          `${config.community.profile.chain_id}:${tokenAddress}`
+        ],
+        name: String(tokenMetadata?.name ?? ''),
+        symbol: String(tokenMetadata?.symbol ?? ''),
+        decimals: Number(tokenMetadata?.decimals ?? 0)
+        // Add any other metadata fields you need
+      } satisfies ConfigToken
+    }
+  };
 
   try {
     const { data: updatedData, error } = await updateCommunityJson(
       client,
       config.community.alias,
-      { json: updateJson }
+      { json: updatedJsonWithTokenMetadata }
     );
 
     if (error) {
