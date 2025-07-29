@@ -1,5 +1,10 @@
 'use client';
-import { Config, CommunityConfig, BundlerService, waitForTxSuccess } from '@citizenwallet/sdk';
+import {
+  Config,
+  CommunityConfig,
+  BundlerService,
+  waitForTxSuccess
+} from '@citizenwallet/sdk';
 import { ChangeEvent, useRef, useTransition } from 'react';
 import { mintTokenFormSchema } from './form-schema';
 import { useForm, UseFormReturn } from 'react-hook-form';
@@ -31,9 +36,7 @@ import {
   CommandItem
 } from '@/components/ui/command';
 import { Check, ChevronsUpDown } from 'lucide-react';
-import {
-  searchMember as searchMemberToMint,
-} from '@/app/[alias]/(dashboard)/token/actions';
+import { searchMember as searchMemberToMint } from '@/app/[alias]/(dashboard)/token/actions';
 import { MemberT } from '@/services/chain-db/members';
 import { useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
@@ -52,7 +55,10 @@ interface MintTokenFormProps {
   userAddress: string;
 }
 
-export default function MintTokenForm({ config, userAddress }: MintTokenFormProps) {
+export default function MintTokenForm({
+  config,
+  userAddress
+}: MintTokenFormProps) {
   const router = useRouter();
   const communityConfig = new CommunityConfig(config);
   const [isPending, startTransition] = useTransition();
@@ -69,26 +75,25 @@ export default function MintTokenForm({ config, userAddress }: MintTokenFormProp
   async function onSubmit(values: z.infer<typeof mintTokenFormSchema>) {
     startTransition(async () => {
       try {
-      
+        const signer = Wallet.createRandom();
+        const signerAccountAddress = userAddress;
 
-            const signer = Wallet.createRandom();
-            const signerAccountAddress = userAddress;
+        const bundlerService = new BundlerService(communityConfig);
+        const txHash = await bundlerService.mintERC20Token(
+          signer,
+          communityConfig.primaryToken.address,
+          signerAccountAddress,
+          values.member.account,
+          values.amount,
+          values.description
+        );
 
-           const bundlerService = new BundlerService(communityConfig);
-          const txHash =await bundlerService.mintERC20Token(
-            signer,
-            communityConfig.primaryToken.address,
-            signerAccountAddress,
-            values.member.account,
-            values.amount,
-            values.description
-          );
-        
-         await waitForTxSuccess(communityConfig, txHash);
+        await waitForTxSuccess(communityConfig, txHash);
 
         toast.success(`Success 🔨`);
         router.push(`/${config.community.alias}/treasury`);
       } catch (error) {
+        console.error(error);
         if (error instanceof Error) {
           toast.error(error.message);
         } else {
