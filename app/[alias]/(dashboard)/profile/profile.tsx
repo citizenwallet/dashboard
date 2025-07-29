@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Config } from '@citizenwallet/sdk';
+import { Config, ConfigCommunity } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Check, Copy, Loader2, Palette } from 'lucide-react';
 import { useState } from 'react';
@@ -110,7 +110,7 @@ export default function ProfilePage({ config }: { config: Config }) {
                 ...(profileData.custom_domain && profileData.custom_domain !== defaultDomain && {
                     custom_domain: profileData.custom_domain
                 })
-            };
+            } satisfies ConfigCommunity;
 
             const updatedConfig: Config = {
                 ...config,
