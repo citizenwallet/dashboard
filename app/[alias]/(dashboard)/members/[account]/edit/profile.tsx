@@ -24,9 +24,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { MemberT } from '@/services/chain-db/members';
 import {
+  BundlerService,
   CommunityConfig,
   Config,
-  checkUsernameAvailability
+  checkUsernameAvailability,
+  waitForTxSuccess
 } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save, Trash2, Upload, User } from 'lucide-react';
@@ -39,9 +41,10 @@ import * as z from 'zod';
 import type { Profile } from '../action';
 import {
   deleteProfileAction,
-  updateProfileAction,
+  pinJsonToIPFSAction,
   updateProfileImageAction
 } from '../action';
+import { Wallet } from 'ethers';
 
 const formSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -52,11 +55,13 @@ const formSchema = z.object({
 export default function Profile({
   memberData,
   hasAdminRole,
-  config
+  config,
+  userAddress
 }: {
   memberData?: MemberT;
   hasAdminRole: boolean;
   config: Config;
+  userAddress: string;
 }) {
   const community = useMemo(() => new CommunityConfig(config), [config]);
   const [isEditing, setIsEditing] = useState(hasAdminRole);
@@ -166,7 +171,25 @@ export default function Profile({
         username: values.username || ''
       };
 
-      await updateProfileAction(profile, config.community.alias, config);
+      const result = await pinJsonToIPFSAction(profile);
+      const profileCid = result.IpfsHash;
+
+      const signer = Wallet.createRandom();
+      const signerAccountAddress = userAddress;
+
+      const bundler = new BundlerService(community);
+
+      const txHash = await bundler.setProfile(
+        signer,
+        signerAccountAddress,
+        profile.account,
+        profile.username,
+        profileCid
+      );
+
+      await waitForTxSuccess(community, txHash);
+
+      await new Promise((resolve) => setTimeout(resolve, 250));
 
       toast.success('Profile updated successfully', {
         onAutoClose: () => {
