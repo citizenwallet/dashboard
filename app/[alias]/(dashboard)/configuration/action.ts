@@ -9,7 +9,7 @@ import { insertEvent } from '@/services/chain-db/event';
 import { uploadImage } from '@/services/storage';
 import { getServiceRoleClient } from '@/services/top-db';
 import { updateCommunityJson } from '@/services/top-db/community';
-import { CommunityConfig, Config, getTokenMetadata, ConfigToken } from '@citizenwallet/sdk';
+import { CommunityConfig, Config, getTokenMetadata, ConfigToken, TRANSFER_EVENT_SIGNATURE } from '@citizenwallet/sdk';
 import { ethers } from 'ethers';
 import { getRpcUrlOfChain } from '@/lib/chain';
 
@@ -89,8 +89,8 @@ export async function createByocAction(
           ...config.community.primary_token,
           address: tokenAddress
         }
-      }
-    };
+      } 
+    } satisfies Config;
 
     const [updateCommunityJsonPromise] = await Promise.allSettled([
       updateCommunityJson(client, config.community.alias, {
@@ -106,9 +106,9 @@ export async function createByocAction(
           name: `${config.community.alias} Transfer`,
           contract: tokenAddress,
           event_signature:
-            'Transfer (index_topic_1 address from, index_topic_2 address to, uint256 value)',
+            TRANSFER_EVENT_SIGNATURE,
           topic:
-            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+            ethers.id(TRANSFER_EVENT_SIGNATURE),
           alias: config.community.alias
         }
       })
