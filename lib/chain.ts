@@ -9,6 +9,13 @@ export type ChainOption = {
   sessionModuleAddress: string;
   sessionFactoryAddress: string;
   sessionProviderAddress: string;
+  blockExplorer: {
+    url: string;
+    name: string;
+  };
+  ipfs: {
+    url: string;
+  };
 };
 
 export const mainnetChains: ChainOption[] = [
@@ -25,7 +32,15 @@ export const mainnetChains: ChainOption[] = [
 
     sessionModuleAddress: '0xE2F3DC3E638113b9496060349e5332963d9C1152',
     sessionFactoryAddress: '0xEd0cD3886b84369A0e29Db9a4480ADF5051c76C9',
-    sessionProviderAddress: '0xF3004A1690f97Cf5d307eDc5958a7F76b62f9FC9'
+    sessionProviderAddress: '0xF3004A1690f97Cf5d307eDc5958a7F76b62f9FC9',
+
+    blockExplorer: {
+      url: 'https://gnosisscan.io',
+      name: 'Gnosis Explorer'
+    },
+    ipfs: {
+      url: 'https://ipfs.internal.citizenwallet.xyz'
+    }
   },
   {
     id: '42220',
@@ -37,7 +52,15 @@ export const mainnetChains: ChainOption[] = [
     primaryCardManager: '0xBA861e2DABd8316cf11Ae7CdA101d110CF581f28',
     sessionModuleAddress: '0xE2F3DC3E638113b9496060349e5332963d9C1152',
     sessionFactoryAddress: '0xEd0cD3886b84369A0e29Db9a4480ADF5051c76C9',
-    sessionProviderAddress: '0xF3004A1690f97Cf5d307eDc5958a7F76b62f9FC9'
+    sessionProviderAddress: '0xF3004A1690f97Cf5d307eDc5958a7F76b62f9FC9',
+
+    blockExplorer: {
+      url: 'https://celoscan.io',
+      name: 'Celo Explorer'
+    },
+    ipfs: {
+      url: 'https://ipfs.internal.citizenwallet.xyz'
+    }
   },
   {
     id: '42161',
@@ -49,7 +72,15 @@ export const mainnetChains: ChainOption[] = [
     primaryCardManager: '0xBA861e2DABd8316cf11Ae7CdA101d110CF581f28',
     sessionModuleAddress: '0xE2F3DC3E638113b9496060349e5332963d9C1152',
     sessionFactoryAddress: '0xEd0cD3886b84369A0e29Db9a4480ADF5051c76C9',
-    sessionProviderAddress: '0xF3004A1690f97Cf5d307eDc5958a7F76b62f9FC9'
+    sessionProviderAddress: '0xF3004A1690f97Cf5d307eDc5958a7F76b62f9FC9',
+
+    blockExplorer: {
+      url: 'https://arbiscan.io',
+      name: 'Arbitrum Explorer'
+    },
+    ipfs: {
+      url: 'https://ipfs.internal.citizenwallet.xyz'
+    }
   },
   {
     id: '137',
@@ -61,7 +92,15 @@ export const mainnetChains: ChainOption[] = [
     primaryCardManager: '0xBA861e2DABd8316cf11Ae7CdA101d110CF581f28',
     sessionModuleAddress: '0xE2F3DC3E638113b9496060349e5332963d9C1152',
     sessionFactoryAddress: '0xEd0cD3886b84369A0e29Db9a4480ADF5051c76C9',
-    sessionProviderAddress: '0xF3004A1690f97Cf5d307eDc5958a7F76b62f9FC9'
+    sessionProviderAddress: '0xF3004A1690f97Cf5d307eDc5958a7F76b62f9FC9',
+
+    blockExplorer: {
+      url: 'https://polygonscan.com',
+      name: 'Polygon Explorer'
+    },
+    ipfs: {
+      url: 'https://ipfs.internal.citizenwallet.xyz'
+    }
   },
   {
     id: '8453',
@@ -76,7 +115,15 @@ export const mainnetChains: ChainOption[] = [
 
     sessionModuleAddress: '0xE2F3DC3E638113b9496060349e5332963d9C1152',
     sessionFactoryAddress: '0xEd0cD3886b84369A0e29Db9a4480ADF5051c76C9',
-    sessionProviderAddress: '0xF3004A1690f97Cf5d307eDc5958a7F76b62f9FC9'
+    sessionProviderAddress: '0xF3004A1690f97Cf5d307eDc5958a7F76b62f9FC9',
+
+    blockExplorer: {
+      url: 'https://basescan.org',
+      name: 'Base Explorer'
+    },
+    ipfs: {
+      url: 'https://ipfs.internal.citizenwallet.xyz'
+    }
   }
 ];
 
@@ -94,7 +141,15 @@ export const testnetChains: ChainOption[] = [
 
     sessionModuleAddress: '0x38819D2D05C6cAaB38B1C16F944acC9E023E010f',
     sessionFactoryAddress: '0x31de0ED701DC3Ac3705bAa2F3A9843aeAC86F8A4',
-    sessionProviderAddress: '0x7E72d41A95659257cdED8f8F361742f72396b0fB'
+    sessionProviderAddress: '0x7E72d41A95659257cdED8f8F361742f72396b0fB',
+
+    blockExplorer: {
+      url: 'https://gnosis-chiado.blockscout.com/',
+      name: 'Gnosis Chiado Explorer'
+    },
+    ipfs: {
+      url: 'https://ipfs.internal.citizenwallet.xyz'
+    }
   }
 ];
 
@@ -159,4 +214,24 @@ export const getSessionProviderAddressOfChain = (chainId: string) => {
     throw new Error(`Chain with id ${chainId} not found`);
   }
   return chain.sessionProviderAddress;
+};
+
+export const getBlockExplorerOfChain = (chainId: string) => {
+  const chain = chains.find((chain) => chain.id === chainId);
+  if (!chain) {
+    throw new Error(`Chain with id ${chainId} not found`);
+  }
+  return chain.blockExplorer;
+};
+
+export const getIpfsOfChain = (chainId: string) => {
+  const chain = chains.find((chain) => chain.id === chainId);
+  if (!chain) {
+    throw new Error(`Chain with id ${chainId} not found`);
+  }
+  return chain.ipfs;
+};
+
+export const getConfigLocationOfAlias = (alias: string) => {
+  return `https://dashboard-orpin-xi.vercel.app/api/communities/${alias}`;
 };
