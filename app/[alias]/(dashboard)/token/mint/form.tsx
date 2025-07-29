@@ -48,19 +48,20 @@ import { isAddress, Wallet } from 'ethers';
 import { formatAddress } from '@/lib/utils';
 import MemberListItem from '../_components/member-list-item';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'state/session/action';
 
 interface MintTokenFormProps {
   alias: string;
   config: Config;
-  userAddress: string;
 }
 
 export default function MintTokenForm({
   config,
-  userAddress
+
 }: MintTokenFormProps) {
   const router = useRouter();
   const communityConfig = new CommunityConfig(config);
+  const [, sessionActions] = useSession(config);
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<z.infer<typeof mintTokenFormSchema>>({
@@ -75,8 +76,16 @@ export default function MintTokenForm({
   async function onSubmit(values: z.infer<typeof mintTokenFormSchema>) {
     startTransition(async () => {
       try {
-        const signer = Wallet.createRandom();
-        const signerAccountAddress = userAddress;
+        const privateKey = sessionActions.storage.getKey('session_private_key');
+        const signerAccountAddress = await sessionActions.getAccountAddress();
+
+        if (!privateKey || !signerAccountAddress) {
+          toast.error('Please login to mint token');
+          router.push(`/${config.community.alias}/login`);
+          return;
+        }
+
+        const signer = new Wallet(privateKey);
 
         const bundlerService = new BundlerService(communityConfig);
         const txHash = await bundlerService.mintERC20Token(
