@@ -1,13 +1,9 @@
-import {
-  getAuthUserRoleInAppAction,
-  getAuthUserRoleInCommunityAction
-} from '@/app/_actions/user-actions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getServiceRoleClient } from '@/services/chain-db';
 import { getMemberByAccount } from '@/services/chain-db/members';
 import { getServiceRoleClient as getTopDbServiceRoleClient } from '@/services/top-db';
 import { getCommunityByAlias } from '@/services/top-db/community';
-import { CommunityConfig, Config, getTwoFAAddress } from '@citizenwallet/sdk';
+import { CommunityConfig, Config, getTwoFAAddress, hasProfileAdminRole as CWHasProfileAdminRole } from '@citizenwallet/sdk';
 import { Suspense } from 'react';
 import Profile from './profile';
 import { auth } from '@/auth';
@@ -85,23 +81,19 @@ async function AsyncPage({
     return <div>Member not found</div>;
   }
 
-  //check admin role
-  const roleInApp = await getAuthUserRoleInAppAction();
-  const roleResult = await getAuthUserRoleInCommunityAction({ alias });
-  let hasAdminRole = false;
+  const communityConfig = new CommunityConfig(config);
+  const twoFAAddress = await getTwoFAAddress({
+    community: communityConfig,
+    source: email,
+    type: 'email'
+  });
 
-  if (roleInApp == 'admin' || roleResult == 'owner') {
-    hasAdminRole = true;
-  }
-
-   const communityConfig = new CommunityConfig(config);
-   const twoFAAddress = await getTwoFAAddress({
-     community: communityConfig,
-     source: email,
-     type: 'email'
-   });
+  const hasProfileAdminRole = await CWHasProfileAdminRole(
+    communityConfig,
+    twoFAAddress ?? ''
+  );
 
   return (
-    <Profile memberData={data} hasAdminRole={hasAdminRole} config={config} userAddress={twoFAAddress ?? ''} />
+    <Profile memberData={data} hasProfileAdminRole={hasProfileAdminRole} config={config} />
   );
 }
