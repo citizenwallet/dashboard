@@ -425,6 +425,8 @@ export async function updateCommunityConfigAction(args: {
   }
 }
 
+// TODO: add token and profile events
+
 export async function sendCtznToReceiverAction(args: {
   signer: Wallet;
   senderAddress: string;
