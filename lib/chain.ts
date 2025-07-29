@@ -87,13 +87,13 @@ export const testnetChains: ChainOption[] = [
     logo: '/chainLogo/Gnosis.png',
     rpcUrl: process.env.GNOSIS_CHIADO_RPC_URL || '',
 
-    primaryAccountFactory: '0x7cC54D54bBFc65d1f0af7ACee5e4042654AF8185',
+    primaryAccountFactory: '0xabb0B1f80E854266bCF0e3107485238b16e777Bb',
     entrypointAddress: '0x7079253c0358eF9Fd87E16488299Ef6e06F403B6',
 
-    primaryCardManager: '0xA63DFccB8a39a3DFE4479b33190b12019Ee594E7',
+    primaryCardManager: '0x1D7546BA232Bd5A0A240f2962d5a3f622aBB56F1',
 
-    sessionModuleAddress: '0x51Ef5Add405CCF63c206A80AF8c2B3cEE0282830',
-    sessionFactoryAddress: '0xbE2Cb3358aa14621134e923B68b8429315368E32',
+    sessionModuleAddress: '0x38819D2D05C6cAaB38B1C16F944acC9E023E010f',
+    sessionFactoryAddress: '0x31de0ED701DC3Ac3705bAa2F3A9843aeAC86F8A4',
     sessionProviderAddress: '0x7E72d41A95659257cdED8f8F361742f72396b0fB'
   }
 ];
