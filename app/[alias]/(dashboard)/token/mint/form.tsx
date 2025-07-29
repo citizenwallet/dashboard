@@ -33,7 +33,6 @@ import {
 import { Check, ChevronsUpDown } from 'lucide-react';
 import {
   searchMember as searchMemberToMint,
-  mintTokenToMemberAction
 } from '@/app/[alias]/(dashboard)/token/actions';
 import { MemberT } from '@/services/chain-db/members';
 import { useState } from 'react';
