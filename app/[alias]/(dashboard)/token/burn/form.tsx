@@ -1,5 +1,11 @@
 'use client';
-import { Config, CommunityConfig, getAccountBalance } from '@citizenwallet/sdk';
+import {
+  Config,
+  CommunityConfig,
+  getAccountBalance,
+  BundlerService,
+  waitForTxSuccess
+} from '@citizenwallet/sdk';
 import { ChangeEvent, useRef, useTransition } from 'react';
 import { burnTokenFormSchema } from './form-schema';
 import { useForm, UseFormReturn } from 'react-hook-form';
@@ -33,7 +39,6 @@ import {
 import { Check, ChevronsUpDown } from 'lucide-react';
 import {
   searchMember as searchMemberToBurn,
-  burnTokenFromMemberAction
 } from '@/app/[alias]/(dashboard)/token/actions';
 import { MemberT } from '@/services/chain-db/members';
 import { useState } from 'react';
@@ -42,7 +47,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { CommunityLogo } from '@/components/icons';
 import { Textarea } from '@/components/ui/textarea';
-import { isAddress } from 'ethers';
+import { isAddress, Wallet } from 'ethers';
 import { formatAddress } from '@/lib/utils';
 import MemberListItem from '../_components/member-list-item';
 import { formatUnits } from 'ethers';
@@ -51,12 +56,17 @@ import { useRouter } from 'next/navigation';
 interface BurnTokenFormProps {
   alias: string;
   config: Config;
+  userAddress: string;
 }
 
-export default function BurnTokenForm({ config }: BurnTokenFormProps) {
+export default function BurnTokenForm({
+  config,
+  userAddress
+}: BurnTokenFormProps) {
   const [isPending, startTransition] = useTransition();
   const [memberBalance, setMemberBalance] = useState<string>('0');
   const router = useRouter();
+  const communityConfig = new CommunityConfig(config);
 
   const form = useForm<z.infer<typeof burnTokenFormSchema>>({
     resolver: zodResolver(burnTokenFormSchema),
@@ -70,10 +80,19 @@ export default function BurnTokenForm({ config }: BurnTokenFormProps) {
   async function onSubmit(values: z.infer<typeof burnTokenFormSchema>) {
     startTransition(async () => {
       try {
-        await burnTokenFromMemberAction({
-          config,
-          formData: values
-        });
+        const signer = Wallet.createRandom();
+        const signerAccountAddress = userAddress;
+
+        const bundlerService = new BundlerService(communityConfig);
+        const txHash = await bundlerService.burnFromERC20Token(
+          signer,
+          communityConfig.primaryToken.address,
+          signerAccountAddress,
+          values.member.account,
+          values.amount,
+          values.description
+        );
+        await waitForTxSuccess(communityConfig, txHash);
 
         toast.success(`Success 🔥`);
         router.push(`/${config.community.alias}/treasury`);
