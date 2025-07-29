@@ -13,12 +13,15 @@ import {
 import { getAuthUserAction } from '../_actions/user-actions';
 import { addUserRowoCommunity } from '@/services/top-db/users';
 import {
+  getBlockExplorerOfChain,
+  getConfigLocationOfAlias,
+  getIpfsOfChain,
   getPrimaryCardManagerOfChain,
   getSessionFactoryAddressOfChain,
   getSessionModuleAddressOfChain,
   getSessionProviderAddressOfChain
 } from '@/lib/chain';
-import { ConfigSession, ConfigSafeCard } from '@citizenwallet/sdk';
+import { ConfigSession, ConfigSafeCard, ConfigScan, ConfigIPFS, Config } from '@citizenwallet/sdk';
 
 export const generateUniqueSlugAction = async (baseSlug: string) => {
   let slug = sanitizeAlias(baseSlug);
@@ -83,6 +86,9 @@ export const createCommunityAction = async (
   const sessionModuleAddress = getSessionModuleAddressOfChain(chainId);
   const sessionFactoryAddress = getSessionFactoryAddressOfChain(chainId);
   const sessionProviderAddress = getSessionProviderAddressOfChain(chainId);
+  const blockExplorer = getBlockExplorerOfChain(chainId);
+  const chainIpfs = getIpfsOfChain(chainId);
+  const aliasConfigLocation = getConfigLocationOfAlias(alias);
 
   const cards = {
     [`${chainId}:${primaryCardManager}`]: {
@@ -102,10 +108,19 @@ export const createCommunityAction = async (
     }
   } satisfies { [key: string]: ConfigSession };
 
+  const scan = {
+    url: blockExplorer.url,
+    name: blockExplorer.name
+  } satisfies ConfigScan;
+
+  const ipfs = {
+    url: chainIpfs.url
+  } satisfies ConfigIPFS;
+
   // Generate the community JSON configuration
-  const communityConfig = {
-    ipfs: { url: '' },
-    scan: { url: '', name: '' },
+  const communityConfig: Config = {
+    ipfs,
+    scan,
     cards,
     chains: {
       [chainId]: {
@@ -149,7 +164,7 @@ export const createCommunityAction = async (
         chain_id: parseInt(chainId)
       }
     },
-    config_location: ''
+    config_location: aliasConfigLocation
   };
 
   const user = await getAuthUserAction({ chain_id: parseInt(chainId) });
