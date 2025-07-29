@@ -9,7 +9,6 @@ import { auth } from '@/auth';
 export default async function Page(props: {
   params: Promise<{ alias: string }>;
 }) {
-
   const session = await auth();
   if (!session) {
     throw new Error('You are not logged in');
@@ -52,7 +51,11 @@ export default async function Page(props: {
         </div>
       </div>
       <div className="flex-1 overflow-auto">
-        <MintTokenForm alias={alias} config={config} userAddress={twoFAAddress ?? ''} />
+        <MintTokenForm
+          alias={alias}
+          config={config}
+          userAddress={twoFAAddress ?? ''}
+        />
       </div>
     </div>
   );
