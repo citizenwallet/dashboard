@@ -3,21 +3,10 @@ import { getServiceRoleClient } from '@/services/top-db';
 import { getCommunityByAlias } from '@/services/top-db/community';
 import { redirect } from 'next/navigation';
 import BurnTokenForm from './form';
-import { CommunityConfig, getTwoFAAddress } from '@citizenwallet/sdk';
-import { auth } from '@/auth';
 
 export default async function Page(props: {
   params: Promise<{ alias: string }>;
 }) {
-  const session = await auth();
-  if (!session) {
-    throw new Error('You are not logged in');
-  }
-  const { email } = session.user;
-  if (!email) {
-    throw new Error('You are not logged in');
-  }
-
   const { alias } = await props.params;
   const client = getServiceRoleClient();
   const { data, error } = await getCommunityByAlias(client, alias);
@@ -35,13 +24,6 @@ export default async function Page(props: {
     redirect(`/${alias}/treasury`);
   }
 
-    const communityConfig = new CommunityConfig(config);
-    const twoFAAddress = await getTwoFAAddress({
-      community: communityConfig,
-      source: email,
-      type: 'email'
-    });
-
   return (
     <div className="flex flex-1 w-full flex-col h-full overflow-hidden">
       <div className="grid grid-cols-2 gap-4 mb-4">
@@ -51,11 +33,7 @@ export default async function Page(props: {
         </div>
       </div>
       <div className="flex-1 overflow-auto">
-        <BurnTokenForm
-          alias={alias}
-          config={config}
-          userAddress={twoFAAddress ?? ''}
-        />
+        <BurnTokenForm alias={alias} config={config} />
       </div>
     </div>
   );

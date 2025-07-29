@@ -37,9 +37,7 @@ import {
   CommandItem
 } from '@/components/ui/command';
 import { Check, ChevronsUpDown } from 'lucide-react';
-import {
-  searchMember as searchMemberToBurn,
-} from '@/app/[alias]/(dashboard)/token/actions';
+import { searchMember as searchMemberToBurn } from '@/app/[alias]/(dashboard)/token/actions';
 import { MemberT } from '@/services/chain-db/members';
 import { useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
@@ -52,21 +50,19 @@ import { formatAddress } from '@/lib/utils';
 import MemberListItem from '../_components/member-list-item';
 import { formatUnits } from 'ethers';
 import { useRouter } from 'next/navigation';
+import { useSession } from 'state/session/action';
 
 interface BurnTokenFormProps {
   alias: string;
   config: Config;
-  userAddress: string;
 }
 
-export default function BurnTokenForm({
-  config,
-  userAddress
-}: BurnTokenFormProps) {
+export default function BurnTokenForm({ config }: BurnTokenFormProps) {
   const [isPending, startTransition] = useTransition();
   const [memberBalance, setMemberBalance] = useState<string>('0');
   const router = useRouter();
   const communityConfig = new CommunityConfig(config);
+  const [, sessionActions] = useSession(config);
 
   const form = useForm<z.infer<typeof burnTokenFormSchema>>({
     resolver: zodResolver(burnTokenFormSchema),
@@ -80,8 +76,16 @@ export default function BurnTokenForm({
   async function onSubmit(values: z.infer<typeof burnTokenFormSchema>) {
     startTransition(async () => {
       try {
-        const signer = Wallet.createRandom();
-        const signerAccountAddress = userAddress;
+        const privateKey = sessionActions.storage.getKey('session_private_key');
+        const signerAccountAddress = await sessionActions.getAccountAddress();
+
+        if (!privateKey || !signerAccountAddress) {
+          toast.error('Please login to burn token');
+          router.push(`/${config.community.alias}/login`);
+          return;
+        }
+
+        const signer = new Wallet(privateKey);
 
         const bundlerService = new BundlerService(communityConfig);
         const txHash = await bundlerService.burnFromERC20Token(
@@ -100,7 +104,7 @@ export default function BurnTokenForm({
         if (error instanceof Error) {
           toast.error(error.message);
         } else {
-          toast.error('Could not mint token');
+          toast.error('Could not burn token');
         }
       }
     });
