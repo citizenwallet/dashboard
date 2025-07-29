@@ -1,5 +1,5 @@
 'use client';
-import { Config, CommunityConfig } from '@citizenwallet/sdk';
+import { Config, CommunityConfig, BundlerService, waitForTxSuccess } from '@citizenwallet/sdk';
 import { ChangeEvent, useRef, useTransition } from 'react';
 import { mintTokenFormSchema } from './form-schema';
 import { useForm, UseFormReturn } from 'react-hook-form';
@@ -42,7 +42,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { CommunityLogo } from '@/components/icons';
 import { Textarea } from '@/components/ui/textarea';
-import { isAddress } from 'ethers';
+import { isAddress, Wallet } from 'ethers';
 import { formatAddress } from '@/lib/utils';
 import MemberListItem from '../_components/member-list-item';
 import { useRouter } from 'next/navigation';
@@ -50,11 +50,12 @@ import { useRouter } from 'next/navigation';
 interface MintTokenFormProps {
   alias: string;
   config: Config;
+  userAddress: string;
 }
 
-export default function MintTokenForm({ config }: MintTokenFormProps) {
+export default function MintTokenForm({ config, userAddress }: MintTokenFormProps) {
   const router = useRouter();
-
+  const communityConfig = new CommunityConfig(config);
   const [isPending, startTransition] = useTransition();
 
   const form = useForm<z.infer<typeof mintTokenFormSchema>>({
@@ -69,10 +70,22 @@ export default function MintTokenForm({ config }: MintTokenFormProps) {
   async function onSubmit(values: z.infer<typeof mintTokenFormSchema>) {
     startTransition(async () => {
       try {
-        await mintTokenToMemberAction({
-          config: config,
-          formData: values
-        });
+      
+
+            const signer = Wallet.createRandom();
+            const signerAccountAddress = userAddress;
+
+           const bundlerService = new BundlerService(communityConfig);
+          const txHash =await bundlerService.mintERC20Token(
+            signer,
+            communityConfig.primaryToken.address,
+            signerAccountAddress,
+            values.member.account,
+            values.amount,
+            values.description
+          );
+        
+         await waitForTxSuccess(communityConfig, txHash);
 
         toast.success(`Success 🔨`);
         router.push(`/${config.community.alias}/treasury`);
