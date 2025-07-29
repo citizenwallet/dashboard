@@ -173,7 +173,7 @@ export default function Profile({
 
       await new Promise((resolve) => setTimeout(resolve, 250));
 
-      toast.success('Profile updated successfully');
+      toast.success('Profile added successfully');
       router.push(`/${config.community.alias}/members`);
     } catch (error) {
       console.error('Error adding member:', error);
