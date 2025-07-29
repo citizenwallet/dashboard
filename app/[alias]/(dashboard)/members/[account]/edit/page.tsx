@@ -7,11 +7,10 @@ import { getServiceRoleClient } from '@/services/chain-db';
 import { getMemberByAccount } from '@/services/chain-db/members';
 import { getServiceRoleClient as getTopDbServiceRoleClient } from '@/services/top-db';
 import { getCommunityByAlias } from '@/services/top-db/community';
-import { Config } from '@citizenwallet/sdk';
+import { CommunityConfig, Config, getTwoFAAddress } from '@citizenwallet/sdk';
 import { Suspense } from 'react';
 import Profile from './profile';
-
-
+import { auth } from '@/auth';
 
 interface PageProps {
   params: Promise<{
@@ -65,7 +64,16 @@ async function AsyncPage({
   config: Config;
   account: string;
   alias: string;
-}) {
+  }) {
+    const session = await auth();
+    if (!session) {
+      throw new Error('You are not logged in');
+    }
+    const { email } = session.user;
+    if (!email) {
+      throw new Error('You are not logged in');
+    }
+  
   const supabase = getServiceRoleClient(config.community.profile.chain_id);
   const profileContract = config.community.profile.address;
   const { data } = await getMemberByAccount({
@@ -85,7 +93,15 @@ async function AsyncPage({
   if (roleInApp == 'admin' || roleResult == 'owner') {
     hasAdminRole = true;
   }
+
+   const communityConfig = new CommunityConfig(config);
+   const twoFAAddress = await getTwoFAAddress({
+     community: communityConfig,
+     source: email,
+     type: 'email'
+   });
+
   return (
-    <Profile memberData={data} hasAdminRole={hasAdminRole} config={config} />
+    <Profile memberData={data} hasAdminRole={hasAdminRole} config={config} userAddress={twoFAAddress ?? ''} />
   );
 }
