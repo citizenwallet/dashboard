@@ -1,9 +1,10 @@
 import { Skeleton } from '@/components/ui/skeleton';
 import { getServiceRoleClient } from '@/services/top-db';
 import { getCommunityByAlias } from '@/services/top-db/community';
-import { Config } from '@citizenwallet/sdk';
+import { CommunityConfig, Config, getTwoFAAddress } from '@citizenwallet/sdk';
 import { Suspense } from 'react';
 import Profile from './profile';
+import { auth } from '@/auth';
 
 interface PageProps {
   params: Promise<{
@@ -55,5 +56,21 @@ async function AsyncPage({
   config: Config;
   account: string;
 }) {
-  return <Profile config={config} account={account} />;
+  const session = await auth();
+  if (!session) {
+    throw new Error('You are not logged in');
+  }
+  const { email } = session.user;
+  if (!email) {
+    throw new Error('You are not logged in');
+  }
+
+  const communityConfig = new CommunityConfig(config);
+  const twoFAAddress = await getTwoFAAddress({
+    community: communityConfig,
+    source: email,
+    type: 'email'
+  });
+
+  return <Profile config={config} account={account} userAddress={twoFAAddress ?? ''} />;
 }
