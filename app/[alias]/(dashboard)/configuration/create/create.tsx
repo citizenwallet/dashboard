@@ -22,7 +22,6 @@ const createFormSchema = z.object({
         .max(50, 'Token name must be less than 50 characters'),
     tokenSymbol: z.string()
         .min(1, 'Token symbol is required')
-        .max(4, 'Token symbol must be 4 characters or less')
         .regex(/^[A-Z0-9]+$/, 'Token symbol must contain only uppercase letters and numbers'),
     icon: z.any().refine((val) => val instanceof File, {
         message: 'Icon is required',
