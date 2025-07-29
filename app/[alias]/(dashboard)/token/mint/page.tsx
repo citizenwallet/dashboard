@@ -3,7 +3,6 @@ import { getServiceRoleClient } from '@/services/top-db';
 import { getCommunityByAlias } from '@/services/top-db/community';
 import { redirect } from 'next/navigation';
 import MintTokenForm from './form';
-import { CommunityConfig, getTwoFAAddress } from '@citizenwallet/sdk';
 import { auth } from '@/auth';
 
 export default async function Page(props: {
@@ -35,13 +34,6 @@ export default async function Page(props: {
     redirect(`/${alias}/treasury`);
   }
 
-    const communityConfig = new CommunityConfig(config);
-    const twoFAAddress = await getTwoFAAddress({
-      community: communityConfig,
-      source: email,
-      type: 'email'
-    });
-
   return (
     <div className="flex flex-1 w-full flex-col h-full overflow-hidden">
       <div className="grid grid-cols-2 gap-4 mb-4">
@@ -54,7 +46,6 @@ export default async function Page(props: {
         <MintTokenForm
           alias={alias}
           config={config}
-          userAddress={twoFAAddress ?? ''}
         />
       </div>
     </div>
