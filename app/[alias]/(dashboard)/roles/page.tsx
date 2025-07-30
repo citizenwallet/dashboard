@@ -1,7 +1,3 @@
-import {
-  getAuthUserRoleInAppAction,
-  getAuthUserRoleInCommunityAction
-} from '@/app/_actions/user-actions';
 import { DataTable } from '@/components/ui/data-table';
 import { getServiceRoleClient } from '@/services/chain-db';
 import {
@@ -11,11 +7,19 @@ import {
 } from '@/services/chain-db/members';
 import { getServiceRoleClient as getServiceRoleClientTopDb } from '@/services/top-db';
 import { getCommunityByAlias } from '@/services/top-db/community';
-import { Config } from '@citizenwallet/sdk';
+import {
+  hasRole as CWCheckRoleAccess,
+  CommunityConfig,
+  MINTER_ROLE,
+  getTwoFAAddress,
+  Config
+} from '@citizenwallet/sdk';
 import { Suspense } from 'react';
 import { placeholderData, skeletonColumns } from './_table/columns';
 import { MinterMembers } from './action';
 import RolePage from './RolePage';
+import { auth } from '@/auth';
+import { JsonRpcProvider } from 'ethers';
 
 interface RolePageProps {
   params: Promise<{ alias: string }>;
@@ -45,21 +49,21 @@ export default async function page(props: RolePageProps) {
       </div>
 
       <Suspense fallback={<Fallback />}>
-        <PageLoader config={config} page={page} alias={alias} />
+        <PageLoader config={config} page={page} />
       </Suspense>
     </div>
   );
 }
 
-async function PageLoader({
-  config,
-  page,
-  alias
-}: {
-  config: Config;
-  page?: string;
-  alias: string;
-}) {
+async function PageLoader({ config, page }: { config: Config; page?: string }) {
+  const session = await auth();
+  if (!session) {
+    throw new Error('You are not logged in');
+  }
+  const { email } = session.user;
+  if (!email) {
+    throw new Error('You are not logged in');
+  }
 
   const supabase = getServiceRoleClient(config.community.profile.chain_id);
   const members = await getAllMembers({
@@ -73,29 +77,36 @@ async function PageLoader({
     page: parseInt(page || '1')
   });
 
-  //check admin role
-  const roleInApp = await getAuthUserRoleInAppAction();
-  const roleResult = await getAuthUserRoleInCommunityAction({ alias });
-  let hasAdminRole = false;
-
-  if (roleInApp == 'admin' || roleResult == 'owner') {
-    hasAdminRole = true;
-  }
-
   const filteredMembers = members.data?.filter((member) => {
     return member.username.toLowerCase() !== 'anonymous';
   });
 
-  return (
+  const communityConfig = new CommunityConfig(config);
 
+  const primaryRpcUrl = communityConfig.primaryRPCUrl;
+  const { address: tokenAddress } = config.community.primary_token;
+
+  const twoFAAddress = await getTwoFAAddress({
+    community: communityConfig,
+    source: email,
+    type: 'email'
+  });
+
+  const hasMinterRole = await CWCheckRoleAccess(
+    tokenAddress,
+    MINTER_ROLE,
+    twoFAAddress ?? '',
+    new JsonRpcProvider(primaryRpcUrl)
+  );
+
+  return (
     <RolePage
       members={filteredMembers as MemberT[]}
-      minterMembers={minterMembers.data as MinterMembers[] | null}
+      minterMembers={minterMembers.data as MinterMembers[]}
       count={minterMembers.count || 0}
       config={config}
-      hasAdminRole={hasAdminRole}
+      hasMinterRole={hasMinterRole}
     />
-
   );
 }
 
