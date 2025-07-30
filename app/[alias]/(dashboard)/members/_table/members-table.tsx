@@ -10,13 +10,15 @@ interface MembersTableProps {
   page: number;
   config: Config;
   showAllMembers: boolean;
+  hasProfileAdminRole: boolean;
 }
 
 export default async function MembersTable({
   query,
   page,
   config,
-  showAllMembers
+  showAllMembers,
+  hasProfileAdminRole
 }: MembersTableProps) {
   const { data, count: totalCount } = await getMembersAction({
     config,
@@ -31,7 +33,11 @@ export default async function MembersTable({
     <>
       <div className="flex-1 overflow-hidden">
         <div className="h-full overflow-y-auto rounded-md border">
-          <MembersClientTable data={data ?? []} config={config} />
+          <MembersClientTable
+            data={data ?? []}
+            config={config}
+            hasProfileAdminRole={hasProfileAdminRole}
+          />
         </div>
       </div>
 

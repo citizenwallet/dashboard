@@ -7,6 +7,13 @@ import AddMember from './_components/add-member';
 import SwitcherButton from './_components/switcher-button';
 import { placeholderData, skeletonColumns } from './_table/columns';
 import MembersTable from './_table/members-table';
+import {
+  CommunityConfig,
+  Config,
+  getTwoFAAddress,
+  hasProfileAdminRole as CWHasProfileAdminRole
+} from '@citizenwallet/sdk';
+import { auth } from '@/auth';
 
 export default async function Page(props: {
   params: Promise<{ alias: string }>;
@@ -16,6 +23,15 @@ export default async function Page(props: {
     showAll?: string;
   }>;
 }) {
+  const session = await auth();
+  if (!session) {
+    throw new Error('You are not logged in');
+  }
+  const { email } = session.user;
+  if (!email) {
+    throw new Error('You are not logged in');
+  }
+
   const { alias } = await props.params;
 
   const client = getServiceRoleClient();
@@ -36,6 +52,19 @@ export default async function Page(props: {
   const page = pageParam || '1';
   const showAllMembers = showAllParam || 'false';
 
+  const communityConfig = new CommunityConfig(config);
+
+  const twoFAAddress = await getTwoFAAddress({
+    community: communityConfig,
+    source: email,
+    type: 'email'
+  });
+
+  const hasProfileAdminRole = await CWHasProfileAdminRole(
+    communityConfig,
+    twoFAAddress ?? ''
+  );
+
   return (
     <div className="flex flex-1 w-full flex-col h-full">
       <div className="grid grid-cols-2 gap-4 mb-4">
@@ -44,7 +73,7 @@ export default async function Page(props: {
           <p className="text-sm text-gray-500">{config.community.name}</p>
         </div>
         <div className="flex justify-end gap-2">
-          <AddMember config={config} />
+          {hasProfileAdminRole && <AddMember config={config} />}
           <div className="flex flex-col">
             <UrlSearch config={config} />
             <div className="h-2" />
@@ -62,6 +91,7 @@ export default async function Page(props: {
           page={Number(page)}
           config={config}
           showAllMembers={showAllMembers === 'true'}
+          hasProfileAdminRole={hasProfileAdminRole}
         />
       </Suspense>
     </div>
