@@ -1,3 +1,4 @@
+import { getAuthUserRoleInCommunityAction } from '@/app/_actions/user-actions';
 import {
   Card,
   CardContent,
@@ -5,17 +6,23 @@ import {
   CardHeader,
   CardTitle
 } from '@/components/ui/card';
-import InviteAdminForm from './form';
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
-import { getAuthUserRoleInCommunityAction } from '@/app/_actions/user-actions';
+import { getServiceRoleClient } from '@/services/top-db';
+import { getCommunityByAlias } from '@/services/top-db/community';
 import { redirect } from 'next/navigation';
+import InviteAdminForm from './form';
 
 export default async function Page(props: {
   params: Promise<{ alias: string }>;
 }) {
   const { alias } = await props.params;
-  const { community: config } = await fetchCommunityByAliasAction(alias);
+  const client = getServiceRoleClient();
+  const { data, error } = await getCommunityByAlias(client, alias);
 
+  if (error || !data) {
+    throw new Error('Failed to get community by alias');
+  }
+
+  const config = data.json;
   const authRole = await getAuthUserRoleInCommunityAction({
     alias
   });

@@ -154,3 +154,13 @@ export async function deleteProfileAction(
     console.error(error);
   }
 }
+
+export async function pinJsonToIPFSAction(Profile: Profile) {
+  try {
+    const result = await pinJSONToIPFS(Profile);
+    return result;
+  } catch (error) {
+    console.error(error);
+    throw new Error('Failed to pin JSON to IPFS');
+  }
+}

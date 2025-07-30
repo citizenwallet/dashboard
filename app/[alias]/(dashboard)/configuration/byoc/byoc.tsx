@@ -4,17 +4,19 @@ import { Button } from '@/components/ui/button';
 import { Card, CardContent } from '@/components/ui/card';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
-import { CommunityConfig, Config, getTokenMetadata } from '@citizenwallet/sdk';
+import { Config } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { isAddress } from 'ethers';
-import { Loader2 } from 'lucide-react';
+import { Coins, Loader2 } from 'lucide-react';
+import { useRouter } from 'next/navigation';
 import { useEffect, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useDebounce } from 'use-debounce';
 import { z } from 'zod';
 import { IconUpload } from '../_components/iconUpload';
-import { createByocAction, uploadIconAction } from '../action';
+import { createByocAction, getTokenMetadataAction, uploadIconAction } from '../action';
+import { chains } from '@/lib/chain';
 
 
 // Form validation schema
@@ -31,12 +33,15 @@ interface TokenMetadata {
     name: string;
 }
 
+
+
 type BYOCFormValues = z.infer<typeof byocFormSchema>;
 
 export default function BYOCForm({ config }: { config: Config }) {
 
     const [isLoading, setIsLoading] = useState(false);
     const [tokenData, setTokenData] = useState<TokenMetadata | null>(null);
+    const router = useRouter();
 
     const form = useForm<BYOCFormValues>({
         resolver: zodResolver(byocFormSchema),
@@ -53,17 +58,23 @@ export default function BYOCForm({ config }: { config: Config }) {
             if (debouncedTokenAddress) {
                 const isValid = isAddress(debouncedTokenAddress);
                 if (isValid) {
-                    const communityConfig = new CommunityConfig(config);
-                    const tokenMetadata = await getTokenMetadata(communityConfig);
+
+
+                    const tokenMetadata = await getTokenMetadataAction(config, debouncedTokenAddress);
+
                     if (tokenMetadata?.decimals == null || tokenMetadata?.symbol == null || tokenMetadata?.name == null) {
-                        form.setError('tokenAddress', { message: 'Token metadata not found' });
+
+                        form.setError('tokenAddress', { message: `Unable to find token, are you sure it is published on ${chains.find(chain => Number(chain.id) === config.community.primary_token.chain_id)?.name}?` });
+
                     } else {
+
                         form.clearErrors('tokenAddress');
                         setTokenData({
                             decimals: Number(tokenMetadata.decimals),
                             symbol: String(tokenMetadata.symbol),
                             name: String(tokenMetadata.name)
                         });
+
                     }
                 } else {
                     form.setError('tokenAddress', { message: 'Invalid token address' });
@@ -71,7 +82,7 @@ export default function BYOCForm({ config }: { config: Config }) {
             }
         };
         validateAddress();
-    }, [debouncedTokenAddress, form]);
+    }, [debouncedTokenAddress, form, config]);
 
     const onSubmit = async (data: BYOCFormValues) => {
         try {
@@ -87,7 +98,16 @@ export default function BYOCForm({ config }: { config: Config }) {
             }
 
             await createByocAction(config, data.tokenAddress, iconUrl, tokenData?.decimals ?? 0, tokenData?.symbol ?? '', tokenData?.name ?? '');
-            toast.success('Configuration created successfully!');
+            toast.success('Configuration created successfully!',
+                {
+                    onAutoClose: () => {
+                        router.push(`/${config.community.alias}/checkout?option=byoc&address=${data.tokenAddress}`);
+                    },
+                    onDismiss: () => {
+                        router.push(`/${config.community.alias}/checkout?option=byoc&address=${data.tokenAddress}`);
+                    }
+                }
+            );
             form.reset();
         } catch (error) {
             console.error('Error creating  configuration:', error);
@@ -101,8 +121,8 @@ export default function BYOCForm({ config }: { config: Config }) {
         <div className="w-full h-full">
             <div className="flex items-left space-x-4">
                 <div>
-                    <h1 className="text-2xl font-bold">Bring Your Own Currency</h1>
-                    <p className="text-muted-foreground">Configure your existing ERC20 token</p>
+                    <h1 className="text-2xl font-bold">Bring your own token (BYOT)</h1>
+                    <p className="text-muted-foreground">Use an existing ERC20 token</p>
                 </div>
             </div>
 
@@ -127,6 +147,17 @@ export default function BYOCForm({ config }: { config: Config }) {
                                     </FormItem>
                                 )}
                             />
+                            {tokenData && (
+                                <div className="flex flex-col items-center justify-center p-6 rounded-lg border bg-muted space-y-2">
+                                    <div className="w-24 h-24 rounded-full bg-white flex items-center justify-center border">
+                                        <Coins className="h-12 w-12 text-orange-500/80" />
+                                    </div>
+                                    <div className="flex flex-col items-center space-y-1 mt-2">
+                                        <span className="text-xl font-medium">{tokenData?.name}</span>
+                                        <span className="text-lg text-foreground/70">{tokenData?.symbol}</span>
+                                    </div>
+                                </div>
+                            )}
 
                             {/* Icon Upload Field */}
                             <FormField

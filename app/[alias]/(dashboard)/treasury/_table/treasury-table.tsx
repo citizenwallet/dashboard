@@ -1,18 +1,21 @@
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 import { getAuthUserRoleInCommunityAction } from '@/app/_actions/user-actions';
-import { getTreasuryTransfersOfTokenAction } from '../actions';
 import UrlPagination from '@/components/custom/pagination-via-url';
-import { TransferClientTable } from './treasury-client-table';
 import { Separator } from '@/components/ui/separator';
-import MintToken from '../_components/mint-token';
-import BurnToken from '../_components/burn-token';
+import { PAGE_SIZE } from '@/services/chain-db/transfers';
+import { getServiceRoleClient } from '@/services/top-db';
+import { getCommunityByAlias } from '@/services/top-db/community';
 import {
-  MINTER_ROLE,
   hasRole as CWCheckRoleAccess,
-  CommunityConfig
+  CommunityConfig,
+  MINTER_ROLE,
+  getTwoFAAddress
 } from '@citizenwallet/sdk';
 import { JsonRpcProvider } from 'ethers';
-import { PAGE_SIZE } from '@/services/chain-db/transfers';
+import BurnToken from '../_components/burn-token';
+import MintToken from '../_components/mint-token';
+import { getTreasuryTransfersOfTokenAction } from '../actions';
+import { TransferClientTable } from './treasury-client-table';
+import { auth } from '@/auth';
 
 interface TreasuryTableProps {
   query: string;
@@ -29,44 +32,54 @@ export default async function TreasuryTable({
   from,
   to
 }: TreasuryTableProps) {
-  const { community: config } = await fetchCommunityByAliasAction(alias);
+  const client = getServiceRoleClient();
+  const { data: communityData, error: communityError } =
+    await getCommunityByAlias(client, alias);
+
+  if (communityError || !communityData) {
+    throw new Error('Failed to get community by alias');
+  }
+
+  const session = await auth();
+  if (!session) {
+    throw new Error('You are not logged in');
+  }
+  const { email } = session.user;
+  if (!email) {
+    throw new Error('You are not logged in');
+  }
+
+  const config = communityData.json;
   const communityConfig = new CommunityConfig(config);
 
   const primaryRpcUrl = communityConfig.primaryRPCUrl;
-  const { chain_id: chainId, address: tokenAddress } =
-    config.community.primary_token;
+  const { address: tokenAddress } = config.community.primary_token;
   const theme = config.community.theme?.primary;
 
-  const [authRoleResult, hasMinterRoleResult, treasuryDataResult] =
-    await Promise.allSettled([
-      getAuthUserRoleInCommunityAction({
-        alias
-      }),
-      CWCheckRoleAccess(
-        tokenAddress,
-        MINTER_ROLE,
-        process.env[`SERVER_${chainId}_ACCOUNT_ADDRESS`] ?? '',
-        new JsonRpcProvider(primaryRpcUrl)
-      ),
-      getTreasuryTransfersOfTokenAction({
-        config,
-        query,
-        page,
-        from,
-        to
-      })
-    ]);
+  const authRole = await getAuthUserRoleInCommunityAction({
+    alias
+  });
 
-  const authRole =
-    authRoleResult.status === 'fulfilled' ? authRoleResult.value : null;
-  const hasMinterRole =
-    hasMinterRoleResult.status === 'fulfilled'
-      ? hasMinterRoleResult.value
-      : false;
-  const treasuryData =
-    treasuryDataResult.status === 'fulfilled'
-      ? treasuryDataResult.value
-      : { data: [], count: 0 };
+  const twoFAAddress = await getTwoFAAddress({
+    community: communityConfig,
+    source: email,
+    type: 'email'
+  });
+
+  const hasMinterRole = await CWCheckRoleAccess(
+    tokenAddress,
+    MINTER_ROLE,
+    twoFAAddress ?? '',
+    new JsonRpcProvider(primaryRpcUrl)
+  );
+
+  const treasuryData = await getTreasuryTransfersOfTokenAction({
+    config,
+    query,
+    page,
+    from,
+    to
+  });
 
   const { data, count: totalCount } = treasuryData;
 

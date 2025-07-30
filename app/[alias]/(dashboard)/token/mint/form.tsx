@@ -1,5 +1,10 @@
 'use client';
-import { Config, CommunityConfig } from '@citizenwallet/sdk';
+import {
+  Config,
+  CommunityConfig,
+  BundlerService,
+  waitForTxSuccess
+} from '@citizenwallet/sdk';
 import { ChangeEvent, useRef, useTransition } from 'react';
 import { mintTokenFormSchema } from './form-schema';
 import { useForm, UseFormReturn } from 'react-hook-form';
@@ -31,10 +36,7 @@ import {
   CommandItem
 } from '@/components/ui/command';
 import { Check, ChevronsUpDown } from 'lucide-react';
-import {
-  searchMember as searchMemberToMint,
-  mintTokenToMemberAction
-} from '@/app/[alias]/(dashboard)/token/actions';
+import { searchMember as searchMemberToMint } from '@/app/[alias]/(dashboard)/token/actions';
 import { MemberT } from '@/services/chain-db/members';
 import { useState } from 'react';
 import { useDebouncedCallback } from 'use-debounce';
@@ -42,18 +44,25 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { Input } from '@/components/ui/input';
 import { CommunityLogo } from '@/components/icons';
 import { Textarea } from '@/components/ui/textarea';
-import { isAddress } from 'ethers';
+import { isAddress, Wallet } from 'ethers';
 import { formatAddress } from '@/lib/utils';
 import MemberListItem from '../_components/member-list-item';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'state/session/action';
 
 interface MintTokenFormProps {
   alias: string;
   config: Config;
 }
 
-export default function MintTokenForm({ config }: MintTokenFormProps) {
+export default function MintTokenForm({
+  config,
+
+}: MintTokenFormProps) {
+  const router = useRouter();
+  const communityConfig = new CommunityConfig(config);
+  const [, sessionActions] = useSession(config);
   const [isPending, startTransition] = useTransition();
-  // const router = useRouter();
 
   const form = useForm<z.infer<typeof mintTokenFormSchema>>({
     resolver: zodResolver(mintTokenFormSchema),
@@ -67,14 +76,33 @@ export default function MintTokenForm({ config }: MintTokenFormProps) {
   async function onSubmit(values: z.infer<typeof mintTokenFormSchema>) {
     startTransition(async () => {
       try {
-        await mintTokenToMemberAction({
-          config: config,
-          formData: values
-        });
+        const privateKey = sessionActions.storage.getKey('session_private_key');
+        const signerAccountAddress = await sessionActions.getAccountAddress();
+
+        if (!privateKey || !signerAccountAddress) {
+          toast.error('Please login to mint token');
+          router.push(`/${config.community.alias}/login`);
+          return;
+        }
+
+        const signer = new Wallet(privateKey);
+
+        const bundlerService = new BundlerService(communityConfig);
+        const txHash = await bundlerService.mintERC20Token(
+          signer,
+          communityConfig.primaryToken.address,
+          signerAccountAddress,
+          values.member.account,
+          values.amount,
+          values.description
+        );
+
+        await waitForTxSuccess(communityConfig, txHash);
 
         toast.success(`Success 🔨`);
-        //    router.back();
+        router.push(`/${config.community.alias}/treasury`);
       } catch (error) {
+        console.error(error);
         if (error instanceof Error) {
           toast.error(error.message);
         } else {
@@ -354,7 +382,7 @@ export function AmountField({ form, config }: AmountFieldProps) {
             <div className="relative">
               <div className="absolute left-3 top-1/2 -translate-y-1/2">
                 <CommunityLogo
-                  logoUrl={config.community.logo}
+                  logoUrl={primaryToken?.logo ?? config.community.logo}
                   tokenSymbol={primaryToken.symbol}
                 />
               </div>

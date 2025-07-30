@@ -9,7 +9,12 @@ import { insertEvent } from '@/services/chain-db/event';
 import { uploadImage } from '@/services/storage';
 import { getServiceRoleClient } from '@/services/top-db';
 import { updateCommunityJson } from '@/services/top-db/community';
-import { Config } from '@citizenwallet/sdk';
+import { CommunityConfig, Config, getTokenMetadata, ConfigToken, TRANSFER_EVENT_SIGNATURE } from '@citizenwallet/sdk';
+import { ethers } from 'ethers';
+import { getRpcUrlOfChain } from '@/lib/chain';
+
+
+
 
 export async function uploadIconAction(imageFile: File, alias: string) {
   const client = getServiceRoleClient();
@@ -74,18 +79,18 @@ export async function createByocAction(
           address: tokenAddress,
           chain_id: config.community.primary_token.chain_id,
           decimals,
-          standard: 'erc20'
-        }
+          standard: 'erc20',
+          logo: icon
+        } satisfies ConfigToken
       },
       community: {
         ...config.community,
-        logo: icon,
         primary_token: {
           ...config.community.primary_token,
           address: tokenAddress
         }
-      }
-    };
+      } 
+    } satisfies Config;
 
     const [updateCommunityJsonPromise] = await Promise.allSettled([
       updateCommunityJson(client, config.community.alias, {
@@ -101,9 +106,9 @@ export async function createByocAction(
           name: `${config.community.alias} Transfer`,
           contract: tokenAddress,
           event_signature:
-            'Transfer (index_topic_1 address from, index_topic_2 address to, uint256 value)',
+            TRANSFER_EVENT_SIGNATURE,
           topic:
-            '0xddf252ad1be2c89b69c2b068fc378daa952ba7f163c4a11628f55a4df523b3ef',
+            ethers.id(TRANSFER_EVENT_SIGNATURE),
           alias: config.community.alias
         }
       })
@@ -119,4 +124,83 @@ export async function createByocAction(
     console.error('Error creating BYOC:', error);
     throw new Error('Failed to create BYOC');
   }
+}
+
+export async function createTokenAction(
+  config: Config,
+  icon: string,
+  symbol: string,
+  name: string
+) {
+  const client = getServiceRoleClient();
+
+  const roleInCommunity = await getAuthUserRoleInCommunityAction({
+    alias: config.community.alias
+  });
+
+  const roleInApp = await getAuthUserRoleInAppAction();
+
+  if (!roleInApp) {
+    throw new Error('Unauthenticated user');
+  }
+
+  if (roleInApp === 'user' && !roleInCommunity) {
+    throw new Error('You are not a member of this community');
+  }
+
+  try {
+    const tokenAddress = ethers.ZeroAddress;
+
+    const updateJson = {
+      ...config,
+      tokens: {
+        ...config.tokens,
+        [`${config.community.primary_token.chain_id}:${tokenAddress}`]: {
+          name,
+          symbol,
+          address: tokenAddress,
+          chain_id: config.community.primary_token.chain_id,
+          decimals: 18,
+          standard: 'erc20',
+          logo: icon
+        } satisfies ConfigToken
+      },
+      community: {
+        ...config.community,
+        primary_token: {
+          ...config.community.primary_token,
+          address: tokenAddress
+        }
+      }
+    };
+
+    const updateCommunity = await updateCommunityJson(
+      client,
+      config.community.alias,
+      {
+        json: updateJson
+      }
+    );
+
+    return updateCommunity;
+  } catch (error) {
+    console.error('Error creating token:', error);
+  }
+}
+
+export async function getTokenMetadataAction(
+  config: Config,
+  tokenAddress: string
+) {
+  const communityConfig = new CommunityConfig(config);
+  const rpcUrl = getRpcUrlOfChain(
+    config.community.profile.chain_id.toString()
+  );
+
+  const tokenMetadata = await getTokenMetadata(communityConfig, {
+    tokenAddress,
+    rpcUrl
+  });
+
+  return tokenMetadata;
 }

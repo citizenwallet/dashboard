@@ -1,18 +1,25 @@
-import UrlPagination from '@/components/custom/pagination-via-url';
-import { getUsersOfCommunityAction } from '@/app/[alias]/(dashboard)/admins/action';
-import { AdminsClientTable } from './admins-client-table';
-import { getAuthUserRoleInCommunityAction } from '@/app/_actions/user-actions';
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
-import { Separator } from '@/components/ui/separator';
 import AddAdmin from '@/app/[alias]/(dashboard)/admins/_components/add-admin';
+import { getUsersOfCommunityAction } from '@/app/[alias]/(dashboard)/admins/action';
+import { getAuthUserRoleInCommunityAction } from '@/app/_actions/user-actions';
+import UrlPagination from '@/components/custom/pagination-via-url';
+import { Separator } from '@/components/ui/separator';
+import { getServiceRoleClient } from '@/services/top-db';
+import { getCommunityByAlias } from '@/services/top-db/community';
+import { AdminsClientTable } from './admins-client-table';
 
 interface AdminsTableProps {
   alias: string;
 }
 
 export default async function AdminsTable({ alias }: AdminsTableProps) {
-  const { community: config } = await fetchCommunityByAliasAction(alias);
+  const client = getServiceRoleClient();
+  const { data: communityData, error: communityError } = await getCommunityByAlias(client, alias);
 
+  if (communityError || !communityData) {
+    throw new Error('Failed to get community by alias');
+  }
+
+  const config = communityData.json;
   const [usersResult, roleResult] = await Promise.allSettled([
     getUsersOfCommunityAction({
       alias

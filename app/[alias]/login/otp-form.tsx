@@ -2,16 +2,12 @@
 
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardFooter } from '@/components/ui/card';
-import { useForm } from 'react-hook-form';
-import { zodResolver } from '@hookform/resolvers/zod';
-import { otpFormSchema } from './form-schema';
-import { z } from 'zod';
 import {
   Form,
+  FormControl,
   FormField,
   FormItem,
   FormLabel,
-  FormControl,
   FormMessage
 } from '@/components/ui/form';
 import {
@@ -19,14 +15,24 @@ import {
   InputOTPGroup,
   InputOTPSlot
 } from '@/components/ui/input-otp';
-import { useTransition } from 'react';
-import { toast } from 'sonner';
+import { REGEXP_ONLY_DIGITS } from 'input-otp';
+import { CommunityConfig, Config, waitForTxSuccess } from '@citizenwallet/sdk';
+import { zodResolver } from '@hookform/resolvers/zod';
 import { Mail } from 'lucide-react';
-import { signInWithOTP } from './actions';
 import { useRouter } from 'next/navigation';
+import { useTransition } from 'react';
+import { useForm } from 'react-hook-form';
+import { toast } from 'sonner';
+import { useSession } from 'state/session/action';
+import { z } from 'zod';
+import { generateOtpFormHashAction, getUserByEmailAction, signInWithOutOTP, submitOtpFormAction } from './actions';
+import { otpFormSchema } from './form-schema';
+import { getBytes, Wallet } from 'ethers';
+
 
 interface OtpFormProps {
   email: string;
+  config: Config;
   onBack: () => void;
   resendCountDown: number;
   onResend: (email: string) => void;
@@ -34,33 +40,90 @@ interface OtpFormProps {
 
 export default function OtpForm({
   email,
+  config,
   onBack,
   resendCountDown,
   onResend
 }: OtpFormProps) {
   const [isPending, startTransition] = useTransition();
   const router = useRouter();
+  const [sessionState, sessionActions] = useSession(config);
+
   const form = useForm<z.infer<typeof otpFormSchema>>({
     resolver: zodResolver(otpFormSchema),
     defaultValues: {
-      code: ''
-    }
+      code: "",
+      sessionRequestHash: sessionState((state) => state.hash) ?? "",
+      privateKey: sessionState((state) => state.privateKey) ?? "",
+    },
   });
 
   async function onSubmit(values: z.infer<typeof otpFormSchema>) {
-    const { code } = values;
+
     startTransition(async () => {
       try {
-        const result = await signInWithOTP({ email, code });
-        if (result?.success) {
-          toast.success('Login successful!');
-          router.push('/');
+
+        const user = await getUserByEmailAction({ email });
+
+        if (!user) {
+          throw new Error(`User with email ${email} not found`);
         }
+
+
+        const communityConfig = new CommunityConfig(config);
+
+        const sessionHash = await generateOtpFormHashAction({
+          formData: values,
+        });
+
+        const signer = new Wallet(values.privateKey);
+        const sessionOwner = signer.address;
+
+        const sessionHashInBytes = getBytes(sessionHash);
+        const signature = await signer.signMessage(sessionHashInBytes);
+
+        const result = await submitOtpFormAction({
+          formData: values,
+          config,
+          sessionOwner,
+          sessionHash,
+          signature
+        });
+
+        const successReceipt = await waitForTxSuccess(
+          communityConfig,
+          result.sessionRequestTxHash,
+        );
+
+        if (!successReceipt) {
+          throw new Error("Failed to confirm transaction");
+        }
+
+        const address = await sessionActions.getAccountAddress();
+
+        if (!address) {
+          throw new Error("Failed to create account");
+        }
+
+        console.log("accountAddress", address)
+
+        const alias = config.community.alias;
+        const response = await signInWithOutOTP({ email, address, alias });
+        if (response?.success) {
+          toast.success('Login successful!');
+          router.push(`/${alias}`);
+        }
+
       } catch (error) {
-        console.error(error);
         if (error instanceof Error) {
-          // Display the exact error message from auth.config.ts
-          toast.error(error.message);
+          console.log(error)
+          if (error.message.includes('500')) {
+            toast.error('Your login code is wrong, please try again');
+          }
+
+          else {
+            toast.error(error.message);
+          }
         } else {
           toast.error('Could not verify login code');
         }
@@ -95,13 +158,11 @@ export default function OtpForm({
                   <FormLabel className="text-center mb-2">Login Code</FormLabel>
                   <FormControl>
                     <InputOTP
-                      type="text"
-                      inputMode="numeric"
-                      autoComplete="one-time-code"
-                      pattern="\d{6}"
                       maxLength={6}
-                      required
+                      pattern={REGEXP_ONLY_DIGITS}
                       {...field}
+                      autoFocus
+                      required
                     >
                       <InputOTPGroup>
                         {Array.from({ length: 6 }).map((_, index) => (

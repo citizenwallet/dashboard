@@ -24,8 +24,14 @@ export default {
       {
         protocol: 'https',
         hostname: 'etvujlqieidfoqsetrqd.supabase.co',
-        pathname: '/storage/v1/object/public/uploads/**'
+        pathname: '/storage/v1/object/public/uploads/**',
+        search: ''
       }
     ]
+  },
+  experimental: {
+    serverActions: {
+      bodySizeLimit: '5mb'
+    }
   }
 };

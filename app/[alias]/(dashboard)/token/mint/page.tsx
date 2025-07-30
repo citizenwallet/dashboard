@@ -1,13 +1,31 @@
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
-import MintTokenForm from './form';
 import { getAuthUserRoleInCommunityAction } from '@/app/_actions/user-actions';
+import { getServiceRoleClient } from '@/services/top-db';
+import { getCommunityByAlias } from '@/services/top-db/community';
 import { redirect } from 'next/navigation';
+import MintTokenForm from './form';
+import { auth } from '@/auth';
 
 export default async function Page(props: {
   params: Promise<{ alias: string }>;
 }) {
+  const session = await auth();
+  if (!session) {
+    throw new Error('You are not logged in');
+  }
+  const { email } = session.user;
+  if (!email) {
+    throw new Error('You are not logged in');
+  }
+
   const { alias } = await props.params;
-  const { community: config } = await fetchCommunityByAliasAction(alias);
+  const client = getServiceRoleClient();
+  const { data, error } = await getCommunityByAlias(client, alias);
+
+  if (error || !data) {
+    throw new Error('Failed to get community by alias');
+  }
+
+  const config = data.json;
   const authRole = await getAuthUserRoleInCommunityAction({
     alias
   });
@@ -25,7 +43,10 @@ export default async function Page(props: {
         </div>
       </div>
       <div className="flex-1 overflow-auto">
-        <MintTokenForm alias={alias} config={config} />
+        <MintTokenForm
+          alias={alias}
+          config={config}
+        />
       </div>
     </div>
   );

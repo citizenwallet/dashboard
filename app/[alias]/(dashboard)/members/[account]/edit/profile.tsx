@@ -24,9 +24,11 @@ import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { MemberT } from '@/services/chain-db/members';
 import {
+  BundlerService,
   CommunityConfig,
   Config,
-  checkUsernameAvailability
+  checkUsernameAvailability,
+  waitForTxSuccess
 } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Save, Trash2, Upload, User } from 'lucide-react';
@@ -39,9 +41,12 @@ import * as z from 'zod';
 import type { Profile } from '../action';
 import {
   deleteProfileAction,
-  updateProfileAction,
+  pinJsonToIPFSAction,
   updateProfileImageAction
 } from '../action';
+import { Wallet } from 'ethers';
+import { useSession } from 'state/session/action';
+import React from 'react';
 
 const formSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -51,16 +56,19 @@ const formSchema = z.object({
 
 export default function Profile({
   memberData,
-  hasAdminRole,
-  config
+  hasProfileAdminRole,
+  config,
 }: {
   memberData?: MemberT;
-  hasAdminRole: boolean;
+  hasProfileAdminRole: boolean;
   config: Config;
 }) {
   const community = useMemo(() => new CommunityConfig(config), [config]);
-  const [isEditing, setIsEditing] = useState(hasAdminRole);
+  const [isEditing, setIsEditing] = useState(hasProfileAdminRole);
   const router = useRouter();
+  const [, sessionActions] = useSession(config);
+
+
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
     defaultValues: {
@@ -166,7 +174,33 @@ export default function Profile({
         username: values.username || ''
       };
 
-      await updateProfileAction(profile, config.community.alias, config);
+      const result = await pinJsonToIPFSAction(profile);
+      const profileCid = result.IpfsHash;
+
+        const privateKey = sessionActions.storage.getKey('session_private_key');
+        const signerAccountAddress = await sessionActions.getAccountAddress();
+
+        if (!privateKey || !signerAccountAddress) {
+          toast.error('Please login to update profile');
+          setIsLoading(false);
+          router.push(`/${config.community.alias}/login`);
+          return;
+        }
+
+      const signer = new Wallet(privateKey);
+      const bundler = new BundlerService(community);
+
+      const txHash = await bundler.setProfile(
+        signer,
+        signerAccountAddress,
+        profile.account,
+        profile.username,
+        profileCid
+      );
+
+      await waitForTxSuccess(community, txHash);
+
+      await new Promise((resolve) => setTimeout(resolve, 250));
 
       toast.success('Profile updated successfully', {
         onAutoClose: () => {
@@ -233,77 +267,97 @@ export default function Profile({
     }
   };
   return (
-    <Card className="shadow-lg border-0">
-      <CardContent className="pt-6">
-        <Form {...form}>
-          <div className="flex flex-col md:flex-row gap-8 items-start">
-            <div className="flex flex-col items-center space-y-3">
-              <Avatar className="h-24 w-24">
-                <AvatarImage
-                  src={userData.avatarUrl}
-                  alt={form.watch('name')}
+    <React.Fragment>
+      <Card className="shadow-lg border-0">
+        <CardContent className="pt-6">
+          <Form {...form}>
+            <div className="flex flex-col md:flex-row gap-8 items-start">
+              <div className="flex flex-col items-center space-y-3">
+                <Avatar className="h-24 w-24">
+                  <AvatarImage
+                    src={userData.avatarUrl}
+                    alt={form.watch('name')}
+                  />
+                  <AvatarFallback>
+                    <User className="h-12 w-12" />
+                  </AvatarFallback>
+                </Avatar>
+
+                <p className="text-sm text-gray-500">@{memberData?.username}</p>
+
+                <input
+                  type="file"
+                  ref={fileInputRef}
+                  onChange={handleImageUpload}
+                  accept="image/*"
+                  className="hidden"
                 />
-                <AvatarFallback>
-                  <User className="h-12 w-12" />
-                </AvatarFallback>
-              </Avatar>
+                <Button
+                  variant="outline"
+                  size="sm"
+                  className="text-xs"
+                  disabled={!isEditing}
+                  onClick={triggerFileInput}
+                >
+                  <Upload className="mr-2 h-3 w-3" />
+                  Change photo
+                </Button>
+              </div>
 
-              <p className="text-sm text-gray-500">@{memberData?.username}</p>
-
-              <input
-                type="file"
-                ref={fileInputRef}
-                onChange={handleImageUpload}
-                accept="image/*"
-                className="hidden"
-              />
-              <Button
-                variant="outline"
-                size="sm"
-                className="text-xs"
-                disabled={!isEditing}
-                onClick={triggerFileInput}
-              >
-                <Upload className="mr-2 h-3 w-3" />
-                Change photo
-              </Button>
-            </div>
-
-            <div className="flex-1 space-y-4 w-full">
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+              <div className="flex-1 space-y-4 w-full">
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <FormField
+                    control={form.control}
+                    name="username"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Username</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Username"
+                            {...field}
+                            disabled={!isEditing}
+                            onChange={(e) => {
+                              setUsernameEdit(true);
+                              field.onChange(e);
+                            }}
+                            className={`bg-white ${isAvailable ? '' : 'border-red-500'}`}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel>Name</FormLabel>
+                        <FormControl>
+                          <Input
+                            placeholder="Your name"
+                            {...field}
+                            disabled={!isEditing}
+                          />
+                        </FormControl>
+                        <FormMessage />
+                      </FormItem>
+                    )}
+                  />
+                </div>
                 <FormField
                   control={form.control}
-                  name="username"
+                  name="description"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Username</FormLabel>
+                      <FormLabel>Description</FormLabel>
                       <FormControl>
-                        <Input
-                          placeholder="Username"
+                        <Textarea
+                          placeholder="Tell us about yourself"
                           {...field}
                           disabled={!isEditing}
-                          onChange={(e) => {
-                            setUsernameEdit(true);
-                            field.onChange(e);
-                          }}
-                          className={`bg-white ${isAvailable ? '' : 'border-red-500'}`}
-                        />
-                      </FormControl>
-                      <FormMessage />
-                    </FormItem>
-                  )}
-                />
-                <FormField
-                  control={form.control}
-                  name="name"
-                  render={({ field }) => (
-                    <FormItem>
-                      <FormLabel>Name</FormLabel>
-                      <FormControl>
-                        <Input
-                          placeholder="Your name"
-                          {...field}
-                          disabled={!isEditing}
+                          className="min-h-[120px] bg-white resize-none"
                         />
                       </FormControl>
                       <FormMessage />
@@ -311,84 +365,66 @@ export default function Profile({
                   )}
                 />
               </div>
-              <FormField
-                control={form.control}
-                name="description"
-                render={({ field }) => (
-                  <FormItem>
-                    <FormLabel>Description</FormLabel>
-                    <FormControl>
-                      <Textarea
-                        placeholder="Tell us about yourself"
-                        {...field}
-                        disabled={!isEditing}
-                        className="min-h-[120px] bg-white resize-none"
-                      />
-                    </FormControl>
-                    <FormMessage />
-                  </FormItem>
-                )}
-              />
             </div>
-          </div>
-        </Form>
-      </CardContent>
+          </Form>
+        </CardContent>
 
-      {/* it can access only admin and community owner  */}
-      {hasAdminRole && (
-        <CardFooter className="flex justify-between pt-6">
-          {isEditing && (
-            <div className="flex gap-3">
-              <Button
-                onClick={form.handleSubmit(onSubmit)}
-                className="gap-2"
-                disabled={!isAvailable || isLoading}
-              >
-                <Save className="h-4 w-4" />
-                {isLoading ? 'Saving...' : 'Save Changes'}
-              </Button>
-            </div>
-          )}
-
-          <Button
-            variant="destructive"
-            onClick={() => {
-              setIsDialogOpen(true);
-            }}
-            className="gap-2"
-            disabled={isLoading}
-          >
-            <Trash2 className="h-4 w-4" />
-            Delete Account
-          </Button>
-
-          <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
-            <DialogContent className="sm:max-w-md">
-              <DialogHeader>
-                <DialogTitle>Remove Member</DialogTitle>
-                <DialogDescription>
-                  Are you sure you want to remove this member?
-                </DialogDescription>
-              </DialogHeader>
-              <DialogFooter className="sm:justify-start gap-2">
+        {/* it can access only admin and community owner  */}
+        {hasProfileAdminRole && (
+          <CardFooter className="flex justify-between pt-6">
+            {isEditing && (
+              <div className="flex gap-3">
                 <Button
-                  disabled={isLoading}
-                  onClick={handleDelete}
-                  type="button"
-                  variant="destructive"
+                  onClick={form.handleSubmit(onSubmit)}
+                  className="gap-2"
+                  disabled={!isAvailable || isLoading}
                 >
-                  {isLoading ? 'Removing...' : 'Remove'}
+                  <Save className="h-4 w-4" />
+                  {isLoading ? 'Saving...' : 'Save Changes'}
                 </Button>
-                <DialogClose asChild>
-                  <Button type="button" variant="outline" disabled={isLoading}>
-                    Cancel
-                  </Button>
-                </DialogClose>
-              </DialogFooter>
-            </DialogContent>
-          </Dialog>
-        </CardFooter>
-      )}
-    </Card>
+              </div>
+            )}
+
+            <Button
+              variant="destructive"
+              onClick={() => {
+                setIsDialogOpen(true);
+              }}
+              className="gap-2"
+              disabled={isLoading}
+            >
+              <Trash2 className="h-4 w-4" />
+              Delete Account
+            </Button>
+          </CardFooter>
+        )}
+      </Card>
+
+      <Dialog open={isDialogOpen} onOpenChange={setIsDialogOpen}>
+        <DialogContent className="sm:max-w-md">
+          <DialogHeader>
+            <DialogTitle>Remove Member</DialogTitle>
+            <DialogDescription>
+              Are you sure you want to remove this member?
+            </DialogDescription>
+          </DialogHeader>
+          <DialogFooter className="sm:justify-start gap-2">
+            <Button
+              disabled={isLoading}
+              onClick={handleDelete}
+              type="button"
+              variant="destructive"
+            >
+              {isLoading ? 'Removing...' : 'Remove'}
+            </Button>
+            <DialogClose asChild>
+              <Button type="button" variant="outline" disabled={isLoading}>
+                Cancel
+              </Button>
+            </DialogClose>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+    </React.Fragment>
   );
 }

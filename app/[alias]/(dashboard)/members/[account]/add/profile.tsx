@@ -14,9 +14,11 @@ import {
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import {
+  BundlerService,
   CommunityConfig,
   Config,
-  checkUsernameAvailability
+  checkUsernameAvailability,
+  waitForTxSuccess
 } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Upload, User } from 'lucide-react';
@@ -27,7 +29,9 @@ import { toast } from 'sonner';
 import { useDebounce } from 'use-debounce';
 import * as z from 'zod';
 import type { Profile } from '../action';
-import { updateProfileAction, updateProfileImageAction } from '../action';
+import { pinJsonToIPFSAction, updateProfileImageAction } from '../action';
+import { Wallet } from 'ethers';
+import { useSession } from 'state/session/action';
 
 const profileFormSchema = z.object({
   username: z.string().min(1, 'Username is required'),
@@ -37,10 +41,12 @@ const profileFormSchema = z.object({
 
 export default function Profile({
   config,
-  account
+  account,
+  hasProfileAdminRole
 }: {
   config: Config;
   account: string;
+  hasProfileAdminRole: boolean;
 }) {
   const community = useMemo(() => new CommunityConfig(config), [config]);
   const router = useRouter();
@@ -51,6 +57,7 @@ export default function Profile({
   const [usernameEdit, setUsernameEdit] = useState(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [, sessionActions] = useSession(config);
 
   const form = useForm<z.infer<typeof profileFormSchema>>({
     resolver: zodResolver(profileFormSchema),
@@ -137,8 +144,36 @@ export default function Profile({
         username: values.username
       };
 
-      await updateProfileAction(profile, config.community.alias, config);
-      toast.success('Profile updated successfully');
+      const result = await pinJsonToIPFSAction(profile);
+      const profileCid = result.IpfsHash;
+
+      const privateKey = sessionActions.storage.getKey('session_private_key');
+      const signerAccountAddress = await sessionActions.getAccountAddress();
+
+      if (!privateKey || !signerAccountAddress) {
+        toast.error('Please login to add a member');
+        setIsLoading(false);
+        router.push(`/${config.community.alias}/login`);
+        return;
+      }
+
+      const signer = new Wallet(privateKey);
+
+      const bundler = new BundlerService(community);
+
+      const txHash = await bundler.setProfile(
+        signer,
+        signerAccountAddress,
+        profile.account,
+        profile.username,
+        profileCid
+      );
+
+      await waitForTxSuccess(community, txHash);
+
+      await new Promise((resolve) => setTimeout(resolve, 250));
+
+      toast.success('Profile added successfully');
       router.push(`/${config.community.alias}/members`);
     } catch (error) {
       console.error('Error adding member:', error);
@@ -240,25 +275,27 @@ export default function Profile({
           </form>
         </Form>
       </CardContent>
-      <CardFooter className="flex justify-between pt-6">
-        <Button
-          variant="destructive"
-          className="gap-2"
-          onClick={() => {
-            router.push(`/${config.community.alias}/members`);
-          }}
-        >
-          Cancel
-        </Button>
-        <Button
-          variant="outline"
-          className="gap-2"
-          disabled={!isAvailable || isLoading}
-          onClick={form.handleSubmit(onSubmit)}
-        >
-          {isLoading ? 'Saving...' : 'Add Member'}
-        </Button>
-      </CardFooter>
+      {hasProfileAdminRole && (
+        <CardFooter className="flex justify-between pt-6">
+          <Button
+            variant="destructive"
+            className="gap-2"
+            onClick={() => {
+              router.push(`/${config.community.alias}/members`);
+            }}
+          >
+            Cancel
+          </Button>
+          <Button
+            variant="outline"
+            className="gap-2"
+            disabled={!isAvailable || isLoading}
+            onClick={form.handleSubmit(onSubmit)}
+          >
+            {isLoading ? 'Saving...' : 'Add Member'}
+          </Button>
+        </CardFooter>
+      )}
     </Card>
   );
 }
