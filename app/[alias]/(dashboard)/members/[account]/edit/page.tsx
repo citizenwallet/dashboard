@@ -1,14 +1,12 @@
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
-import {
-  getAuthUserRoleInAppAction,
-  getAuthUserRoleInCommunityAction
-} from '@/app/_actions/user-actions';
 import { Skeleton } from '@/components/ui/skeleton';
 import { getServiceRoleClient } from '@/services/chain-db';
 import { getMemberByAccount } from '@/services/chain-db/members';
-import { Config } from '@citizenwallet/sdk';
+import { getServiceRoleClient as getTopDbServiceRoleClient } from '@/services/top-db';
+import { getCommunityByAlias } from '@/services/top-db/community';
+import { CommunityConfig, Config, getTwoFAAddress, hasProfileAdminRole as CWHasProfileAdminRole } from '@citizenwallet/sdk';
 import { Suspense } from 'react';
 import Profile from './profile';
+import { auth } from '@/auth';
 
 interface PageProps {
   params: Promise<{
@@ -20,8 +18,14 @@ interface PageProps {
 export default async function page(props: PageProps) {
   const { account, alias } = await props.params;
 
-  const { community: config } = await fetchCommunityByAliasAction(alias);
+  const client = getTopDbServiceRoleClient();
+  const { data, error } = await getCommunityByAlias(client, alias);
 
+  if (error || !data) {
+    throw new Error('Failed to get community by alias');
+  }
+
+  const config = data.json;
 
   return (
     <div className="flex flex-1 w-full flex-col h-full">
@@ -51,12 +55,20 @@ export default async function page(props: PageProps) {
 async function AsyncPage({
   config,
   account,
-  alias
 }: {
   config: Config;
   account: string;
   alias: string;
-}) {
+  }) {
+    const session = await auth();
+    if (!session) {
+      throw new Error('You are not logged in');
+    }
+    const { email } = session.user;
+    if (!email) {
+      throw new Error('You are not logged in');
+    }
+  
   const supabase = getServiceRoleClient(config.community.profile.chain_id);
   const profileContract = config.community.profile.address;
   const { data } = await getMemberByAccount({
@@ -68,15 +80,19 @@ async function AsyncPage({
     return <div>Member not found</div>;
   }
 
-  //check admin role
-  const roleInApp = await getAuthUserRoleInAppAction();
-  const roleResult = await getAuthUserRoleInCommunityAction({ alias });
-  let hasAdminRole = false;
+  const communityConfig = new CommunityConfig(config);
+  const twoFAAddress = await getTwoFAAddress({
+    community: communityConfig,
+    source: email,
+    type: 'email'
+  });
 
-  if (roleInApp == 'admin' || roleResult == 'owner') {
-    hasAdminRole = true;
-  }
+  const hasProfileAdminRole = await CWHasProfileAdminRole(
+    communityConfig,
+    twoFAAddress ?? ''
+  );
+
   return (
-    <Profile memberData={data} hasAdminRole={hasAdminRole} config={config} />
+    <Profile memberData={data} hasProfileAdminRole={hasProfileAdminRole} config={config} />
   );
 }

@@ -4,7 +4,7 @@ import { Button } from '@/components/ui/button';
 import { Form, FormControl, FormDescription, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
-import { Config } from '@citizenwallet/sdk';
+import { Config, ConfigCommunity } from '@citizenwallet/sdk';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { Check, Copy, Loader2, Palette } from 'lucide-react';
 import { useState } from 'react';
@@ -14,6 +14,8 @@ import { z } from 'zod';
 import { ColorPicker } from './_components/colorPicker';
 import { LogoUpload } from './_components/logoUpload';
 import { updateProfileAction, uploadItemImageAction } from './action';
+import { isEmpty } from '@/lib/utils';
+import { useRouter } from 'next/navigation';
 
 // Form validation schema
 const profileFormSchema = z.object({
@@ -43,6 +45,7 @@ export default function ProfilePage({ config }: { config: Config }) {
 
     const [isLoading, setIsLoading] = useState(false);
     const [copiedDomain, setCopiedDomain] = useState(false);
+    const router = useRouter();
 
     const copyDomainToClipboard = async (domain: string) => {
         try {
@@ -59,6 +62,8 @@ export default function ProfilePage({ config }: { config: Config }) {
     const onSubmit = async (data: ProfileFormValues) => {
         try {
             setIsLoading(true);
+
+            const currencyActive = (isEmpty(config.community.primary_token.address) && isEmpty(config.community.profile.address));
 
             // Handle logo upload to Supabase bucket or keep existing logo
             let logoUrl = config.community.logo;
@@ -105,7 +110,7 @@ export default function ProfilePage({ config }: { config: Config }) {
                 ...(profileData.custom_domain && profileData.custom_domain !== defaultDomain && {
                     custom_domain: profileData.custom_domain
                 })
-            };
+            } satisfies ConfigCommunity;
 
             const updatedConfig: Config = {
                 ...config,
@@ -116,14 +121,14 @@ export default function ProfilePage({ config }: { config: Config }) {
             await updateProfileAction(updatedConfig, config.community.alias);
 
             // Show success message
-            toast.success(`Profile updated successfully!`, {
-                onAutoClose: () => {
-                    window.location.reload();
-                },
-                onDismiss: () => {
-                    window.location.reload();
-                }
-            });
+            toast.success(`Profile updated successfully!`);
+            if (currencyActive) {
+                router.push(`/${config.community.alias}/configuration`)
+            } else {
+                window.location.reload();
+            }
+
+
         } catch (error) {
             console.error('Error updating profile:', error);
             toast.error('Failed to update profile. Please try again.');

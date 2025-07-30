@@ -1,8 +1,15 @@
-import { fetchCommunityByAliasAction } from '@/app/_actions/community-actions';
 import { Skeleton } from '@/components/ui/skeleton';
-import { Config } from '@citizenwallet/sdk';
+import { getServiceRoleClient } from '@/services/top-db';
+import { getCommunityByAlias } from '@/services/top-db/community';
+import {
+  CommunityConfig,
+  Config,
+  getTwoFAAddress,
+  hasProfileAdminRole as CWHasProfileAdminRole
+} from '@citizenwallet/sdk';
 import { Suspense } from 'react';
 import Profile from './profile';
+import { auth } from '@/auth';
 
 interface PageProps {
   params: Promise<{
@@ -13,7 +20,14 @@ interface PageProps {
 
 export default async function page(props: PageProps) {
   const { account, alias } = await props.params;
-  const { community: config } = await fetchCommunityByAliasAction(alias);
+  const client = getServiceRoleClient();
+  const { data, error } = await getCommunityByAlias(client, alias);
+
+  if (error || !data) {
+    throw new Error('Failed to get community by alias');
+  }
+
+  const config = data.json;
 
   return (
     <div className="flex flex-1 w-full flex-col h-full">
@@ -47,5 +61,27 @@ async function AsyncPage({
   config: Config;
   account: string;
 }) {
-  return <Profile config={config} account={account} />;
+  const session = await auth();
+  if (!session) {
+    throw new Error('You are not logged in');
+  }
+  const { email } = session.user;
+  if (!email) {
+    throw new Error('You are not logged in');
+  }
+
+  const communityConfig = new CommunityConfig(config);
+
+  const twoFAAddress = await getTwoFAAddress({
+    community: communityConfig,
+    source: email,
+    type: 'email'
+  });
+
+  const hasProfileAdminRole = await CWHasProfileAdminRole(
+    communityConfig,
+    twoFAAddress ?? ''
+  );
+
+  return <Profile config={config} account={account} hasProfileAdminRole={hasProfileAdminRole} />;
 }

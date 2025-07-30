@@ -28,7 +28,11 @@ function Fallback() {
         <div className="flex flex-col">
           <h1 className="text-2xl font-bold">Communities</h1>
         </div>
-        <Button className="flex items-center gap-2 w-40 mb-4">
+        <Button
+          variant="default"
+          size="default"
+          className="flex items-center gap-2 w-auto px-4 py-2 mb-4 font-medium transition-colors hover:bg-primary/90"
+        >
           <Plus size={16} />
           Create Community
         </Button>
