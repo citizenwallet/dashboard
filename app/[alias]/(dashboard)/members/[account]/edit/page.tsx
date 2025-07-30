@@ -55,7 +55,6 @@ export default async function page(props: PageProps) {
 async function AsyncPage({
   config,
   account,
-  alias
 }: {
   config: Config;
   account: string;
