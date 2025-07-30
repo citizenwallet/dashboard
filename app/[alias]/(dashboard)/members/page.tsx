@@ -73,7 +73,7 @@ export default async function Page(props: {
           <p className="text-sm text-gray-500">{config.community.name}</p>
         </div>
         <div className="flex justify-end gap-2">
-          {hasProfileAdminRole && <AddMember config={config} />}
+          <AddMember config={config} />
           <div className="flex flex-col">
             <UrlSearch config={config} />
             <div className="h-2" />
