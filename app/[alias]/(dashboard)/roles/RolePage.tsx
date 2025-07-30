@@ -30,7 +30,13 @@ import {
 import { Separator } from '@/components/ui/separator';
 import { cn, formatAddress } from '@/lib/utils';
 import { MemberT } from '@/services/chain-db/members';
-import { Config } from '@citizenwallet/sdk';
+import {
+  BundlerService,
+  CommunityConfig,
+  Config,
+  MINTER_ROLE,
+  waitForTxSuccess
+} from '@citizenwallet/sdk';
 import {
   Check,
   ChevronsUpDown,
@@ -41,24 +47,31 @@ import {
 } from 'lucide-react';
 import { useCallback, useRef, useState } from 'react';
 import { toast } from 'sonner';
-import { grantRoleAction, MinterMembers, revokeRoleAction } from './action';
+import { MinterMembers } from './action';
+import { useSession } from 'state/session/action';
+import { Wallet } from 'ethers';
+import { useRouter } from 'next/navigation';
 
 export default function RolePage({
   members,
   minterMembers,
   count,
   config,
-  hasAdminRole
+  hasMinterRole
 }: {
   members: MemberT[];
-  minterMembers: MinterMembers[] | null;
+  minterMembers: MinterMembers[];
   count: number;
   config: Config;
-  hasAdminRole: boolean;
+  hasMinterRole: boolean;
 }) {
   const [isAddDialogOpen, setIsAddDialogOpen] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
   const [isDialogOpen, setIsDialogOpen] = useState(false);
+
+  const [, sessionActions] = useSession(config);
+
+  const router = useRouter();
 
   const [open, setOpen] = useState(false);
   const [memberAccount, setMemberAccount] = useState('');
@@ -97,20 +110,53 @@ export default function RolePage({
   };
 
   const grantAccess = async () => {
-    setIsLoading(true);
-    const res = await grantRoleAction({ config, account: memberAccount });
+    try {
+      setIsLoading(true);
 
-    if (res.success) {
-      toast.success('Access granted successfully.');
-    } else {
+      const privateKey = sessionActions.storage.getKey('session_private_key');
+      const signerAccountAddress = await sessionActions.getAccountAddress();
+
+      if (!privateKey || !signerAccountAddress) {
+        toast.error('Please login to add minter');
+        setIsLoading(false);
+        router.push(`/${config.community.alias}/login`);
+        return;
+      }
+
+      const signer = new Wallet(privateKey);
+
+      const community = new CommunityConfig(config);
+      const bundler = new BundlerService(community);
+
+      const tokenAddress = community.primaryToken.address;
+
+      const hash = await bundler.grantRole(
+        signer,
+        tokenAddress,
+        signerAccountAddress,
+        MINTER_ROLE,
+        memberAccount
+      );
+      const isSuccess = await waitForTxSuccess(community, hash);
+
+      if (isSuccess) {
+        // await grantRoleAction({ config, account: memberAccount });
+        router.refresh();
+        toast.success('Access granted successfully.');
+      } else {
+        toast.error('Failed to grant access.');
+      }
+    } catch (error) {
+      console.error(error);
       toast.error('Failed to grant access.');
+    } finally {
+      setIsLoading(false);
+      setIsAddDialogOpen(false);
     }
-    setIsLoading(false);
-    setIsAddDialogOpen(false);
   };
 
   const handleGrantAccess = () => {
-    if (!hasAdminRole) {
+    if (!hasMinterRole) {
       toast.error('You do not have permission to revoke access.');
       return;
     }
@@ -128,7 +174,7 @@ export default function RolePage({
 
   return (
     <>
-      {hasAdminRole && (
+      {hasMinterRole && (
         <Dialog open={isAddDialogOpen} onOpenChange={setIsAddDialogOpen}>
           <DialogTrigger asChild>
             <div className="flex justify-start mb-4">
@@ -277,6 +323,7 @@ export default function RolePage({
         <div className="h-full overflow-y-auto rounded-md border">
           <div className="flex-1 overflow-hidden">
             <div className="h-full overflow-y-auto rounded-md ">
+              {/* TODO: move to columns file */}
               <DataTable
                 columns={[
                   {
@@ -340,24 +387,63 @@ export default function RolePage({
                       };
 
                       const revokeAccess = async (account: string) => {
-                        if (!hasAdminRole) {
+                        if (!hasMinterRole) {
                           toast.error(
                             'You do not have permission to revoke access.'
                           );
                           return;
                         }
-                        setIsPending(true);
-                        const res = await revokeRoleAction({
-                          config,
-                          account: account
-                        });
-                        if (res.success) {
-                          toast.success('Access revoked successfully.');
-                        } else {
-                          toast.error('Failed to revoke access.');
+
+                        const privateKey = sessionActions.storage.getKey(
+                          'session_private_key'
+                        );
+                        const signerAccountAddress =
+                          await sessionActions.getAccountAddress();
+
+                        if (!privateKey || !signerAccountAddress) {
+                          toast.error('Please login to revoke access');
+                          router.push(`/${config.community.alias}/login`);
+                          return;
                         }
-                        setIsPending(false);
-                        setIsDialogOpen(false);
+
+                        setIsPending(true);
+                        try {
+                          const signer = new Wallet(privateKey);
+
+                          const community = new CommunityConfig(config);
+                          const bundler = new BundlerService(community);
+
+                          const tokenAddress = community.primaryToken.address;
+
+                          const hash = await bundler.revokeRole(
+                            signer,
+                            tokenAddress,
+                            signerAccountAddress,
+                            MINTER_ROLE,
+                            account
+                          );
+
+                          const isSuccess = await waitForTxSuccess(
+                            community,
+                            hash
+                          );
+
+                          if (isSuccess) {
+                            router.refresh();
+                            toast.success('Access revoked successfully.');
+                          } else {
+                            throw new Error('Failed to revoke access.');
+                          }
+                        } catch (error) {
+                          if (error instanceof Error) {
+                            toast.error(error.message);
+                          } else {
+                            toast.error('Failed to revoke access.');
+                          }
+                        } finally {
+                          setIsPending(false);
+                          setIsDialogOpen(false);
+                        }
                       };
                       return (
                         <>
