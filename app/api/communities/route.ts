@@ -17,5 +17,9 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: error.message }, { status: 500 });
   }
 
-  return NextResponse.json(data);
+  const activeCommunities = data.filter(
+    (community) => !community.json.community.hidden
+  );
+
+  return NextResponse.json(activeCommunities);
 }
