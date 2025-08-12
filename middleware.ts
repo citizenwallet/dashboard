@@ -1,7 +1,6 @@
 import { NextResponse } from 'next/server';
 import type { NextRequest } from 'next/server';
 import { auth } from '@/auth';
-import dns from 'dns';
 
 async function getRedirectUrlFromTXT(
   hostname: string | null
@@ -16,17 +15,24 @@ async function getRedirectUrlFromTXT(
       ? hostname.split('.').slice(-2).join('.')
       : hostname;
 
-    // Query TXT records on the parent domain
-    const txtRecords = await dns.promises.resolveTxt(parentDomain);
+    // Use DNS-over-HTTPS to resolve TXT records (Edge Runtime compatible)
+    const response = await fetch(
+      `https://dns.google/resolve?name=${parentDomain}&type=TXT`
+    );
+    const data = await response.json();
 
-    // Look for TXT record with redirect[subdomain]=url format
-    for (const record of txtRecords) {
-      for (const entry of record) {
-        const match = entry.match(/^redirect\[([^\]]+)\]=(.+)$/);
-        if (match) {
-          const [_, configuredHostname, redirectUrl] = match;
-          if (configuredHostname === hostname) {
-            return redirectUrl.trim();
+    if (data.Answer) {
+      // Look for TXT record with redirect[subdomain]=url format
+      for (const answer of data.Answer) {
+        if (answer.type === 16) {
+          // TXT record type
+          const txtData = answer.data.replace(/"/g, ''); // Remove quotes
+          const match = txtData.match(/^redirect\[([^\]]+)\]=(.+)$/);
+          if (match) {
+            const [_, configuredHostname, redirectUrl] = match;
+            if (configuredHostname === hostname) {
+              return redirectUrl.trim();
+            }
           }
         }
       }
