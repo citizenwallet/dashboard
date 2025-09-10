@@ -1,3 +1,5 @@
+'use server';
+
 import { getServiceRoleClient } from '../top-db';
 import { getCommunityByAlias } from '../top-db/community';
 import { Config } from '@citizenwallet/sdk';
