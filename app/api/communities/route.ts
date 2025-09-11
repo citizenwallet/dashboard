@@ -10,7 +10,7 @@ export async function GET(request: NextRequest) {
 
   const { data, error } = await getCommunitiesByChainId(
     client,
-    Number(chainId)
+    chainId ? Number(chainId) : undefined
   );
 
   if (error) {
