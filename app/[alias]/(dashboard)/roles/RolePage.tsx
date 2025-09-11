@@ -21,6 +21,7 @@ import {
   DialogTitle,
   DialogTrigger
 } from '@/components/ui/dialog';
+import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import {
   Popover,
@@ -28,6 +29,7 @@ import {
   PopoverTrigger
 } from '@/components/ui/popover';
 import { Separator } from '@/components/ui/separator';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { cn, formatAddress } from '@/lib/utils';
 import { MemberT } from '@/services/chain-db/members';
 import { Config } from '@citizenwallet/sdk';
@@ -62,8 +64,24 @@ export default function RolePage({
 
   const [open, setOpen] = useState(false);
   const [memberAccount, setMemberAccount] = useState('');
+  const [manualAddress, setManualAddress] = useState('');
+  const [isValidAddress, setIsValidAddress] = useState(false);
 
   const totalPages = Math.ceil(Number(count) / 25);
+
+  // Function to validate Ethereum address
+  const isValidEthereumAddress = (address: string): boolean => {
+    return /^0x[a-fA-F0-9]{40}$/.test(address);
+  };
+
+  // Handle manual address input
+  const handleManualAddressChange = (value: string) => {
+    setManualAddress(value);
+    setIsValidAddress(isValidEthereumAddress(value));
+    if (isValidEthereumAddress(value)) {
+      setMemberAccount(value);
+    }
+  };
 
   const IDRow = ({ account }: { account: string }) => {
     const [isCopied, setIsCopied] = useState(false);
@@ -97,6 +115,11 @@ export default function RolePage({
   };
 
   const grantAccess = async () => {
+    if (!memberAccount) {
+      toast.error('Please select a member or enter a valid address.');
+      return;
+    }
+
     setIsLoading(true);
     const res = await grantRoleAction({ config, account: memberAccount });
 
@@ -148,83 +171,124 @@ export default function RolePage({
               </DialogDescription>
             </DialogHeader>
             <div className="grid gap-4 py-4">
-              <div className="grid gap-2">
-                <Label htmlFor="memberAccount" className="text-sm font-medium">
-                  Member Account
-                </Label>
-                <Popover open={open} onOpenChange={setOpen}>
-                  <PopoverTrigger asChild>
-                    <Button
-                      variant="outline"
-                      role="combobox"
-                      aria-expanded={open}
-                      className="w-full overflow-hidden justify-between"
-                      id="place"
-                    >
-                      {memberAccount || 'Select a member'}
-                      <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
-                    </Button>
-                  </PopoverTrigger>
-                  <PopoverContent
-                    className="w-[--radix-popover-trigger-width] p-0"
-                    align="start"
-                    side="top"
-                    sideOffset={4}
-                  >
-                    <Command>
-                      <CommandInput
-                        placeholder="Search username..."
-                        className="h-9"
-                      />
-                      <CommandList
-                        ref={commandListRef}
-                        className="max-h-[200px] overflow-y-auto"
-                        onWheel={handleWheel}
-                      >
-                        <CommandEmpty>No Member found.</CommandEmpty>
-                        <CommandGroup>
-                          {members?.map((member) => (
-                            <CommandItem
-                              key={member.id}
-                              value={member.username.toLowerCase()}
-                              onSelect={() => {
-                                setMemberAccount(member.account);
-                                setOpen(false);
-                              }}
-                            >
-                              <div className="flex items-center gap-2 min-w-[200px]">
-                                <Avatar className="h-8 w-8 flex-shrink-0">
-                                  <AvatarImage
-                                    src={member.image}
-                                    alt={member.username}
-                                  />
-                                  <AvatarFallback>
-                                    {member.username.slice(0, 2)}
-                                  </AvatarFallback>
-                                </Avatar>
-                                <div className="flex flex-col">
-                                  <span className="text-xs text-muted-foreground">
-                                    {`@${member.username}`}
-                                  </span>
-                                </div>
-                              </div>
+              <Tabs defaultValue="members" className="w-full">
+                <TabsList className="grid w-full grid-cols-2">
+                  <TabsTrigger value="members">Select Member</TabsTrigger>
+                  <TabsTrigger value="manual">Enter Address</TabsTrigger>
+                </TabsList>
 
-                              <Check
-                                className={cn(
-                                  'ml-auto h-4 w-4',
-                                  memberAccount === member.account.toString()
-                                    ? 'opacity-100'
-                                    : 'opacity-0'
-                                )}
-                              />
-                            </CommandItem>
-                          ))}
-                        </CommandGroup>
-                      </CommandList>
-                    </Command>
-                  </PopoverContent>
-                </Popover>
-              </div>
+                <TabsContent value="members" className="space-y-2">
+                  <Label
+                    htmlFor="memberAccount"
+                    className="text-sm font-medium"
+                  >
+                    Member Account
+                  </Label>
+                  <Popover open={open} onOpenChange={setOpen}>
+                    <PopoverTrigger asChild>
+                      <Button
+                        variant="outline"
+                        role="combobox"
+                        aria-expanded={open}
+                        className="w-full overflow-hidden justify-between"
+                        id="place"
+                      >
+                        {memberAccount || 'Select a member'}
+                        <ChevronsUpDown className="ml-2 h-4 w-4 opacity-50" />
+                      </Button>
+                    </PopoverTrigger>
+                    <PopoverContent
+                      className="w-[--radix-popover-trigger-width] p-0"
+                      align="start"
+                      side="top"
+                      sideOffset={4}
+                    >
+                      <Command>
+                        <CommandInput
+                          placeholder="Search username..."
+                          className="h-9"
+                        />
+                        <CommandList
+                          ref={commandListRef}
+                          className="max-h-[200px] overflow-y-auto"
+                          onWheel={handleWheel}
+                        >
+                          <CommandEmpty>No Member found.</CommandEmpty>
+                          <CommandGroup>
+                            {members?.map((member) => (
+                              <CommandItem
+                                key={member.id}
+                                value={member.username.toLowerCase()}
+                                onSelect={() => {
+                                  setMemberAccount(member.account);
+                                  setManualAddress(''); // Clear manual input
+                                  setOpen(false);
+                                }}
+                              >
+                                <div className="flex items-center gap-2 min-w-[200px]">
+                                  <Avatar className="h-8 w-8 flex-shrink-0">
+                                    <AvatarImage
+                                      src={member.image}
+                                      alt={member.username}
+                                    />
+                                    <AvatarFallback>
+                                      {member.username.slice(0, 2)}
+                                    </AvatarFallback>
+                                  </Avatar>
+                                  <div className="flex flex-col">
+                                    <span className="text-xs text-muted-foreground">
+                                      {`@${member.username}`}
+                                    </span>
+                                  </div>
+                                </div>
+
+                                <Check
+                                  className={cn(
+                                    'ml-auto h-4 w-4',
+                                    memberAccount === member.account.toString()
+                                      ? 'opacity-100'
+                                      : 'opacity-0'
+                                  )}
+                                />
+                              </CommandItem>
+                            ))}
+                          </CommandGroup>
+                        </CommandList>
+                      </Command>
+                    </PopoverContent>
+                  </Popover>
+                </TabsContent>
+
+                <TabsContent value="manual" className="space-y-2">
+                  <Label
+                    htmlFor="manualAddress"
+                    className="text-sm font-medium"
+                  >
+                    Ethereum Address
+                  </Label>
+                  <Input
+                    id="manualAddress"
+                    placeholder="0x..."
+                    value={manualAddress}
+                    onChange={(e) => handleManualAddressChange(e.target.value)}
+                    className={cn(
+                      'font-mono',
+                      manualAddress && !isValidAddress && 'border-red-500'
+                    )}
+                  />
+                  {manualAddress && !isValidAddress && (
+                    <p className="text-sm text-red-500">
+                      Please enter a valid Ethereum address (0x followed by 40
+                      hex characters)
+                    </p>
+                  )}
+                  {manualAddress && isValidAddress && (
+                    <p className="text-sm text-green-600">
+                      ✓ Valid Ethereum address
+                    </p>
+                  )}
+                </TabsContent>
+              </Tabs>
             </div>
             <DialogFooter>
               <Button
@@ -232,6 +296,8 @@ export default function RolePage({
                 onClick={() => {
                   setIsAddDialogOpen(false);
                   setMemberAccount('');
+                  setManualAddress('');
+                  setIsValidAddress(false);
                 }}
               >
                 Cancel
