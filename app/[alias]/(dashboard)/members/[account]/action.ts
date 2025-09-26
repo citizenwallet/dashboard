@@ -9,6 +9,7 @@ import {
   BundlerService,
   CommunityConfig,
   Config,
+  getAccountAddress,
   waitForTxSuccess
 } from '@citizenwallet/sdk';
 import { Wallet } from 'ethers';
@@ -66,13 +67,22 @@ export async function updateProfileAction(
   }
 
   const result = await pinJSONToIPFS(profile);
-  const profileCid = result.IpfsHash;
+  const profileCid = result;
+  if (!profileCid) {
+    throw new Error('Failed to pin profile to IPFS');
+  }
 
   const community = new CommunityConfig(config);
   const bundler = new BundlerService(community);
 
   const signer = new Wallet(process.env.SERVER_PRIVATE_KEY as string);
-  const signerAccountAddress = process.env.SERVER_ACCOUNT_ADDRESS as string;
+  const signerAccountAddress = await getAccountAddress(
+    community,
+    signer.address
+  );
+  if (!signerAccountAddress) {
+    throw new Error('Failed to get signer account address');
+  }
 
   const account = profile.account;
   const username = profile.username;
@@ -128,7 +138,13 @@ export async function deleteProfileAction(
     const bundler = new BundlerService(community);
 
     const signer = new Wallet(process.env.SERVER_PRIVATE_KEY as string);
-    const signerAccountAddress = process.env.SERVER_ACCOUNT_ADDRESS as string;
+    const signerAccountAddress = await getAccountAddress(
+      community,
+      signer.address
+    );
+    if (!signerAccountAddress) {
+      throw new Error('Failed to get signer account address');
+    }
 
     const txHash = await bundler.burnProfile(
       signer,
