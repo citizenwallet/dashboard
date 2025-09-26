@@ -124,7 +124,7 @@ export default function Profile({
           imageFile,
           community.community.alias
         );
-        cid = response.IpfsHash;
+        cid = response || '';
       }
 
       const profile: Profile = {
