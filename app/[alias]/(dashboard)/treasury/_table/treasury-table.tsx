@@ -36,12 +36,17 @@ export default async function TreasuryTable({
     alias
   });
 
-  const hasMinterRole = await hasRole(
-    tokenAddress,
-    MINTER_ROLE,
-    process.env.SERVER_ACCOUNT_ADDRESS ?? '',
-    new JsonRpcProvider(primaryRpcUrl)
-  );
+  let hasMinterRole = false;
+  try {
+    hasMinterRole = await hasRole(
+      tokenAddress,
+      MINTER_ROLE,
+      process.env.SERVER_ACCOUNT_ADDRESS ?? '',
+      new JsonRpcProvider(primaryRpcUrl)
+    );
+  } catch (error) {
+    console.error('Error checking minter role:', error);
+  }
 
   const treasuryData = await getTreasuryTransfersOfTokenAction({
     config,
