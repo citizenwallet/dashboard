@@ -18,7 +18,11 @@ import { useForm } from 'react-hook-form';
 import { toast } from 'sonner';
 import { useSession } from 'state/session/action';
 import { z } from 'zod';
-import { generateEmailFormHashAction, getUserByEmailAction, sendEmailFormRequestAction } from './actions';
+import {
+  generateEmailFormHashAction,
+  getUserByEmailAction,
+  sendEmailFormRequestAction
+} from './actions';
 import { emailFormSchema } from './form-schema';
 
 interface EmailFormProps {
@@ -34,13 +38,12 @@ export default function EmailForm({ config, onSuccess }: EmailFormProps) {
   const form = useForm<z.infer<typeof emailFormSchema>>({
     resolver: zodResolver(emailFormSchema),
     defaultValues: {
-      email: "",
-      type: "email",
+      email: '',
+      type: 'email'
     }
   });
 
   async function onSubmit(values: z.infer<typeof emailFormSchema>) {
-
     const { email } = values;
     startTransition(async () => {
       try {
@@ -73,14 +76,13 @@ export default function EmailForm({ config, onSuccess }: EmailFormProps) {
           config
         });
 
-
         const successReceipt = await waitForTxSuccess(
           communityConfig,
-          result.sessionRequestTxHash,
+          result.sessionRequestTxHash
         );
 
         if (!successReceipt) {
-          throw new Error("Failed to confirm transaction");
+          throw new Error('Failed to confirm transaction');
         }
 
         sessionActions[1].storePrivateKey(privateKey);
@@ -91,18 +93,16 @@ export default function EmailForm({ config, onSuccess }: EmailFormProps) {
         // await sendOTPAction({ email });
         onSuccess(values.email);
         toast.success(`Login code sent to ${values.email}`);
-
-
       } catch (error) {
         if (error instanceof Error) {
-          console.log(error)
+          console.log(error);
           if (error.message.includes('500')) {
-            toast.error('Could not send login code now, please try again later');
-          }
-          else if (error.message.includes('429')) {
+            toast.error(
+              'Could not send login code now, please try again later'
+            );
+          } else if (error.message.includes('429')) {
             toast.error('Too many requests, please try again later');
-          }
-          else {
+          } else {
             toast.error(error.message);
           }
         } else {
