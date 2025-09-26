@@ -9,6 +9,7 @@ import {
   BundlerService,
   CommunityConfig,
   Config,
+  getAccountAddress,
   MINTER_ROLE,
   waitForTxSuccess
 } from '@citizenwallet/sdk';
@@ -37,7 +38,13 @@ export const grantRoleAction = async (args: {
   const tokenAddress = community.primaryToken.address;
 
   const signer = new Wallet(process.env.SERVER_PRIVATE_KEY as string);
-  const signerAccountAddress = process.env.SERVER_ACCOUNT_ADDRESS as string;
+  const signerAccountAddress = await getAccountAddress(
+    community,
+    signer.address
+  );
+  if (!signerAccountAddress) {
+    throw new Error('Failed to get signer account address');
+  }
 
   const hash = await bundler.grantRole(
     signer,
@@ -75,7 +82,13 @@ export const revokeRoleAction = async (args: {
   const tokenAddress = community.primaryToken.address;
 
   const signer = new Wallet(process.env.SERVER_PRIVATE_KEY as string);
-  const signerAccountAddress = process.env.SERVER_ACCOUNT_ADDRESS as string;
+  const signerAccountAddress = await getAccountAddress(
+    community,
+    signer.address
+  );
+  if (!signerAccountAddress) {
+    throw new Error('Failed to get signer account address');
+  }
 
   const hash = await bundler.revokeRole(
     signer,

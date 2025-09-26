@@ -6,8 +6,13 @@ import { TransferClientTable } from './treasury-client-table';
 import { Separator } from '@/components/ui/separator';
 import MintToken from '../_components/mint-token';
 import BurnToken from '../_components/burn-token';
-import { MINTER_ROLE, hasRole, CommunityConfig } from '@citizenwallet/sdk';
-import { JsonRpcProvider } from 'ethers';
+import {
+  MINTER_ROLE,
+  hasRole,
+  CommunityConfig,
+  getAccountAddress
+} from '@citizenwallet/sdk';
+import { JsonRpcProvider, Wallet } from 'ethers';
 import { PAGE_SIZE } from '@/services/chain-db/transfers';
 
 interface TreasuryTableProps {
@@ -36,12 +41,21 @@ export default async function TreasuryTable({
     alias
   });
 
+  const signer = new Wallet(process.env.SERVER_PRIVATE_KEY as string);
+  const serverAccountAddress = await getAccountAddress(
+    communityConfig,
+    signer.address
+  );
+  if (!serverAccountAddress) {
+    throw new Error('Failed to get server account address');
+  }
+
   let hasMinterRole = false;
   try {
     hasMinterRole = await hasRole(
       tokenAddress,
       MINTER_ROLE,
-      process.env.SERVER_ACCOUNT_ADDRESS ?? '',
+      serverAccountAddress,
       new JsonRpcProvider(primaryRpcUrl)
     );
   } catch (error) {
