@@ -18,6 +18,7 @@ export default async function DashboardLayout({
 }) {
   const { alias } = await params;
   let hasAccess = false;
+  let isAdmin = false;
 
 
   const { community } = await getCommunity(alias);
@@ -46,8 +47,17 @@ export default async function DashboardLayout({
     }
   }
 
+  if (role === 'user' && accessList.length > 0) {
+    accessList.forEach(access => {
+      if (access.alias === alias && access.role === 'owner') {
+        isAdmin = true;
+      }
+    });
+  }
+
   if (role === 'admin') {
     hasAccess = true;
+    isAdmin = true;
   }
 
 
@@ -55,7 +65,13 @@ export default async function DashboardLayout({
 
   return (
     <SidebarProvider>
-      <AppSidebar user={user} communities={communities} config={community} hasAccess={hasAccess} />
+      <AppSidebar
+        user={user}
+        communities={communities}
+        config={community}
+        hasAccess={hasAccess}
+        isAdmin={isAdmin}
+      />
       <SidebarInset className="flex flex-col h-screen overflow-hidden">
         <header className="flex h-16 shrink-0 items-center gap-2 transition-[width,height] ease-linear group-has-[[data-collapsible=icon]]/sidebar-wrapper:h-12">
           <div className="flex items-center gap-2 px-4">
